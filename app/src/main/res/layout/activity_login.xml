@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    android:background="#4c75a3"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.login_activity">
+
+    <ImageView
+        android:layout_marginTop="60dp"
+        android:layout_marginBottom="50dp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/app_image"
+        android:src="@drawable/app_image2"
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
+
+    <RelativeLayout
+        android:id="@+id/login_fields"
+        android:layout_below="@id/app_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Spinner
+            android:padding="15dp"
+            android:layout_marginBottom="10dp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/groupsPickerSpinner"
+            android:textColor="@android:color/white"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:layout_below="@id/groupsPickerSpinner"
+            android:padding="15dp"
+            android:layout_marginBottom="10dp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/studentPickerSpinner"
+            android:textColor="@android:color/white"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:background="@drawable/bottom_color_edittext"
+            android:weightSum="100"
+            android:orientation="horizontal"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/studentPickerSpinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content">
+        <EditText
+            android:layout_weight="40"
+            android:inputType="textPassword"
+            android:textColor="@android:color/white"
+            android:padding="15dp"
+            android:background="@drawable/bottom_color_edittext"
+            android:id="@+id/password"
+            android:hint="@string/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox"
+            android:layout_marginStart="40dp"
+            android:layout_weight="60"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/bottomPart"
+        android:layout_below="@id/login_fields"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:elevation="5dp"
+            android:id="@+id/signIn"
+            android:textColor="@android:color/white"
+            android:background="@color/signInButton"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true"
+            android:text="@string/sign_in"
+            android:layout_width="250dp"
+            android:layout_height="50dp" />
+
+        <TextView
+            android:visibility="invisible"
+            android:enabled="false"
+            android:id="@+id/register"
+            android:textSize="20dp"
+            android:layout_margin="25dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            android:textColor="@android:color/white"
+            android:text="@string/register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            android:layout_below="@id/signIn"
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="21dp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

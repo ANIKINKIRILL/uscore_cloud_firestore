@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    android:id="@+id/cardViewLayout"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="15dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/topLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_margin="10dp"
+                android:id="@+id/teacherName"
+                android:textSize="20sp"
+                android:text="Teacher Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:layout_toRightOf="@id/teacherName"
+                android:gravity="center"
+                android:layout_weight="3"
+                android:id="@+id/result"
+                android:textSize="20sp"
+                android:text="result"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_below="@id/topLayout"
+            android:id="@+id/scoreDateResultLayout"
+            android:layout_marginBottom="10dp"
+            android:weightSum="12"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:gravity="center"
+                android:layout_weight="6"
+                android:id="@+id/score"
+                android:textSize="20sp"
+                android:text="score"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:gravity="center"
+                android:layout_weight="6"
+                android:id="@+id/date"
+                android:textSize="20sp"
+                android:text="date"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

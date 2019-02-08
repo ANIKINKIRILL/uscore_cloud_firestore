@@ -1,0 +1,309 @@
+<resources>
+    <string name="app_name" translatable="false">USCORE001</string>
+
+    <string name="open_dialog" translatable="false">open_dialog</string>
+
+    <!-- shared preferences-->
+    <string name="email_pref" translatable="false">email_preference</string>
+    <string name="password_pref" translatable="false">password_preference</string>
+    <string name="group_pref" translatable="false">group_pref</string>
+    <string name="username_pref" translatable="false">username_pref</string>
+    <string name="group_pref_from_profile_group_fragment" translatable="false">group_pref</string>
+
+    <!--// all strings for change language-->
+
+    <string name="dashboard_title">Главное меню</string>
+    <string name="my_profile">Мой профиль</string>
+    <string name="top_scores">Рейтинг</string>
+    <string name="rules">Регламент</string>
+    <string name="recent">Недавние</string>
+    <string name="status">статус</string>
+    <string name="my_group">Моя группа</string>
+    <string name="school">Школа</string>
+    <string name="sign_out">Выйти</string>
+    <string name="add_score">Добавить очки</string>
+    <string name="generate_qr_code">Сгенерировать QR CODE</string>
+    <string name="ask_for_score">Ask For Score</string>
+    <string name="scan_qr_code">сканировать QR CODE</string>
+    <string name="changeLang">Поменять язык</string>
+    <string name="statusStudent">Студент</string>
+    <string name="statusTeacher">Учитель</string>
+
+    <string name="currentStudentGroup" translatable="false">currentStudentGroup</string>
+    <string name="currentStudentUsername" translatable="false">currentStudentUsername</string>
+    <string name="currentStudentRateInGroup" translatable="false">currentStudentRateInGroup</string>
+    <string name="currentStudentRateInSchool" translatable="false">currentStudentRateInSchool</string>
+
+    <string name="currentStudentConfirmedRequests" translatable="false">currentStudentConfirmedRequests</string>
+    <string name="currentStudentDeniedRequests" translatable="false">currentStudentDeniedRequests</string>
+
+    <string name="intentScore" translatable="false">intentScore</string>
+    <string name="intentGroup" translatable="false">intentGroup</string>
+    <string name="intentUsername" translatable="false">intentUsername</string>
+    <string name="intentImage" translatable="false">intentImage</string>
+    <string name="intentEmail" translatable="false">intentEmail</string>
+    <string name="intentSenderImage" translatable="false">intentSenderImage</string>
+    <string name="intentLimitScore" translatable="false">intentLimitScore</string>
+
+    <string name="intentTeacherEmail" translatable="false">intentTeacherEmail</string>
+    <string name="intentTeacherFullname" translatable="false">intentTeacherFullname</string>
+    <string name="intentTeacherImage_path" translatable="false">intentTeacherImage_path</string>
+    <string name="intentTeacherPosition" translatable="false">intentTeacherPosition</string>
+    <string name="intentTeacherSubject" translatable="false">intentTeacherSubject</string>
+    <string name="intentTeacherScore" translatable="false">intentTeacherScore</string>
+
+    <string name="studentEmailAddress">почта ученика</string>
+    <string name="score">очки</string>
+    <string name="cancel">ОТМЕНА</string>
+    <string name="ok">ОК</string>
+    <string name="addScoreDialogTitle">Добавить очки</string>
+    <string name="notGoodError">Плохо...</string>
+    <string name="MaybeyougottacheckError">Наверно нужно проверить</string>
+    <string name="teacherEmail">учитель@mail.ru</string>
+    <string name="teacherpassword">пароль</string>
+    <string name="scanning_process">Сканирование....</string>
+    <string name="cancelScanProccess">Вы только что отменили сканирование</string>
+    <string name="requestScore">Запрашиваемые очки:</string>
+    <string name="confirm">Подтвердить очки</string>
+    <string name="addedPerson"> было добавленно </string>
+    <string name="addingProccessCanceled">Процесс был оменен</string>
+
+    <string name="addCommentButton">Оставить коменнтарий</string>
+    <string name="show_all_comments">Показать все коменнтарии</string>
+    <string name="group">Группа</string>
+    <string name="addedTimes">ДОБАВЛЕННО</string>
+
+    <string name="you_are_on">You are on </string>
+    <string name="place_with"> place with </string>
+    <string name="points"> points</string>
+
+    <string name="added_to">Added to</string>
+
+    <string name="leave_your_comment_here">оставить коменнтарии...</string>
+    <string name="comments_number">Коменнтарии</string>
+    <string name="sign_in">Войти</string>
+    <string name="already_have_account" translatable="false">Уже есть аккаунт</string>
+    <string name="group_small">группа</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="password">пароль</string>
+
+    <string name="open_drawer">open_drawer</string>
+    <string name="close_drawer">close_drawer</string>
+
+
+    <string-array name="teachers">
+        <item>Илья Аркадьевич</item>
+        <item>Роберт Альбертович</item>
+        <item>Надежда Александровна</item>
+    </string-array>
+
+    <string-array name="teachersWithAllOption">
+        <item>Teachers</item>
+        <item>Роберт Альбертович</item>
+        <item>Надежда Александровна</item>
+        <item>Илья Аркадьевич</item>
+        <item>Все</item>
+    </string-array>
+
+    <string name="selectedTeacher">selectedTeacher</string>
+
+    <string-array name="options">
+        <item>Занятое 1-ое место в международных олимпиадах</item>
+        <item>Призеры международных олимпиад</item>
+        <item>Занятое 1-ое место в международных конкурсах, проектах</item>
+        <item>Призеры международных конкурсов, проектов</item>
+        <item>Занятое 1-ое место во Всероссийских олимпиадах</item>
+        <item>Призеры Всероссийских о лимпиад</item>
+        <item>Участие во Всероссийских олимпиадах</item>
+        <item>Участие во Всероссийских конкурсах, проектах</item>
+        <item>Занятое 1-ое место в республиканских и муниципальных олимпиадах</item>
+        <item>Призеры республиканских и муниципальных олимпиад</item>
+        <item>Участие в республиканских и муниципальных олимпиадах</item>
+        <item>Участие в  республиканских и муниципальных конкурсах, проектах</item>
+        <item>Занятые призовые места на школьных олимпиадах, конкурсах, проектах</item>
+        <item>Участие на школьных олимпиадах, конкурсах, проектах</item>
+        <item>Результаты ОГЭ и ЕГЭ согласно набранным баллам</item>
+        <item>Высокие результаты тестирования (90-100%), директорские контрольные работы («5»)</item>
+        <item>Средние результаты тестирования (50-89%), директорские контрольные работы («4»)</item>
+        <item>Средний балл аттестата «5,0» за четверть </item>
+        <item>Средний балл аттестата  «4,5-4,99» за четверть</item>
+        <item>Средний балл аттестата «4,0-4,49» за четверть</item>
+        <item>Участие в органах самоуправления лицея 1 раз в четверть</item>
+        <item>Полное и своевременное выполнение дополнительного поручения</item>
+        <item>Активное участие в школьных мероприятиях, предметных неделях 1 раз в месяц</item>
+        <item>Помощь учителю, персоналу</item>
+        <item>Помощь учителю, персоналу</item>
+        <item>Дежурство</item>
+    </string-array>
+    
+    <string-array name="defaultPenalty">
+        <item>Недостойное поведение; пререкание с учителем, воспитателем или персоналом; непослушание</item>
+        <item>Азартные игры</item>
+        <item>Брань, угрозы, издевательства над другими учениками, ссоры</item>
+        <item>Употребление жевательной резинки</item>
+        <item>Плевание</item>
+        <item>Покидание класса, дополнительного занятия, секции, мероприятия без разрешения</item>
+        <item>Неподобающее поведение во время уроков, мероприятия, поездок, экскурсии</item>
+        <item>Несоблюдение чистоты в школе (в т.ч.рабочее место)</item>
+        <item>Несоблюдение чистоты в интернате</item>
+        <item>Бег по школе, в кабинете, в столовой, в интернате</item>
+        <item>Нарушение правил в столовой</item>
+        <item>Нарушение правил в интернате</item>
+        <item>Нарушение правил пользования телефоном, ноутбуком. </item>
+        <item>Непристойные выражения, надписи или рисунки</item>
+        <item>Подстрекательство </item>
+        <item>Пользование интернетом в учебное время (не по теме занятия)</item>
+        <item>Занятие посторонними делами в учебное время</item>
+        <item>Нецелевое использование интернета, компьютерные игры (в учебное время и во время самоподготовки)</item>
+        <item>Нарушение правил ТБ</item>
+        <item>Нарушение правил библиотеки</item>
+        <item>Порча школьного имущества, имущества в интернате</item>
+        <item>Приглашение посторонних лиц в школу без разрешения</item>
+        <item>Наличие, раздача или продажа пищи, напитков или других предметов без разрешения администрации школы</item>
+        <item>Нарушение правил допустимых к хранению продуктов питания в интернате</item>
+        <item>Намеренное оскорбление, унижение других лиц (в т.ч.группой лиц)</item>
+        <item>Нарушение правил сетевого этикета</item>
+        <item>Нарушение общепринятых норм поведения</item>
+    </string-array>
+
+    <string name="requestDetailsBody">requestDetailsBody</string>
+    <string name="requestDetailsDate">requestDetailsDate</string>
+    <string name="requestDetailsUserImage">requestDetailUserImage</string>
+    <string name="requestDetailsSenderEmail">requestDetailSenderEmail</string>
+    <string name="requestDetailsSenderUsername">requestDetailSenderUsername</string>
+    <string name="requestDetailsGroup">requestDetailGroup</string>
+    <string name="requestDetailsScore">requestDetailScore</string>
+    <string name="requestDetailsOption">requestDetailOption</string>
+
+    <string name="social">Соц.сети</string>
+    <string name="make_request">Отправить запрос</string>
+    <string name="description">описание</string>
+    <string name="add_cancel">+/-</string>
+    <string name="all_tab">Все</string>
+    <string name="positive_tab">Добавленные</string>
+    <string name="negative_tab">Отмененные</string>
+    <string name="my_requests">Мои запросы</string>
+
+    <string name="notYoursRatingScoreHint">Это его места по очкам в школе и группе</string>
+    <string name="yoursRatingScoreHint">Это твои места по очкам в школе и группе</string>
+
+    <string name="leftScore">Осталось</string>
+    <string name="leftPoints">очков</string>
+    <string name="enableAddScoreMessage">На сегодня очки законченны. Приходи завтра</string>
+
+    <string name="no_access">Недоступно</string>
+
+    <string-array name="groups">
+        <item>Учителя</item>
+        <item>11-1</item>
+        <item>11-2</item>
+        <item>11-3</item>
+        <item>11-4</item>
+        <item>11-5</item>
+        <item>11-6</item>
+        <item>10-1</item>
+        <item>10-2</item>
+        <item>10-3</item>
+        <item>10-4</item>
+        <item>10-5</item>
+        <item>10-6</item>
+        <item>9-1</item>
+        <item>9-2</item>
+        <item>9-3</item>
+        <item>9-4</item>
+        <item>9-5</item>
+        <item>9-6</item>
+        <item>8-1</item>
+        <item>8-2</item>
+        <item>8-3</item>
+        <item>8-4</item>
+        <item>8-5</item>
+        <item>8-6</item>
+        <item>7-1</item>
+        <item>7-2</item>
+        <item>7-3</item>
+        <item>7-4</item>
+        <item>7-5</item>
+        <item>7-6</item>
+        <item>6-1</item>
+        <item>6-2</item>
+        <item>6-3</item>
+        <item>6-4</item>
+        <item>6-5</item>
+        <item>6-6</item>
+    </string-array>
+
+    <string-array name="groupsWithoutTeachers">
+        <item>11-1</item>
+        <item>11-2</item>
+        <item>11-3</item>
+        <item>11-4</item>
+        <item>11-5</item>
+        <item>11-6</item>
+        <item>10-1</item>
+        <item>10-2</item>
+        <item>10-3</item>
+        <item>10-4</item>
+        <item>10-5</item>
+        <item>10-6</item>
+        <item>9-1</item>
+        <item>9-2</item>
+        <item>9-3</item>
+        <item>9-4</item>
+        <item>9-5</item>
+        <item>9-6</item>
+        <item>8-1</item>
+        <item>8-2</item>
+        <item>8-3</item>
+        <item>8-4</item>
+        <item>8-5</item>
+        <item>8-6</item>
+        <item>7-1</item>
+        <item>7-2</item>
+        <item>7-3</item>
+        <item>7-4</item>
+        <item>7-5</item>
+        <item>7-6</item>
+        <item>6-1</item>
+        <item>6-2</item>
+        <item>6-3</item>
+        <item>6-4</item>
+        <item>6-5</item>
+        <item>6-6</item>
+    </string-array>
+
+    <string name="introSlide1Text" translatable="false">
+        Привет, друг. Разработчик новичек, не судите строго...
+    </string>
+
+    <string name="introSlide2Text" translatable="false">
+        В USCORE ты можешь следить за своими баллами.
+        Соревноваться с друзьями. Получать призы.
+        Но как это делать?
+    </string>
+
+    <string name="introSlide3Text" translatable="false">
+        Чтобы добавить очки, зайдите в главное меню и выбирете СГЕНИРИРОВАТЬ QR CODE
+    </string>
+
+    <string name="introSlide4Text" translatable="false">
+        Однако можно воспользоваться запросом. Учитель примет решение. Нужно лишь набраться терепения
+    </string>
+
+    <string name="introSlide5Text" translatable="false">
+        Остался 1 шаг до завершения. Терпения
+    </string>
+
+    <string name="introSlide5TextContacts" translatable="false">
+        https://vk.com/k.anikin2013
+    </string>
+
+    <string name="questions" translatable="false">
+        Есть вопросы?
+    </string>
+
+    <string name="rules_text">Регламент</string>
+    <string name="make_penalty">Понизить очки</string>
+    <string name="shared_preferences">sharedPreferences</string>
+
+</resources>

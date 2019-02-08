@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:layout_height="match_parent">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:fitsSystemWindows="true">
+
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbarLayout"
+            app:title="ANIKIN KIRILL"
+            app:subtitle="Your score 2500 points"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:contentScrim="@color/startblue_transparent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+                <ImageView
+                    android:id="@+id/studentImageView"
+                    android:src="@drawable/app_image2"
+                    app:layout_collapseMode="parallax"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            <android.support.v7.widget.Toolbar
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize">
+                <!--<RelativeLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="match_parent">-->
+                <ImageView
+                    android:layout_centerVertical="true"
+                    android:visibility="visible"
+                    android:layout_marginEnd="30dp"
+                    android:id="@+id/backArrow"
+                    android:src="@drawable/ic_arrow_blue"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_marginEnd="15dp"
+                    android:id="@+id/filterMenu"
+                    android:src="@drawable/ic_filter_list"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp" />
+                <!--</RelativeLayout>-->
+            </android.support.v7.widget.Toolbar>
+            
+        </android.support.design.widget.CollapsingToolbarLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.design.widget.TabLayout
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <android.support.v4.view.ViewPager
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_below="@id/tabs"
+        android:id="@+id/viewpager_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+
+
+</android.support.design.widget.CoordinatorLayout>

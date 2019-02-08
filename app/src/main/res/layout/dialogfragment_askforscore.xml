@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/teacherEmailAddress"
+        android:padding="20dp"
+        android:hint="@string/teacherEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/teacherPassword"
+        android:padding="20dp"
+        android:hint="@string/teacherpassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:hint="@string/score"
+        android:id="@+id/score"
+        android:padding="20dp"
+        android:inputType="number"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </EditText>
+
+    <EditText
+        android:hint="@string/group"
+        android:id="@+id/group"
+        android:padding="20dp"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="94dp"
+            android:text="@string/cancel"
+            android:textColor="#4169E1"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:layout_marginEnd="30dp"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/ok"
+            android:textSize="15sp"
+            android:textColor="#4169E1"
+            android:text="@string/ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+</LinearLayout>

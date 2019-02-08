@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dashboard_title">ГЛАВНОЕ МЕНЮ</string>
+    <string name="my_profile">МОЙ ПРОФИЛЬ</string>
+    <string name="top_scores">ТОП РЕЙТИНГ</string>
+    <string name="rules">ПРАВИЛА</string>
+    <string name="recent">НЕДАВНИЕ</string>
+    <string name="status">СТАТУС</string>
+    <string name="my_group">МОЯ ГРУППА</string>
+    <string name="school">ШКОЛА</string>
+    <string name="sign_out">ВЫЙТИ</string>
+    <string name="add_score">ДОБВАИТЬ ОЧКИ</string>
+    <string name="generate_qr_code">СГЕНЕРИРОВАТЬ QR CODE</string>
+    <string name="ask_for_score">СПРОСИТЬ ОЧКИ</string>
+    <string name="scan_qr_code">СКАНИРОВАТЬ QR CODE</string>
+    <string name="changeLang">ПОМЕНЯТЬ ЯЗЫЫК</string>
+    <string name="statusStudent">Ученик</string>
+    <string name="statusTeacher">Учитель</string>
+
+    <string name="studentEmailAddress">Почта ученика</string>
+    <string name="score">Очки</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">Ок</string>
+    <string name="addScoreDialogTitle">Добавить очки</string>
+    <string name="notGoodError">Нехорошо...</string>
+    <string name="MaybeyougottacheckError">Бро прочекай поле</string>
+    <string name="teacherEmail">учитель@mail.ru</string>
+    <string name="teacherpassword">пароль</string>
+    <string name="scanning_process">Подожди идет сканирование....</string>
+    <string name="cancelScanProccess">Ты только что отменил сканирование</string>
+    <string name="requestScore">Запрошеваемые очки:</string>
+    <string name="confirm">Подтвердить добавление очков</string>
+    <string name="addedPerson"> было довавленно к </string>
+    <string name="addingProccessCanceled">Добавление отменнено</string>
+
+    <string name="addCommentButton">Оставить комментарий</string>
+    <string name="show_all_comments">Показать комментарии</string>
+    <string name="group">ГРУППА</string>
+    <string name="addedTimes">+</string>
+
+    <string name="you_are_on">Ты на </string>
+    <string name="place_with"> месте с </string>
+    <string name="points"> очков</string>
+
+    <string name="added_to">Добавленно к</string>
+    <string name="social">Соц.сети</string>
+    <string name="make_request">Запрос</string>
+    <string name="description">описание(необязательно)</string>
+    <string name="add_cancel">+/-</string>
+    <string name="all_tab">Все</string>
+    <string name="positive_tab">Принятные</string>
+    <string name="negative_tab">Отказанные</string>
+    <string name="my_requests">Запросы</string>
+    <string name="no_access">Нет доступа</string>
+    <string name="notYoursRatingScoreHint">Это его места по очкам в школе и группе</string>
+    <string name="yoursRatingScoreHint">Это мое место по очкам в школе и группе</string>
+    <string name="leftScore">Осталось</string>
+    <string name="leftPoints">очков</string>
+    <string name="enableAddScoreMessage">На сегодня очки законченны. Приходи завтра</string>
+    <string name="rules_text">Регламент</string>
+    <string name="make_penalty">Понизить очки</string>
+
+</resources>

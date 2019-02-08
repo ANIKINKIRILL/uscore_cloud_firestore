@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="toolbarColor">#483D8B</color>
+
+    <color name="startblue">#09c6df</color>
+    <color name="endblue">#0bcce6</color>
+    <color name="primaryDark">#292b3d</color>
+    <color name="graylight">#fafafa</color>
+
+    <color name="recentCardViewUsername">#626a74</color>
+
+    <color name="startblue_transparent">#597da3</color>
+
+    <color name="currentStudentCardViewColor">#adb8c4</color>
+
+    <color name="addedColor">#5ca95c</color>
+    <color name="canceledColor">#d95335</color>
+    <color name="inProcessColor">#5aa4d2</color>
+
+    <color name="signInButton">#3e6c89</color>
+
+    <color name="numberBackground">#abbfd4</color>
+    <color name="number">#715490de</color>
+
+</resources>

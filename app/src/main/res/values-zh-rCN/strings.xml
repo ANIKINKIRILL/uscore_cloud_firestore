@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dashboard_title">我的仪表板</string>
+    <string name="my_profile">我的个人资料</string>
+    <string name="top_scores">顶级得分手</string>
+    <string name="rules">规则</string>
+    <string name="recent">最近</string>
+    <string name="status">状态</string>
+    <string name="my_group">我的班</string>
+    <string name="school">学校</string>
+    <string name="sign_out">退出</string>
+    <string name="add_score">加分</string>
+    <string name="generate_qr_code">造成QR CODE</string>
+    <string name="ask_for_score">请加分</string>
+    <string name="scan_qr_code">扫一扫</string>
+    <string name="changeLang">变语言</string>
+    <string name="statusStudent">学生</string>
+    <string name="statusTeacher">老师</string>
+
+    <string name="studentEmailAddress">学生的邮局</string>
+    <string name="score">分</string>
+    <string name="cancel">拒绝</string>
+    <string name="ok">好</string>
+    <string name="addScoreDialogTitle">加分</string>
+    <string name="notGoodError">不好。。。</string>
+    <string name="MaybeyougottacheckError">应该再查一下</string>
+    <string name="teacherEmail">老师@mail.ru</string>
+    <string name="teacherpassword">密码</string>
+    <string name="scanning_process">在扫下</string>
+    <string name="cancelScanProccess">你刚刚拒绝扫的过程</string>
+    <string name="requestScore">要的分:</string>
+    <string name="confirm">确认学生的分</string>
+    <string name="addedPerson"> 给 </string>
+    <string name="addingProccessCanceled">拒绝加分过程</string>
+
+    <string name="addCommentButton">讨论</string>
+    <string name="show_all_comments">看一看讨论</string>
+    <string name="group">班</string>
+    <string name="addedTimes">加次</string>
+
+    <string name="you_are_on"></string>
+    <string name="place_with"> 有 </string>
+    <string name="points"> 分</string>
+
+    <string name="added_to">给</string>
+    <string name="social">社会</string>
+    <string name="make_request">请加分</string>
+    <string name="description">了解（不用）</string>
+    <string name="add_cancel">接受/拒绝</string>
+    <string name="all_tab">所有的</string>
+    <string name="positive_tab">加的</string>
+    <string name="negative_tab">拒绝的</string>
+    <string name="my_requests">询问</string>
+    <string name="no_access">不能看</string>
+    <string name="notYoursRatingScoreHint">这是他的学校/班的情况</string>
+    <string name="yoursRatingScoreHint">这是的学校/班的情况</string>
+    <string name="leftScore">还有</string>
+    <string name="leftPoints">分</string>
+    <string name="enableAddScoreMessage">已经花了一天的分。明天再来</string>
+    <string name="rules_text">Регламент</string>
+    <string name="make_penalty">Понизить очки</string>
+
+</resources>

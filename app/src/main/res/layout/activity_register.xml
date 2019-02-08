@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v4.widget.NestedScrollView
+    android:background="#4c75a3"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:background="#4c75a3"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activities.login_activity">
+
+        <TextView
+            android:layout_centerHorizontal="true"
+            android:id="@+id/welcomeTitle"
+            android:text="WELCOME"
+            android:gravity="center"
+            android:textSize="35sp"
+            android:textColor="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="100dp" />
+
+        <RelativeLayout
+            android:id="@+id/login_fields"
+            android:layout_below="@id/welcomeTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:padding="15dp"
+                android:background="@drawable/bottom_color_edittext"
+                android:layout_marginBottom="10dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/email"
+                android:textColorHint="@android:color/darker_gray"
+                android:textColor="@android:color/white"
+                android:hint="student@mail.ru"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:inputType="textPassword"
+                android:layout_marginBottom="10dp"
+                android:textColor="@android:color/white"
+                android:padding="15dp"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@drawable/bottom_color_edittext"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/email"
+                android:id="@+id/password"
+                android:hint="@string/password"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:layout_marginBottom="10dp"
+                android:textColor="@android:color/white"
+                android:padding="15dp"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@drawable/bottom_color_edittext"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/password"
+                android:id="@+id/username"
+                android:hint="Фамилия Имя"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content" />
+
+            <!--<EditText-->
+                <!--android:layout_marginBottom="10dp"-->
+                <!--android:textColor="@android:color/white"-->
+                <!--android:padding="15dp"-->
+                <!--android:textColorHint="@android:color/darker_gray"-->
+                <!--android:background="@drawable/bottom_color_edittext"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_below="@id/username"-->
+                <!--android:id="@+id/group"-->
+                <!--android:hint="@string/group_small"-->
+                <!--android:layout_width="300dp"-->
+                <!--android:layout_height="wrap_content" />-->
+
+            <Spinner
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/username"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/groupsPickerSpinner"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_below="@id/login_fields"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <Button
+                android:id="@+id/register"
+                android:textColor="@android:color/white"
+                android:background="@color/signInButton"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="20dp"
+                android:layout_centerHorizontal="true"
+                android:text="@string/register"
+                android:layout_width="180dp"
+                android:layout_height="50dp" />
+
+            <TextView
+                android:layout_below="@id/register"
+                android:padding="10dp"
+                android:id="@+id/loginPage"
+                android:textSize="20dp"
+                android:layout_margin="25dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:textColor="@android:color/white"
+                android:text="@string/already_have_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</android.support.v4.widget.NestedScrollView>

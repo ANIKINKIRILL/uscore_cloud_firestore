@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="dashboard_title">MY DASHBOARD</string>
+    <string name="my_profile">MY PROFILE</string>
+    <string name="top_scores">TOP SCORES</string>
+    <string name="rules">RULES</string>
+    <string name="recent">RECENT</string>
+    <string name="status">status</string>
+    <string name="my_group">MY GROUP</string>
+    <string name="school">SCHOOL</string>
+    <string name="sign_out">Sign out</string>
+    <string name="add_score">Add Score</string>
+    <string name="generate_qr_code">GENERATE QR CODE</string>
+    <string name="ask_for_score">Ask For Score</string>
+    <string name="scan_qr_code">scan QR CODE</string>
+    <string name="changeLang">Change Language</string>
+    <string name="statusStudent">Student</string>
+    <string name="statusTeacher">Change Language</string>
+
+    <string name="studentEmailAddress">Student Email Address</string>
+    <string name="score">score</string>
+    <string name="cancel">CANCEL</string>
+    <string name="ok">OK</string>
+    <string name="addScoreDialogTitle">Add Score</string>
+    <string name="notGoodError">Not Good...</string>
+    <string name="MaybeyougottacheckError">Maybe you gotta check</string>
+    <string name="teacherEmail">teacher@mail.ru</string>
+    <string name="teacherpassword">password</string>
+    <string name="scanning_process">SCANNING WAIT....</string>
+    <string name="cancelScanProccess">You just canceled scanning</string>
+    <string name="requestScore">Request score:</string>
+    <string name="confirm">Confirm Student Score</string>
+    <string name="addedPerson"> was added to </string>
+    <string name="addingProccessCanceled">Adding process was canceled</string>
+
+    <string name="addCommentButton">Leave a comment</string>
+    <string name="show_all_comments">Show all comments</string>
+    <string name="group">GROUP</string>
+    <string name="addedTimes">ADDED</string>
+
+    <string name="you_are_on">You are on </string>
+    <string name="place_with"> place with </string>
+    <string name="points"> points</string>
+
+    <string name="added_to">Added to</string>
+    <string name="social">SOCIAl</string>
+    <string name="make_request">Make a Request</string>
+    <string name="description">description(optional)</string>
+    <string name="add_cancel">Add/Cancel</string>
+    <string name="all_tab">All</string>
+    <string name="positive_tab">Positive</string>
+    <string name="negative_tab">Negative</string>
+    <string name="my_requests">My request</string>
+    <string name="no_access">No Access</string>
+    <string name="notYoursRatingScoreHint">This is his score in school/group</string>
+    <string name="yoursRatingScoreHint">This is my score in school/group</string>
+    <string name="leftScore">Left</string>
+    <string name="leftPoints">points</string>
+    <string name="enableAddScoreMessage">You`ve already spent your daily points</string>
+    <string name="rules_text">Регламент</string>
+    <string name="make_penalty">Понизить очки</string>
+
+</resources>

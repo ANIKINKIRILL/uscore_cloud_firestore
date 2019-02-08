@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:icon="@drawable/ic_person"
+            android:id="@+id/my_profile"
+            android:title="@string/my_profile"/>
+
+        <item
+            android:icon="@drawable/icons8_star_filled"
+            android:id="@+id/teachersTop"
+            android:title="Рейтинг Учителей"/>
+
+        <item
+            android:icon="@drawable/icons8_classroom"
+            android:id="@+id/teachers"
+            android:title="Учителя"/>
+
+        <item
+            android:icon="@drawable/icons8_time_machine"
+            android:id="@+id/actions"
+            android:title="@string/recent"/>
+
+        <item
+            android:title="@string/social">
+            <menu>
+                <item
+                    android:id="@+id/whatsUpPage"
+                    android:title="Whats UP"/>
+                <item
+                    android:id="@+id/vkPage"
+                    android:title="VK"/>
+                <item
+                    android:id="@+id/instagram"
+                    android:title="Instagram"/>
+                <item
+                    android:id="@+id/youtube"
+                    android:title="YouTube"/>
+            </menu>
+        </item>
+
+        <item
+            android:title="Feedback"
+            android:id="@+id/feedback">
+            <menu>
+                <item
+                    android:icon="@drawable/icons8_teenager"
+                    android:id="@+id/developer"
+                    android:title="Разработчик"/>
+                <item
+                    android:icon="@drawable/icons8_about"
+                    android:id="@+id/aboutApp"
+                    android:title="О приложении"/>
+                <item
+                    android:icon="@drawable/icons8_average"
+                    android:id="@+id/rateApp"
+                    android:title="Оценить приложение"/>
+                <item
+                    android:icon="@drawable/icons8_settings"
+                    android:id="@+id/setting"
+                    android:title="Настройки"/>
+                <item
+                    android:icon="@drawable/icons8_exit_sign"
+                    android:title="Выйти"
+                    android:id="@+id/exit"/>
+            </menu>
+        </item>
+
+
+
+
+    </group>
+
+
+
+</menu>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    android:id="@+id/cardViewLayout"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="8dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/ic_person" />
+
+        <TextView
+            android:padding="5dp"
+            android:layout_margin="0dp"
+            android:layout_marginTop="0dp"
+            android:id="@+id/username"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:text="username"
+            android:layout_toRightOf="@id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:padding="5dp"
+            android:layout_toRightOf="@id/image"
+            android:layout_below="@id/username"
+            android:id="@+id/score_group_layout"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_weight="1"
+                android:layout_below="@id/username"
+                android:id="@+id/score"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:text="score"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:layout_weight="1"
+                android:id="@+id/group"
+                android:layout_toRightOf="@id/image"
+                android:layout_toLeftOf="@id/score"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/username"
+                android:gravity="center"
+                android:text="group"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:padding="10dp"
+            android:id="@+id/selectedOption"
+            android:gravity="center"
+            android:layout_toRightOf="@id/image"
+            android:layout_below="@id/score_group_layout"
+            android:text="selectedOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_marginBottom="10dp"
+            android:textSize="12dp"
+            android:id="@+id/ok"
+            android:textColor="@color/startblue_transparent"
+            android:layout_marginEnd="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/selectedOption"
+            android:text="OK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_marginBottom="10dp"
+            android:textSize="12dp"
+            android:id="@+id/cancel"
+            android:textColor="@color/startblue_transparent"
+            android:layout_marginEnd="35dp"
+            android:layout_toLeftOf="@+id/ok"
+            android:layout_below="@id/selectedOption"
+            android:text="CANCEL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
