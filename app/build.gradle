@@ -37,16 +37,18 @@ dependencies {
     implementation 'com.android.support:cardview-v7:28.0.0'
 
     // Firebse LIBRARIES
-    implementation 'com.google.firebase:firebase-auth:11.0.4'
-    implementation 'com.google.firebase:firebase-database:11.0.4'
+    implementation "com.google.firebase:firebase-core:16.0.7"
+    implementation 'com.google.firebase:firebase-auth:16.1.0'
+    implementation 'com.google.firebase:firebase-database:16.0.6'
 
     // Universal image loader
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 
     // FIREBASE STORAGE
-    implementation 'com.google.firebase:firebase-storage:11.0.4'
+    implementation 'com.google.firebase:firebase-storage:16.0.5'
 
     // CLOUD FIRESTORE
+    implementation 'com.google.firebase:firebase-firestore:18.0.0'
 
     // design library
     implementation 'com.android.support:design:28.0.0'
@@ -83,7 +85,6 @@ dependencies {
 
     // Material SearchView library
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
-
 }
 
 apply plugin: 'com.google.gms.google-services'

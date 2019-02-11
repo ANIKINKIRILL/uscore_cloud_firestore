@@ -52,15 +52,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.StudentProfile_activity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.PROFILE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <activity android:name=".activities.TopScore_acivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>

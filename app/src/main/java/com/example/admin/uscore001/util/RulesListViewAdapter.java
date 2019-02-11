@@ -44,8 +44,8 @@ public class RulesListViewAdapter extends BaseAdapter {
         Option optionClass = options.get(i);
         TextView option = infalatedView.findViewById(R.id.option);
         TextView score = infalatedView.findViewById(R.id.score);
-        option.setText(optionClass.getOption());
-        score.setText(Integer.toString(optionClass.getScore()));
+//        option.setText(optionClass.getOption());
+//        score.setText(Integer.toString(optionClass.getScore()));
         return infalatedView;
     }
 

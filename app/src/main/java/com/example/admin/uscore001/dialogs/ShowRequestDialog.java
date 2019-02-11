@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -28,14 +36,18 @@ import java.util.ArrayList;
 
 public class ShowRequestDialog extends DialogFragment implements View.OnClickListener{
 
+    private static final String TAG = "ShowRequestDialog";
+
     // widgets
     RecyclerView recyclerView;
     ImageView closeImageView;
+
     // vars
     ArrayList<RequestAddingScore> requests = new ArrayList<>();
 
-    // Firebase
-    DatabaseReference mDatabaseRequestRef = FirebaseDatabase.getInstance().getReference("RequestsAddingScore");
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
 
     @Nullable
     @Override
@@ -46,13 +58,11 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
 
         closeImageView.setOnClickListener(this);
 
-        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(getContext()).build();
-        ImageLoader.getInstance().init(configuration);
-
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         String teacher = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-
-        loadRequest(teacher);
+        String teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
+        Log.d(TAG, "onCreateView: " + teacherRequestID);
+        loadRequest(teacherRequestID);
 
         return view;
     }
@@ -67,43 +77,70 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
         }
     }
 
-    public void loadRequest(final String teacher){
+    public void loadRequest(final String teacherRequestID){
         requests.clear();
-        mDatabaseRequestRef.child(teacher).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot students : dataSnapshot.getChildren()){
-                    for(DataSnapshot request : students.getChildren()){
-                        if( !request.getValue(RequestAddingScore.class).isAnswer() // is not answered
-                                &&
-                            !request.getValue(RequestAddingScore.class).isCancel() // is not canceled
-                            ){
-                                String senderUsername = request.getValue(RequestAddingScore.class).getSenderUsername();
-                                int score = request.getValue(RequestAddingScore.class).getScore();
-                                String group = request.getValue(RequestAddingScore.class).getGroup();
-                                String body = request.getValue(RequestAddingScore.class).getBody();
-                                String date = request.getValue(RequestAddingScore.class).getDate();
-                                String senderEmail = request.getValue(RequestAddingScore.class).getSenderEmail();
-                                String requestID = request.getValue(RequestAddingScore.class).getRequestID();
-                                String senderImage = request.getValue(RequestAddingScore.class).getImage_path();
-                                String option = request.getValue(RequestAddingScore.class).getOption();
-                                RequestAddingScore requestClass = new RequestAddingScore(false, body, date, teacher, senderImage, senderEmail,
-                                        senderUsername, score, group, requestID, false, option);
-                                requests.add(requestClass);
-                            }
+            requests$DB
+                .document(teacherRequestID)
+                .collection("STUDENTS")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                            documentSnapshot
+                                .getReference()
+                                .collection("REQUESTS")
+                                .whereEqualTo("answered", false)
+                                .whereEqualTo("canceled", false)
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                        for(DocumentSnapshot documents : queryDocumentSnapshots.getDocuments()){
+                                            RequestAddingScore request = documents.toObject(RequestAddingScore.class);
+                                            String id = request.getId();
+                                            String body = request.getBody();
+                                            String date = request.getDate();
+                                            String getter = request.getGetter();
+                                            String image_path = request.getImage_path();
+                                            String senderEmail = request.getSenderEmail();
+                                            String firstName = request.getFirstName();
+                                            String secondName = request.getSecondName();
+                                            String lastName = request.getLastName();
+                                            int score = request.getScore();
+                                            String groupID = request.getGroupID();
+                                            String requestID = request.getRequestID();
+                                            String optionID = request.getOptionID();
+                                            boolean answered = request.isAnswered();
+                                            boolean canceled = request.isCanceled();
+                                            String senderID = request.getSenderID();
+                                            RequestAddingScore requestClass = new RequestAddingScore(
+                                                    id,
+                                                    body,
+                                                    date,
+                                                    getter,
+                                                    image_path,
+                                                    senderEmail,
+                                                    firstName,
+                                                    secondName,
+                                                    lastName,
+                                                    score,
+                                                    groupID,
+                                                    requestID,
+                                                    optionID,
+                                                    answered,
+                                                    canceled,
+                                                    senderID
+                                            );
+                                            requests.add(requestClass);
+                                        }
+                                        RequestsAdapter adapter = new RequestsAdapter(requests);
+                                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                                        recyclerView.setAdapter(adapter);
+                                    }
+                                });
+                        }
                     }
-                }
+                });
 
-                RequestsAdapter adapter = new RequestsAdapter(requests);
-                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                recyclerView.setAdapter(adapter);
-
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
 }

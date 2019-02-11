@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.util.StudentRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +26,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -50,6 +58,14 @@ public class FragmentGroup extends Fragment {
     DatabaseReference mDatabaseRef = mDatabase.getReference("Students");
     DatabaseReference mDatabaseCurrentGroupRef = mDatabase.getReference("Students");
 
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
+    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
+    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
+    private String currentUserGroupID;
+    private String currentUserGroupName;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,57 +80,58 @@ public class FragmentGroup extends Fragment {
     }
 
     public void findCurrentUserGroup(){
-        mDatabaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot groups : dataSnapshot.getChildren()){
-                    for(DataSnapshot student : groups.getChildren()){
-                        if(student.getKey().equals(currentUser.getEmail().replace(".", ""))){
-                            currentUserGroup = student.getValue(Student.class).getGroup();
-                            title.setText(currentUserGroup);
-                            loadCurrentUserGroupMembers(currentUserGroup);
-                        }
+        students$DB
+                .whereEqualTo("email", currentUser.getEmail())
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                        Student student = documentSnapshot.toObject(Student.class);
+                        currentUserGroupID = student.getGroupID();
+                        findGroupNameByGroupID(currentUserGroupID);
+                        loadCurrentUserGroupMembers(currentUserGroupID);
                     }
-                }
-            }
+                });
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
-    public void loadCurrentUserGroupMembers(String foundGroup){
+    private void findGroupNameByGroupID(String groupID){
+        groups$DB.whereEqualTo("id", groupID)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                        Group group = documentSnapshot.toObject(Group.class);
+                        currentUserGroupName = group.getName();
+                    }
+                });
+    }
+
+    public void loadCurrentUserGroupMembers(String foundGroupID){
         students.clear();
-        mDatabaseCurrentGroupRef.child(foundGroup).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot currentGroupMembers : dataSnapshot.getChildren()){
-                    score = currentGroupMembers.getValue(Student.class).getScore();
-                    if(score.trim().isEmpty()){
-                        score = "working...";
+        students$DB
+                .whereEqualTo("groupID", foundGroupID)
+                .orderBy("score", Query.Direction.DESCENDING)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                            Student student = documentSnapshot.toObject(Student.class);
+                            score = student.getScore();
+                            image_path = student.getImage_path();
+                            if (image_path.isEmpty()) {
+                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                            }
+                            username = student.getFirstName() + " " + student.getSecondName();
+                            Student studentClass = new Student(score, username, image_path, foundGroupID, "", "", "", "", "");
+                            students.add(studentClass);
+                        }
+                        adapter = new StudentRecyclerAdapter(students);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        recyclerView.setAdapter(adapter);
                     }
-                    image_path = currentGroupMembers.getValue(Student.class).getImage_path();
-                    if(image_path.isEmpty()){
-                        image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                    }
-                    username = currentGroupMembers.getValue(Student.class).getUsername();
-                    Student student = new Student(score, username, image_path, "", "");
-                    students.add(student);
-                }
-//                CompareStudentsByScore comparator = new CompareStudentsByScore();
-//                students.sort(comparator);
-                adapter = new StudentRecyclerAdapter(students);
-                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                recyclerView.setAdapter(adapter);
-            }
+                });
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
     public class CompareStudentsByScore implements Comparator<Student> {

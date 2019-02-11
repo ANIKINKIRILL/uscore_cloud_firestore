@@ -2,23 +2,41 @@ package com.example.admin.uscore001.models;
 
 public class Student {
     String email;
-    String username;
-    String group;
+    String groupID;
     String image_path;
     String score;
-    String uID;
+    String id;
     String limitScore;
     String teacherID;
+    String firstName;
+    String secondName;
+    String lastName;
+    String statusID;
 
-    public Student(String email, String username, String group, String image_path, String score, String uID, String limitScore, String teacherID) {
+    public Student(
+            String email,
+            String username,
+            String groupID,
+            String image_path,
+            String score,
+            String id,
+            String limitScore,
+            String teacherID,
+            String firstName,
+            String secondName,
+            String lastName,
+            String statusID) {
         this.email = email;
-        this.username = username;
-        this.group = group;
+        this.groupID = groupID;
         this.image_path = image_path;
         this.score = score;
-        this.uID = uID;
+        this.id = id;
         this.limitScore = limitScore;
         this.teacherID = teacherID;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.statusID = statusID;
     }
 
     {
@@ -29,12 +47,64 @@ public class Student {
 
     }
 
-    public Student(String score, String username, String image_path, String group, String email){
+    public Student(
+            String score,
+            String username,
+            String image_path,
+            String groupID,
+            String email,
+            String firstName,
+            String secondName,
+            String lastName,
+            String statusID){
         this.score = score;
-        this.username = username;
         this.image_path = image_path;
-        this.group = group;
+        this.groupID = groupID;
         this.email = email;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.statusID = statusID;
+    }
+
+    public String getStatusID() {
+        return statusID;
+    }
+
+    public void setStatusID(String statusID) {
+        this.statusID = statusID;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getTeacherID() {
@@ -52,15 +122,6 @@ public class Student {
     public void setLimitScore(String limitScore) {
         this.limitScore = limitScore;
     }
-
-    public String getuID() {
-        return uID;
-    }
-
-    public void setuID(String uID) {
-        this.uID = uID;
-    }
-
     public String getScore() {
         return score;
     }
@@ -83,19 +144,11 @@ public class Student {
         this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    public String getGroupID() {
+        return groupID;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
+    public void setGroupID(String group) {
+        this.groupID = group;
     }
 }

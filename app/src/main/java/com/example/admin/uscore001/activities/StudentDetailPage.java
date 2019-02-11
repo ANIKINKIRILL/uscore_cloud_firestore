@@ -1,9 +1,12 @@
 package com.example.admin.uscore001.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -20,6 +23,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -29,6 +38,8 @@ import java.util.Collections;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StudentDetailPage extends AppCompatActivity implements View.OnClickListener{
+
+    private static final String TAG = "StudentDetailPage";
 
     // widgets
     CircleImageView circleImageView;
@@ -45,10 +56,15 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
     ArrayList<Student> students2 = new ArrayList<>();
     String scoreValue;
     Student currentStudentClass;
+    int currentStudentRateSchool;
+    String intentEmail;
 
     // Firebase
-    DatabaseReference mRef = FirebaseDatabase.getInstance().getReference("Comments");
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
 
 
     @Override
@@ -56,15 +72,18 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile2);
 
-        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(configuration);
-
         Bundle intent = getIntent().getExtras();
         String intentImageView = intent.getString(getString(R.string.intentImage));
         String intentUsername = intent.getString(getString(R.string.intentUsername));
         String intentScore = intent.getString(getString(R.string.intentScore));
         String intentGroup = intent.getString(getString(R.string.intentGroup));
-        String intentEmail = intent.getString(getString(R.string.intentEmail));
+        intentEmail = intent.getString(getString(R.string.intentEmail));
+        String intentGroupID = intent.getString(getString(R.string.intentGroupID));
+        Log.d(TAG, "onCreate: " + intentGroupID);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String studentStatusID = sharedPreferences.getString(getString(R.string.studentStatusID), "");
+        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
 
         circleImageView = findViewById(R.id.imageView);
         ratingHint = findViewById(R.id.ratingHint);
@@ -82,9 +101,9 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         showAllComments = findViewById(R.id.showAllComments);
         showAllComments.setOnClickListener(this);
 
-        if(!currentUser.getEmail().contains("teacher")){
+        if(!studentStatusID.isEmpty() && teacherStatusID.isEmpty()){
             status.setText(R.string.statusStudent);
-        }else {
+        }else if(studentStatusID.isEmpty() && !teacherStatusID.isEmpty()){
             status.setText(R.string.statusTeacher);
         }
 
@@ -103,7 +122,7 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         score.setText(intentScore);
         group.setText(intentGroup);
 
-        rateStudentInGroup(intentGroup);
+        rateStudentInGroup(intentGroupID);
 
         rateStudentInSchool();
 
@@ -132,70 +151,111 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
     }
 
     public void rateStudentInGroup(final String foundGroup){
+        Log.d(TAG, "rateStudentInGroup: " + intentEmail);
         students.clear();
-        FirebaseDatabase.getInstance().getReference("Students").child(foundGroup).addValueEventListener(new ValueEventListener() {
+        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    for (DataSnapshot currentGroupMembers : dataSnapshot.getChildren()) {
-                        if (currentGroupMembers.getKey().equals(emailAddress.getText().toString().replace(".", ""))) {
-                            scoreValue = currentGroupMembers.getValue(Student.class).getScore();
-                            currentStudentClass = new Student(scoreValue, "", "", "", "");
-                        } else {
-                            scoreValue = currentGroupMembers.getValue(Student.class).getScore();
-                            Student student = new Student(scoreValue, "", "", "", "");
-                            students.add(student);
-                        }
-
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    if(student.getEmail().equals(intentEmail)){
+                        scoreValue = student.getScore();
+                        currentStudentClass = new Student(
+                                "",
+                                student.getFirstName() + " " + student.getSecondName(),
+                                "",
+                                "",
+                                scoreValue,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                    }else{
+                        scoreValue = student.getScore();
+                        Student studentClass = new Student(
+                                "",
+                                student.getFirstName() + " " + student.getSecondName(),
+                                "",
+                                "",
+                                scoreValue,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                        students.add(studentClass);
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
                 }
                 students.add(currentStudentClass);
                 bubbleSortStudents(students);
                 Collections.reverse(students);
                 int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
                 rateInGroup.setText(Integer.toString(currentStudentRateGroup));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
+                editor.apply();
             }
         });
     }
 
     public void rateStudentInSchool(){
-        students2.clear();
-        FirebaseDatabase.getInstance().getReference("Students").addValueEventListener(new ValueEventListener() {
+        student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    for (DataSnapshot groups : dataSnapshot.getChildren()) {
-                        for (DataSnapshot student : groups.getChildren()) {
-                            if (student.getKey().equals(emailAddress.getText().toString().replace(".", ""))) {
-                                scoreValue = student.getValue(Student.class).getScore();
-                                currentStudentClass = new Student(scoreValue, "", "", "", "");
-                            } else {
-                                scoreValue = student.getValue(Student.class).getScore();
-                                Student new_student = new Student(scoreValue, "", "", "", "");
-                                students2.add(new_student);
-                            }
-                        }
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
+                    Student student = studentSnapshot.toObject(Student.class);
+                    if(student.getEmail().equals(intentEmail)){
+                        scoreValue = student.getScore();
+                        currentStudentClass = new Student(
+                                "",
+                                "",
+                                "",
+                                "",
+                                scoreValue,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                    }else{
+                        scoreValue = student.getScore();
+                        Student new_student = new Student(
+                                "",
+                                "",
+                                "",
+                                "",
+                                scoreValue,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                        students2.add(new_student);
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
                 }
                 students2.add(currentStudentClass);
                 bubbleSortStudents(students2);
                 Collections.reverse(students2);
-                int currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
+                currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
                 rateInSchool.setText(Integer.toString(currentStudentRateSchool));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(getString(R.string.currentStudentRateInSchool), Integer.toString(currentStudentRateSchool));
+                editor.apply();
             }
         });
     }

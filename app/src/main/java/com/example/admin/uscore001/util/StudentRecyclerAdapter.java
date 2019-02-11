@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,26 +17,46 @@ import com.bumptech.glide.Glide;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.activities.StudentDetailPage;
 import com.example.admin.uscore001.activities.StudentProfile_activity2;
+import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 
+import javax.annotation.Nullable;
+
 public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecyclerAdapter.StudentRecyclerViewHolder> {
 
-    ArrayList<Student> students = new ArrayList<>();
+    private static final String TAG = "StudentRecyclerAdapter";
 
     // Firebase
-    FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseUser mUser = mAuth.getCurrentUser();
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser mUser = mAuth.getCurrentUser();
+
+    // Firestore
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    private CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
+
+    // vars
+    private String groupName;
+    private ArrayList<Student> students = new ArrayList<>();
 
     public class StudentRecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView userAvatar;
         TextView username, score, group;
         RelativeLayout cardViewLayout;
-        public StudentRecyclerViewHolder(@NonNull View itemView) {
+        private StudentRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             userAvatar = itemView.findViewById(R.id.userAvatar);
             username = itemView.findViewById(R.id.username);
@@ -57,21 +78,31 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
         return holder;
     }
 
+    public void groupNameByGroupID(String groupID, StudentRecyclerViewHolder studentRecyclerViewHolder){
+        groups$DB.document(groupID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                groupName = task.getResult().get("name").toString();
+                studentRecyclerViewHolder.group.setText(groupName);
+            }
+        });
+    }
+
     @Override
     public void onBindViewHolder(@NonNull final StudentRecyclerViewHolder studentRecyclerViewHolder, int i) {
         final Student student = students.get(i);
+        groupNameByGroupID(student.getGroupID(), studentRecyclerViewHolder);
         final String image_path = student.getImage_path();
         Glide.with(studentRecyclerViewHolder.cardViewLayout.getContext()).load(image_path).into(studentRecyclerViewHolder.userAvatar);
-        studentRecyclerViewHolder.username.setText(student.getUsername());
+        studentRecyclerViewHolder.username.setText(student.getFirstName()+" "+student.getSecondName());
         studentRecyclerViewHolder.score.setText(student.getScore());
-        studentRecyclerViewHolder.group.setText(student.getGroup());
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(studentRecyclerViewHolder.cardViewLayout.getContext());
         final String currentStudentUsername = sharedPreferences.getString(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.currentStudentUsername), "");
-        final String currentStudentGroup = sharedPreferences.getString(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.currentStudentGroup), "");
+        String currentStudentGroupID = sharedPreferences.getString(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.currentStudentGroupID), "");
 
 
-        if(student.getUsername().equals(currentStudentUsername) && student.getGroup().equals(currentStudentGroup) && !mUser.getEmail().contains("teacher")){
+        if((student.getFirstName()+" "+student.getSecondName()).equals(currentStudentUsername) && student.getGroupID().equals(currentStudentGroupID) && !mUser.getEmail().contains("teacher")){
             studentRecyclerViewHolder.cardViewLayout.setBackgroundColor(
                     studentRecyclerViewHolder.cardViewLayout.getResources().getColor(R.color.currentStudentCardViewColor)
             );
@@ -90,6 +121,7 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentUsername), studentRecyclerViewHolder.username.getText().toString());
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentImage), image_path);
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentEmail), student.getEmail());
+                    intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentGroupID), student.getGroupID());
                     studentRecyclerViewHolder.cardViewLayout.getContext().startActivity(intent);
                 }
             }

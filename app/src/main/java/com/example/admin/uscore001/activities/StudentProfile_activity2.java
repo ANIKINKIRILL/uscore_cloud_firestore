@@ -27,6 +27,7 @@ import com.example.admin.uscore001.dialogs.ImageDialog;
 import com.example.admin.uscore001.models.Student;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -35,6 +36,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -49,7 +56,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StudentProfile_activity2 extends AppCompatActivity implements View.OnClickListener, OnImageClickListener {
 
-    private static final String TAG = "StudentProfile_activity";
+    private static final String TAG = "StProfile_activity2";
 
     // widgets
     CircleImageView userAvatar;
@@ -72,25 +79,28 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
     String currentStudentRateInSchool;
     int confirmedRequestsNumber;
     int deniedRequestsNumber;
+    private String currentStudentID;
 
-    //Firebase STUFF
+    //Firebase
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mDatabaseRef = mDatabase.getReference("Students");
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference mRef = storage.getReference();
     FirebaseUser user = mAuth.getCurrentUser();
+
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile2);
+        init();
+    }
 
+    private void init(){
         rateInSchool = findViewById(R.id.rateInSchool);
         rateInGroup = findViewById(R.id.rateInGroup);
-
-        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(configuration);
 
         loadSharedPreferences();
 
@@ -113,7 +123,7 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
 
         if(!user.getEmail().contains("teacher")) {
             getUserImage();
-            setCurrentUserInfo();
+            setCurrentUserInfo(currentStudentID);
         }
 
         backArraw = findViewById(R.id.back);
@@ -134,31 +144,25 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         }
     }
 
-    public void setCurrentUserInfo(){
-        Query query = mDatabaseRef.child(studentGroup).orderByChild("email").equalTo(user.getEmail());
-        query.addValueEventListener(new ValueEventListener() {
+    public void setCurrentUserInfo(String studentID){
+        student$db.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot student : dataSnapshot.getChildren()) {
-                    String currentUserUsername = student.getValue(Student.class).getUsername();
-                    String currentUserGroup = student.getValue(Student.class).getGroup();
-                    String currentUserScore = student.getValue(Student.class).getScore();
-                    email.setText(user.getEmail());
-                    username.setText(currentUserUsername);
-                    group.setText(currentUserGroup);
-                    if (currentUserScore.equals("")) {
-                        score.setText("0");
-                    } else {
-                        score.setText(currentUserScore);
-                    }
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                Student student = documentSnapshot.toObject(Student.class);
+                String currentUserUsername = student.getFirstName() + " " + student.getSecondName();
+                String currentUserGroup = studentGroup;
+                String currentUserScore = student.getScore();
+                email.setText(user.getEmail());
+                username.setText(currentUserUsername);
+                group.setText(currentUserGroup);
+                if (currentUserScore.equals("")) {
+                    score.setText("0");
+                } else {
+                    score.setText(currentUserScore);
                 }
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
+
     }
 
     @Override
@@ -190,42 +194,67 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
 
     public void loadSharedPreferences(){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentProfile_activity2.this);
-        studentGroup = sharedPreferences.getString(getString(R.string.currentStudentGroup), "");
+        studentGroup = sharedPreferences.getString(getString(R.string.groupName), "");
         studentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
         currentStudentRateInGroup = sharedPreferences.getString(getString(R.string.currentStudentRateInGroup), "not found");
         currentStudentRateInSchool = sharedPreferences.getString(getString(R.string.currentStudentRateInSchool), "not found");
         confirmedRequestsNumber = sharedPreferences.getInt(getString(R.string.currentStudentConfirmedRequests), 0);
         deniedRequestsNumber = sharedPreferences.getInt(getString(R.string.currentStudentDeniedRequests), 0);
+        currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
+        Log.d(TAG, "loadSharedPreferences: currentStudentID: " + currentStudentID);
     }
 
     public void getUserImage(){
-        Query query = mDatabaseRef.child(studentGroup).orderByChild("email").equalTo(user.getEmail());
-        query.addValueEventListener(new ValueEventListener() {
+//        Query query = mDatabaseRef.child(studentGroup).orderByChild("email").equalTo(user.getEmail());
+//        query.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                for(DataSnapshot student : dataSnapshot.getChildren()){
+//                    image_pathValue = student.getValue(Student.class).getImage_path();
+//                    try {
+//                        Glide.with(StudentProfile_activity2.this).load(image_pathValue).into(userAvatar);
+//                    }catch (Exception e){
+//                        Log.d(TAG, "onDataChange: " + e.getMessage());
+//                    }
+//                }
+//                if(image_pathValue.isEmpty()){
+//                    try {
+//                        Glide.with(StudentProfile_activity2.this).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(userAvatar);
+//                    }catch (Exception e){
+//                        Log.d(TAG, "onDataChange: " + e.getMessage());
+//                    }
+//                }
+//                progressBar.setVisibility(View.GONE);
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+        student$db.whereEqualTo("email", user.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot student : dataSnapshot.getChildren()){
-                    image_pathValue = student.getValue(Student.class).getImage_path();
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                    Student student = documentSnapshot.toObject(Student.class);
+                    image_pathValue = student.getImage_path();
                     try {
                         Glide.with(StudentProfile_activity2.this).load(image_pathValue).into(userAvatar);
-                    }catch (Exception e){
-                        Log.d(TAG, "onDataChange: " + e.getMessage());
+                    }catch (Exception e1){
+                        Log.d(TAG, "onDataChange: " + e1.getMessage());
                     }
                 }
                 if(image_pathValue.isEmpty()){
                     try {
                         Glide.with(StudentProfile_activity2.this).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(userAvatar);
-                    }catch (Exception e){
-                        Log.d(TAG, "onDataChange: " + e.getMessage());
+                    }catch (Exception e1){
+                        Log.d(TAG, "onDataChange: " + e1.getMessage());
                     }
                 }
                 progressBar.setVisibility(View.GONE);
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
+
     }
 
     @Override
@@ -301,34 +330,14 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                final Uri downloadUri = taskSnapshot.getDownloadUrl();
-                mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                Task<Uri> uriTask = taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for(DataSnapshot groups : dataSnapshot.getChildren()){
-                            for(DataSnapshot student : groups.getChildren()){
-                                if(student.getKey().equals(user.getEmail().replace(".",""))){
-                                    student.getRef().child("image_path").setValue(downloadUri.toString());
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(StudentProfile_activity2.this, "Canceled", Toast.LENGTH_SHORT).show();
+                    public void onSuccess(Uri uri) {
+                        student$db.document(currentStudentID).update("image_path", uri.toString());
                     }
                 });
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(StudentProfile_activity2.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
         });
-    }
-
-
 //    public void loadStudentSchool(){
 //        students.clear();
 //        mDatabaseRef.addValueEventListener(new ValueEventListener() {
@@ -430,5 +439,5 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
 //            return s2_score_int - s1_score_int ;
 //        }
 //    }
-
+    }
 }

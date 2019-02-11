@@ -25,7 +25,7 @@
             android:layout_centerVertical="true"
             android:textSize="20sp"
             android:layout_toRightOf="@+id/userAvatar"
-            android:text="username"
+            android:text=""
             android:layout_width="120dp"
             android:layout_height="wrap_content" />
 
@@ -35,7 +35,7 @@
             android:layout_centerVertical="true"
             android:textSize="20sp"
             android:layout_toRightOf="@+id/username"
-            android:text="score"
+            android:text=""
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -46,7 +46,7 @@
             android:layout_marginEnd="10dp"
             android:layout_alignParentEnd="true"
             android:layout_below="@id/userScore"
-            android:text="group"
+            android:text=""
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

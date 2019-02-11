@@ -16,6 +16,10 @@ public class Group {
         this.name = name;
     }
 
+    public Group(){
+
+    }
+
     public String getId() {
         return id;
     }

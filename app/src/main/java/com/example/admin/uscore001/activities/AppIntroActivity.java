@@ -29,15 +29,15 @@ public class AppIntroActivity extends AppIntro {
 
     }
 
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        if(FirebaseAuth.getInstance().getCurrentUser() != null){   // already logged in
-//            Intent intent = new Intent("android.intent.action.LOGIN");
-//            startActivity(intent);
-//            finish();
-//        }
-//    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){   // already logged in
+            Intent intent = new Intent("android.intent.action.LOGIN");
+            startActivity(intent);
+            finish();
+        }
+    }
 
     @Override
     public void onSkipPressed(Fragment currentFragment) {

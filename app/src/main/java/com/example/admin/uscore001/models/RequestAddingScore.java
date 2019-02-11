@@ -3,52 +3,76 @@ package com.example.admin.uscore001.models;
 import java.util.Date;
 
 public class RequestAddingScore {
-    boolean answer;
-    boolean cancel;
+    String id;
     String body;
     String date;
     String getter;
-    String  image_path;
+    String image_path;
     String senderEmail;
-    String senderUsername;
-    String group;
+    String firstName;
+    String secondName;
+    String lastName;
     int score;
+    String groupID;
     String requestID;
-    String option;
+    String optionID;
+    boolean answered;
+    boolean canceled;
+    String senderID;
 
-    public RequestAddingScore(boolean answer, String body, String date, String getter, String image_path,
-                              String senderEmail, String senderUsername, int score, String group, String requestID,
-                                boolean cancel, String option) {
-        this.answer = answer;
+    public RequestAddingScore(
+            String id,
+            String body,
+            String date,
+            String getter,
+            String image_path,
+            String senderEmail,
+            String firstName,
+            String secondName,
+            String lastName,
+            int score,
+            String groupID,
+            String requestID,
+            String optionID,
+            boolean answered,
+            boolean canceled,
+            String senderID
+    ) {
+        this.id = id;
         this.body = body;
         this.date = date;
         this.getter = getter;
         this.image_path = image_path;
         this.senderEmail = senderEmail;
-        this.senderUsername = senderUsername;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
         this.score = score;
-        this.group = group;
+        this.groupID = groupID;
         this.requestID = requestID;
-        this.cancel = cancel;
-        this.option = option;
+        this.optionID = optionID;
+        this.answered = answered;
+        this.canceled = canceled;
+        this.senderID = senderID;
+    }
+
+    public String getSenderID() {
+        return senderID;
+    }
+
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
     }
 
     public String getOption() {
-        return option;
+        return optionID;
     }
 
     public void setOption(String option) {
-        this.option = option;
+        this.optionID = option;
     }
 
-    public RequestAddingScore(){}
-
-    public boolean isCancel() {
-        return cancel;
-    }
-
-    public void setCancel(boolean cancel) {
-        this.cancel = cancel;
+    public RequestAddingScore() {
     }
 
     public String getRequestID() {
@@ -63,24 +87,8 @@ public class RequestAddingScore {
         return score;
     }
 
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
     public void setScore(int score) {
         this.score = score;
-    }
-
-    public boolean isAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(boolean answer) {
-        this.answer = answer;
     }
 
     public String getBody() {
@@ -123,11 +131,67 @@ public class RequestAddingScore {
         this.senderEmail = senderEmail;
     }
 
-    public String getSenderUsername() {
-        return senderUsername;
+    public String getId() {
+        return id;
     }
 
-    public void setSenderUsername(String senderUsername) {
-        this.senderUsername = senderUsername;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getGroupID() {
+        return groupID;
+    }
+
+    public void setGroupID(String groupID) {
+        this.groupID = groupID;
+    }
+
+    public String getOptionID() {
+        return optionID;
+    }
+
+    public void setOptionID(String optionID) {
+        this.optionID = optionID;
+    }
+
+    public boolean isAnswered() {
+        return answered;
+    }
+
+    public void setAnswered(boolean answered) {
+        this.answered = answered;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        this.canceled = canceled;
     }
 }

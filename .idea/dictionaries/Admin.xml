@@ -2,6 +2,7 @@
   <dictionary name="Admin">
     <words>
       <w>firestore</w>
+      <w>reqeusts</w>
     </words>
   </dictionary>
 </component>

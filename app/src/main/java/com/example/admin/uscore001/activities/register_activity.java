@@ -121,7 +121,7 @@ public class register_activity extends AppCompatActivity implements View.OnClick
                     if (task.isSuccessful()) {
                         Toast.makeText(register_activity.this, "Successfully registered", Toast.LENGTH_SHORT).show();
                         String uID = mRef.push().getKey();
-                        Student student = new Student(emailValue, usernameText, groupText, "", "0", uID, "5000", "");
+                        Student student = new Student(emailValue, usernameText, groupText, "", "0", uID, "5000", "", getString(R.string.studentStatusValue));
                         mRef.child("Students").child(groupText).child(emailValue.replace(".", "")).setValue(student);
                         Intent intent = new Intent(register_activity.this, login_activity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -1,36 +1,75 @@
 package com.example.admin.uscore001.models;
 
 public class Teacher {
-    String email;
-    String fullname;
+    String responsible_email;
     String image_path;
-    String position;
-    String subject;
+    String positionID;
+    String subjectID;
+    String firstName;
+    String secondName;
+    String lastName;
+    String groupID;
+    String id;
+    String requestID;
+    String statusID;
 
-    public Teacher(String email, String fullname, String image_path, String position, String subject) {
-        this.email = email;
-        this.fullname = fullname;
+    public Teacher(
+            String responsible_email,
+            String image_path,
+            String positionID,
+            String subjectID,
+            String firstName,
+            String secondName,
+            String lastName,
+            String groupID,
+            String id,
+            String requestID,
+            String statusID) {
+        this.responsible_email = responsible_email;
         this.image_path = image_path;
-        this.position = position;
-        this.subject = subject;
+        this.positionID = positionID;
+        this.subjectID = subjectID;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.groupID = groupID;
+        this.id = id;
+        this.requestID = requestID;
+        this.statusID = statusID;
     }
 
     public Teacher(){}
 
-    public String getEmail() {
-        return email;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getFullname() {
-        return fullname;
+    public String getSecondName() {
+        return secondName;
     }
 
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getResponsible_email() {
+        return responsible_email;
+    }
+
+    public void setResponsible_email(String responsible_email) {
+        this.responsible_email = responsible_email;
     }
 
     public String getImage_path() {
@@ -41,19 +80,56 @@ public class Teacher {
         this.image_path = image_path;
     }
 
-    public String getPosition() {
-        return position;
+    public String getPositionID() {
+        return positionID;
     }
 
-    public void setPosition(String position) {
-        this.position = position;
+    public void setPositionID(String positionID) {
+        this.positionID = positionID;
     }
 
-    public String getSubject() {
-        return subject;
+    public String getSubjectID() {
+        return subjectID;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setSubjectID(String subjectID) {
+        this.subjectID = subjectID;
+    }
+
+    public String getGroupID() {
+        return groupID;
+    }
+
+    public void setGroupID(String groupID) {
+        this.groupID = groupID;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(String requestID) {
+        this.requestID = requestID;
+    }
+
+    public String getStatusID() {
+        return statusID;
+    }
+
+    public void setStatusID(String statusID) {
+        this.statusID = statusID;
+    }
+
+    @Override
+    public String toString() {
+        return this.getFirstName() + " " + this.getLastName();
     }
 }

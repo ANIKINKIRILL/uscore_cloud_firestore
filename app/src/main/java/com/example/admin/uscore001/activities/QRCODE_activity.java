@@ -28,6 +28,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
@@ -49,12 +55,18 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     DatabaseReference mRef = mDatabase.getReference("Students");
 
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference groups$db = firebaseFirestore.collection("GROUPS$DB");
+    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
+
     // vars
     String currentStudentUsername;
-    String currentStudentGroup;
+    String currentStudentGroupID;
     boolean isDone = false;
     boolean islimitAndRequestScoreChecked = true;
     public static final int LIMIT_REQUEST_SCORE = 150;
+    String groupName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,7 +81,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         generateButton.setOnClickListener(this);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(QRCODE_activity.this);
-        currentStudentGroup = sharedPreferences.getString(getString(R.string.currentStudentGroup), "not found");
+        currentStudentGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "not found");
         currentStudentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "not found");
 
 
@@ -83,6 +95,18 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         });
 
     }
+
+    private String findCurrentUserGroupByGroupID(String groupID){
+        groups$db.whereEqualTo("id", groupID).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                groupName = documentSnapshot.get("name").toString();
+            }
+        });
+        return groupName;
+    }
+
 
     public void hideKeyBoard(View view){
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -100,12 +124,14 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                 String scoreValue = score.getText().toString();
                 try {
                     MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-                    BitMatrix bitMatrix = multiFormatWriter.encode(scoreValue + "| from: " + ", " + currentUser.getEmail() + "/" + currentStudentGroup, BarcodeFormat.QR_CODE,
+                    BitMatrix bitMatrix = multiFormatWriter.encode(
+                            scoreValue + "| from: " + ", " + currentUser.getEmail() + "/" + findCurrentUserGroupByGroupID(currentStudentGroupID),
+                            BarcodeFormat.QR_CODE,
                             300, 300);
                     BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
                     Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
                     qrcode_image.setImageBitmap(bitmap);
-                    decreaseLimitScore(currentStudentGroup, currentUser.getEmail(), Integer.parseInt(scoreValue));
+                    decreaseLimitScore(Integer.parseInt(scoreValue));
                 }catch (Exception e){
                     Log.d(TAG, "onClick: " + e.getMessage());
                 }
@@ -114,34 +140,32 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    public void decreaseLimitScore(String group, String email, int requestedScoreValue){
-            mRef.child(group).child(email.replace(".", ""))
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (!isDone) {
-                                try {
-                                    String limitScore = dataSnapshot.getValue(Student.class).getLimitScore();
-                                    int limitScoreInteger = Integer.parseInt(limitScore);
-                                    int result = limitScoreInteger - requestedScoreValue;
-                                    if (result <= 0) {
-                                        dataSnapshot.getRef().child("limitScore").setValue("0");
-                                    } else {
-                                        String resultString = Integer.toString(result);
-                                        dataSnapshot.getRef().child("limitScore").setValue(resultString);
-                                    }
-                                    isDone = true;
-                                }catch (Exception e){
-                                    Log.d("decreaseLimitScore ", e.getMessage());
-                                }
-                            }
+    public void decreaseLimitScore(int requestedScoreValue){
+        students$DB.whereEqualTo("email", currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                Student student = documentSnapshot.toObject(Student.class);
+                if (!isDone) {
+                    try {
+                        String limitScore = student.getLimitScore();
+                        int limitScoreInteger = Integer.parseInt(limitScore);
+                        int result = limitScoreInteger - requestedScoreValue;
+                        if (result <= 0) {
+                            student.setLimitScore("0");
+                        } else {
+                            String resultString = Integer.toString(result);
+                            student.setLimitScore(resultString);
                         }
+                        isDone = true;
+                    }catch (Exception e1){
+                        Log.d("decreaseLimitScore ", e1.getMessage());
+                    }
+                }
+            }
+        });
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
 
-                        }
-                    });
     }
 
 }

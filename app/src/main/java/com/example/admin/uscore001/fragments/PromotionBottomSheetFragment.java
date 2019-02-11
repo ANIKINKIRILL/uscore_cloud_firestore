@@ -57,10 +57,10 @@ public class PromotionBottomSheetFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Log.d(TAG, "onDataChange: loading options");
                     for (DataSnapshot option : dataSnapshot.getChildren()) {
-                        String optionValue = option.getValue(Option.class).getOption();
-                        int scoreValue = option.getValue(Option.class).getScore();
-                        Option optionClass = new Option(scoreValue, optionValue);
-                        options.add(optionClass);
+//                        String optionValue = option.getValue(Option.class).getOption();
+//                        int scoreValue = option.getValue(Option.class).getScore();
+//                        Option optionClass = new Option(scoreValue, optionValue);
+//                        options.add(optionClass);
                     }
                     adapter = new RulesListViewAdapter(options, getContext());
                     listView.setAdapter(adapter);

@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -41,6 +42,8 @@ import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -49,6 +52,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -61,7 +71,8 @@ import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class dashboard_activity extends AppCompatActivity implements View.OnClickListener,
+public class dashboard_activity extends AppCompatActivity implements
+                                        View.OnClickListener,
                                         ActionBar.OnNavigationListener{
 
     private static final String TAG = "dashboard_activity";
@@ -74,6 +85,13 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     DatabaseReference mRefTeacher = mDatabase.getReference("Teachers");
     DatabaseReference mRefTeacherRequest = mDatabase.getReference("RequestsAddingScore");
 
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
+    CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
+    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
+
     // widgets
     TextView username, requestNumber, limitScoreView, timer;
     CardView myProfileCardView, topScoresCardView, rulesCardView, recentCardView;
@@ -81,13 +99,11 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     NavigationView navigationView;
     CircleImageView userImage;
     ImageView notification_alarm;
-//    de.hdodenhof.circleimageview.CircleImageView floatingActionButton;
-//    de.hdodenhof.circleimageview.CircleImageView fabIconNew;
 
     // vars
     int counter = 0;
     static int pickedLang = 0;
-    String currentUserGroup;
+    String currentUserGroupID;
     String currentUserUsername;
     ArrayList<Student> students = new ArrayList<>();
     ArrayList<Student> students2= new ArrayList<>();
@@ -110,6 +126,9 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     private boolean timerRunning;
     private CountDownTimer countDownTimer;
     private ModalBottomSheetDialogFragment modalBottomSheetDialogFragment;
+    private String groupName;
+    private String currentStudentID;
+    private String statusID;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -127,12 +146,12 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
             TimeLeftInMillis = sharedPreferences.getLong("timeLeftInMills", START_TIME_IN_MILLIS);
             timerRunning = sharedPreferences.getBoolean("timeRunning", false);
             updateCountDownText();
-
+            Log.d(TAG, "onStart: " + TimeLeftInMillis);
             if (TimeLeftInMillis < 0) {
                 TimeLeftInMillis = 0;
                 timerRunning = false;
                 updateCountDownText();
-            } else {
+            } else if(TimeLeftInMillis > 0){
                 startTimer();
             }
         }
@@ -176,18 +195,16 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
         actionBarDrawerToggle.syncState();
 
         if(!currentUser.getEmail().contains("teacher")) {                           // is a Student
-            findCurrentUserInfo(); // in here have rateStudentInGroup function
+            findCurrentUserInfo(); // in here have rateStudentInGroup, putGroupNameToSharedPref function
             rateStudentInSchool();
-            confirmedAndDeniedRequestsNumber(currentUser.getEmail());
+//            confirmedAndDeniedRequestsNumber(currentUser.getEmail());
             requestNumber.setText("");
             notification_alarm.setVisibility(View.INVISIBLE);
         }else {                                                                     // is s Teacher
             isTeacher = true;
             requestNumber.setOnClickListener(this);
             getTeacherInfo(); // in here getTeacherRequestsNumber
-            changeNotificationAlarmImage();
             limitScoreView.setVisibility(View.INVISIBLE);
-
         }
 
         username = findViewById(R.id.username);
@@ -205,9 +222,6 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
         rulesCardView = findViewById(R.id.rulesCardView);
         rulesCardView.setOnClickListener(this);
 
-//        floatingActionButton = findViewById(R.id.floatingButton);
-
-//        buildSubMenu();
         try {
             ImageView view = navigationView.getHeaderView(0).findViewById(R.id.imageView);
             Log.d(TAG, "NavigationDrawerImage: " + navigationView.getHeaderCount());
@@ -225,6 +239,21 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
         }else if (requestCounter > 0){
             notification_alarm.setImageResource(R.drawable.ic_notifications_ring);
         }
+    }
+
+    private void putGroupNameByGroupIDToSharedPref(String groupID){
+        groups$DB.whereEqualTo("id", groupID).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    groupName = documentSnapshot.get("name").toString();
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(getString(R.string.groupName), groupName);
+                    editor.apply();
+                }
+            }
+        });
     }
 
     @Override
@@ -370,67 +399,70 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     }
 
     public void getTeacherInfo(){
-        final String currentUserEmail = currentUser.getEmail();
-        mRefTeacher.addValueEventListener(new ValueEventListener() {
+        teachers$DB.whereEqualTo("responsible_email", currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot teacher : dataSnapshot.getChildren()){
-                    if(teacher.getValue(Teacher.class).getEmail().equals(currentUserEmail)){
-                        String email = teacher.getValue(Teacher.class).getEmail();
-                        String fullname = teacher.getValue(Teacher.class).getFullname();
-                        String image_path = teacher.getValue(Teacher.class).getImage_path();
-                        String position = teacher.getValue(Teacher.class).getPosition();
-                        String subject = teacher.getValue(Teacher.class).getSubject();
-
-                        if(image_path.isEmpty()){
-                            image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                        }
-
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString(getString(R.string.intentTeacherEmail), email);
-                        editor.putString(getString(R.string.intentTeacherFullname), fullname);
-                        editor.putString(getString(R.string.intentTeacherImage_path), image_path);
-                        editor.putString(getString(R.string.intentTeacherPosition), position);
-                        editor.putString(getString(R.string.intentTeacherSubject), subject);
-                        editor.apply();
-                        getTeacherRequestsNumber(fullname);
-
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                    String email = teacher.getResponsible_email();
+                    String fullname = teacher.getFirstName() + " " + teacher.getLastName();
+                    String image_path = teacher.getImage_path();
+                    String positionID = teacher.getPositionID();
+                    String subjectID = teacher.getSubjectID();
+                    String requestID = teacher.getRequestID();
+                    String statusID = teacher.getStatusID();
+                    String teacherRequestID = teacher.getRequestID();
+                    Log.d(TAG, "teacher statusID: " + statusID);
+                    if (image_path.isEmpty()) {
+                        image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
                     }
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(getString(R.string.intentTeacherEmail), email);
+                    editor.putString(getString(R.string.intentTeacherFullname), fullname);
+                    editor.putString(getString(R.string.intentTeacherImage_path), image_path);
+                    editor.putString(getString(R.string.intentTeacherPosition), positionID);
+                    editor.putString(getString(R.string.intentTeacherSubject), subjectID);
+                    editor.putString("intentTeacherRequestID", requestID);
+                    editor.putString(getString(R.string.teacherStatusID), statusID);
+                    editor.apply();
+                    getTeacherRequestsNumber(teacherRequestID);
+                    Log.d(TAG, "teacherRequestID: " + teacherRequestID);
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }
 
-    public void getTeacherRequestsNumber(String fullname){
-        requestCounter = 0;
-        mRefTeacherRequest.child(fullname)
-            .addValueEventListener(new ValueEventListener() {
+    public void getTeacherRequestsNumber(String teacherRequestID){
+        requests$DB
+            .document(teacherRequestID)
+            .collection("STUDENTS")
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    requestCounter = 0;
-                    for(DataSnapshot student : dataSnapshot.getChildren()){
-                        for(DataSnapshot studentRequests : student.getChildren()){
-                            if(!studentRequests.getValue(RequestAddingScore.class).isAnswer()
-                                    &&
-                                !studentRequests.getValue(RequestAddingScore.class).isCancel()){
-                                requestCounter++;
-                            }
-                        }
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot
+                            .getReference()
+                            .collection("REQUESTS")
+                            .whereEqualTo("answered", false)
+                            .whereEqualTo("canceled", false)
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if(task.isSuccessful()){
+                                        Log.d(TAG, "onComplete: successful");
+                                        requestCounter += task.getResult().getDocuments().size();
+                                        Log.d(TAG, "onComplete: " + requestCounter);
+                                        requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
+                                    }else{
+                                        Log.d(TAG, "onComplete: " + task.getException().getMessage());
+                                    }
+                                }
+                            });
+                        Log.d(TAG, "student request amount of answered canceled being false: " + requestCounter);
                     }
-
-                    requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
+                    changeNotificationAlarmImage();
                 }
             });
     }
@@ -554,46 +586,49 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     public void findCurrentUserInfo(){
         findCurrentUserInfoBackGroundTask task = new findCurrentUserInfoBackGroundTask(this);
         task.execute();
-        //        mRef.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot groups : dataSnapshot.getChildren()){
-//                    for(DataSnapshot student : groups.getChildren()){
-//                        if(student.getKey().equals(currentUser.getEmail().replace(".", ""))){
-//                            currentUserGroup = student.getValue(Student.class).getGroup();
-//                            currentUserUsername = student.getValue(Student.class).getUsername();
-//                            senderImage = student.getValue(Student.class).getImage_path();
-//                            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-//                            SharedPreferences.Editor editor = sharedPreferences.edit();
-//                            editor.putString(getString(R.string.currentStudentGroup), currentUserGroup);
-//                            editor.putString(getString(R.string.currentStudentUsername), currentUserUsername);
-//                            editor.putString(getString(R.string.intentSenderImage), senderImage);
-//                            editor.apply();
-//                            rateStudentInGroup(currentUserGroup);
-//                        }
-//                    }
-//                }
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {}
-//        });
     }
 
     public void rateStudentInGroup(final String foundGroup){
         students.clear();
-        mRef.child(foundGroup).addValueEventListener(new ValueEventListener() {
+        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot currentGroupMembers : dataSnapshot.getChildren()){
-                    if(currentGroupMembers.getKey().equals(currentUser.getEmail().replace(".", ""))){
-                        score = currentGroupMembers.getValue(Student.class).getScore();
-                        currentStudentClass = new Student(score, "", "", "", "");
-                    }else {
-                        score = currentGroupMembers.getValue(Student.class).getScore();
-                        Student student = new Student(score, usernameValue, image_path, "", "");
-                        students.add(student);
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    if(student.getEmail().equals(currentUser.getEmail())){
+                        score = student.getScore();
+                        currentStudentClass = new Student(
+                                "",
+                                student.getFirstName() + " " + student.getSecondName(),
+                                "",
+                                "",
+                                score,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                    }else{
+                        score = student.getScore();
+                        Student studentClass = new Student(
+                                "",
+                                student.getFirstName() + " " + student.getSecondName(),
+                                "",
+                                "",
+                                score,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                        );
+                        students.add(studentClass);
                     }
-
                 }
                 students.add(currentStudentClass);
                 bubbleSortStudents(students);
@@ -604,65 +639,12 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
                 editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
                 editor.apply();
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
     }
 
     public void rateStudentInSchool(){
         rateStudentInSchoolBackGroundTask task = new rateStudentInSchoolBackGroundTask(this);
         task.execute();
-        //        students2.clear();
-//        mRef.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot groups : dataSnapshot.getChildren()){
-//                    for(DataSnapshot student : groups.getChildren()) {
-//                        if(student.getKey().equals(currentUser.getEmail().replace(".", ""))){
-//                            score = student.getValue(Student.class).getScore();
-//                            image_path = student.getValue(Student.class).getImage_path();
-//                            usernameValue = student.getValue(Student.class).getUsername();
-//                            if (score.trim().isEmpty()) {
-//                                score = "In process...";
-//                            }
-//                            if (image_path.isEmpty()) {
-//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                            }
-//                            currentStudentClass = new Student(score, usernameValue, image_path, "", "");
-//                        }else {
-//                            score = student.getValue(Student.class).getScore();
-//                            if (score.trim().isEmpty()) {
-//                                score = "In process...";
-//                            }
-//                            image_path = student.getValue(Student.class).getImage_path();
-//                            if (image_path.isEmpty()) {
-//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                            }
-//                            usernameValue = student.getValue(Student.class).getUsername();
-//                            Student new_student = new Student(score, usernameValue, image_path, "", "");
-//                            students2.add(new_student);
-//
-//                        }
-//                    }
-//                }
-//                students2.add(currentStudentClass);
-//                bubbleSortStudents(students2);
-//                Collections.reverse(students2);
-//                currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
-//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString(getString(R.string.currentStudentRateInSchool), Integer.toString(currentStudentRateSchool));
-//                editor.apply();
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
     public void bubbleSortStudents(ArrayList<Student> students){
@@ -679,34 +661,65 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
             }
         }
 
-    public void confirmedAndDeniedRequestsNumber(final String currentUserEmail){
-        mRefTeacherRequest.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot teacher : dataSnapshot.getChildren()){
-                    if(teacher.hasChild(currentUserEmail.replace(".", ""))){
-                        for(DataSnapshot currentUserRequests : teacher.child(currentUserEmail.replace(".","")).getChildren()){
-                            if(currentUserRequests.getValue(RequestAddingScore.class).isAnswer()){
-                                confirmedRequestsNumber++;
-                            }
+    public void confirmedAndDeniedRequestsNumber(final String currentStudentID){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        mRefTeacherRequest.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                for(DataSnapshot teacher : dataSnapshot.getChildren()){
+//                    if(teacher.hasChild(currentUserEmail.replace(".", ""))){
+//                        for(DataSnapshot currentUserRequests : teacher.child(currentUserEmail.replace(".","")).getChildren()){
+//                            if(currentUserRequests.getValue(RequestAddingScore.class).isAnswer()){
+//                                confirmedRequestsNumber++;
+//                            }
+//
+//                            if(currentUserRequests.getValue(RequestAddingScore.class).isCancel()){
+//                                deniedRequestsNumber++;
+//                            }
+//                        }
+//                    }
+//                }
+//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putInt(getString(R.string.currentStudentConfirmedRequests), confirmedRequestsNumber);
+//                editor.putInt(getString(R.string.currentStudentDeniedRequests), deniedRequestsNumber);
+//                editor.apply();
+//            }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
 
-                            if(currentUserRequests.getValue(RequestAddingScore.class).isCancel()){
-                                deniedRequestsNumber++;
+        requests$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot teachersRequestsID : queryDocumentSnapshots.getDocuments()){
+                    teachersRequestsID.getReference().collection("STUDENTS").document(currentStudentID).collection("REQUESTS")
+                        .whereEqualTo("answered", true).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                confirmedRequestsNumber += task.getResult().getDocuments().size();
+                                editor.putInt(getString(R.string.currentStudentConfirmedRequests), confirmedRequestsNumber);
+                                editor.apply();
+                                Log.d(TAG, "+: " + confirmedRequestsNumber);
                             }
-                        }
-                    }
+                        });
+                    teachersRequestsID.getReference().collection("STUDENTS").document(currentStudentID).collection("REQUESTS")
+                        .whereEqualTo("canceled", true).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                deniedRequestsNumber += task.getResult().getDocuments().size();
+                                editor.putInt(getString(R.string.currentStudentDeniedRequests), deniedRequestsNumber);
+                                editor.apply();
+                                Log.d(TAG, "-: " + deniedRequestsNumber);
+                            }
+                        });
                 }
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt(getString(R.string.currentStudentConfirmedRequests), confirmedRequestsNumber);
-                editor.putInt(getString(R.string.currentStudentDeniedRequests), deniedRequestsNumber);
-                editor.apply();
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
             }
         });
+
     }
 
     public static class findCurrentUserInfoBackGroundTask extends AsyncTask<Void, Void, Void>{
@@ -735,41 +748,43 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
             if(activity == null || activity.isFinishing()){
                 return null;
             }
-
-            activity.mRef.addValueEventListener(new ValueEventListener() {
+            activity.student$db.whereEqualTo("email", activity.currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    activity.limitScoreView.setText(activity.getString(R.string.leftScore));
-                    for(DataSnapshot groups : dataSnapshot.getChildren()){
-                        for(DataSnapshot student : groups.getChildren()){
-                            if(student.getKey().equals(activity.currentUser.getEmail().replace(".", ""))){
-                                activity.currentUserGroup = student.getValue(Student.class).getGroup();
-                                activity.currentUserUsername = student.getValue(Student.class).getUsername();
-                                activity.senderImage = student.getValue(Student.class).getImage_path();
-                                activity.limitScore = student.getValue(Student.class).getLimitScore();
-                                try {
-                                    activity.checkLimitScoreValue(activity.limitScore);
-                                }catch (Exception e){
-                                    Log.d(TAG, "onDataChange: " + e.getMessage());
-                                }
-                                String leftText = activity.limitScoreView.getText().toString();
-                                String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
-                                activity.limitScoreView.setText(result);
-                                activity.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-                                SharedPreferences.Editor editor = activity.sharedPreferences.edit();
-                                editor.putString(activity.getString(R.string.currentStudentGroup), activity.currentUserGroup);
-                                editor.putString(activity.getString(R.string.currentStudentUsername), activity.currentUserUsername);
-                                editor.putString(activity.getString(R.string.intentSenderImage), activity.senderImage);
-                                editor.putString(activity.getString(R.string.intentLimitScore), activity.limitScore);
-                                editor.apply();
-                                activity.rateStudentInGroup(activity.currentUserGroup);
-                            }
-                        }
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                        Student student = documentSnapshot.toObject(Student.class);
+                        activity.limitScoreView.setText(activity.getString(R.string.leftScore));
+                        activity.currentUserGroupID = student.getGroupID();
+                        activity.putGroupNameByGroupIDToSharedPref(activity.currentUserGroupID);
+                        activity.currentUserUsername = student.getFirstName() + " " + student.getSecondName();
+                        activity.senderImage = student.getImage_path();
+                        activity.limitScore = student.getLimitScore();
+                        activity.currentStudentID = student.getId();
+                        activity.statusID = student.getStatusID();
+                        Log.d(TAG, "student statusID: " + activity.statusID);
+                        activity.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+                        SharedPreferences.Editor editor = activity.sharedPreferences.edit();
+                        editor.putString(activity.getString(R.string.currentStudentGroupID), activity.currentUserGroupID);
+                        editor.putString(activity.getString(R.string.currentStudentUsername), activity.currentUserUsername);
+                        editor.putString(activity.getString(R.string.intentSenderImage), activity.senderImage);
+                        editor.putString(activity.getString(R.string.intentLimitScore), activity.limitScore);
+                        editor.putString(activity.getString(R.string.currentStudentID), activity.currentStudentID);
+                        editor.putString(activity.myProfileCardView.getContext().getString(R.string.studentStatusID), activity.statusID);
+                        editor.apply();
                     }
+                    try{
+                        activity.checkLimitScoreValue(activity.limitScore);
+                    }catch (Exception e1){
+                        Log.d(TAG, "onEvent: " + e1.getMessage());
+                    }
+                    String leftText = activity.limitScoreView.getText().toString();
+                    String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
+                    activity.limitScoreView.setText(result);
+                    activity.rateStudentInGroup(activity.currentUserGroupID);
+                    activity.confirmedAndDeniedRequestsNumber(activity.currentStudentID);
                 }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
             });
+
             return null;
         }
         @Override
@@ -800,42 +815,64 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
                 return null;
             }
 
-            activity.students2.clear();
-            activity.mRef.addValueEventListener(new ValueEventListener() {
+            /*
+                        START CLOUD FIRESTORE
+             */
+            activity.student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    try {
-                        for (DataSnapshot groups : dataSnapshot.getChildren()) {
-                            for (DataSnapshot student : groups.getChildren()) {
-                                if (student.getKey().equals(activity.currentUser.getEmail().replace(".", ""))) {
-                                    activity.score = student.getValue(Student.class).getScore();
-                                    activity.image_path = student.getValue(Student.class).getImage_path();
-                                    activity.usernameValue = student.getValue(Student.class).getUsername();
-                                    if (activity.score.trim().isEmpty()) {
-                                        activity.score = "In process...";
-                                    }
-                                    if (activity.image_path.isEmpty()) {
-                                        activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                                    }
-                                    activity.currentStudentClass = new Student(activity.score, activity.usernameValue, activity.image_path, "", "");
-                                } else {
-                                    activity.score = student.getValue(Student.class).getScore();
-                                    if (activity.score.trim().isEmpty()) {
-                                        activity.score = "In process...";
-                                    }
-                                    activity.image_path = student.getValue(Student.class).getImage_path();
-                                    if (activity.image_path.isEmpty()) {
-                                        activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                                    }
-                                    activity.usernameValue = student.getValue(Student.class).getUsername();
-                                    Student new_student = new Student(activity.score, activity.usernameValue, activity.image_path, "", "");
-                                    activity.students2.add(new_student);
-
-                                }
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Student student = studentSnapshot.toObject(Student.class);
+                        if(student.getEmail().equals(activity.currentUser.getEmail())){
+                            activity.score = student.getScore();
+                            activity.image_path = student.getImage_path();
+                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
+                            if (activity.score.trim().isEmpty()) {
+                                activity.score = "In process...";
                             }
+                            if (activity.image_path.isEmpty()) {
+                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                            }
+                            activity.currentStudentClass = new Student(
+                                    "",
+                                    activity.usernameValue,
+                                    "",
+                                    activity.image_path,
+                                    activity.score,
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    ""
+                            );
+                        }else{
+                            activity.score = student.getScore();
+                            if (activity.score.trim().isEmpty()) {
+                                activity.score = "In process...";
+                            }
+                            activity.image_path = student.getImage_path();
+                            if (activity.image_path.isEmpty()) {
+                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                            }
+                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
+                            Student new_student = new Student(
+                                    "",
+                                    activity.usernameValue,
+                                    "",
+                                    activity.image_path,
+                                    activity.score,
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    ""
+                            );
+                            activity.students2.add(new_student);
                         }
-                    }catch (Exception e){
-                        e.printStackTrace();
                     }
                     activity.students2.add(activity.currentStudentClass);
                     activity.bubbleSortStudents(activity.students2);
@@ -846,96 +883,14 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
                     editor.putString(activity.getString(R.string.currentStudentRateInSchool), Integer.toString(activity.currentStudentRateSchool));
                     editor.apply();
                 }
-                @Override
-                public void onCancelled(DatabaseError databaseError){
-
-                }
             });
             return null;
         }
     }
 
-    // buildSubMenu -> arcLayout at the bottom
-    //    public void buildSubMenu(){
-//        SubActionButton.Builder rLSubBuilder = new SubActionButton.Builder(this);
-//        // Create an image view for each menu item
-//        ImageView menuOption1 = new ImageView(this);
-//        ImageView menuOption2 = new ImageView(this);
-//        ImageView menuOption3 = new ImageView(this);
-//        ImageView menuOption4 = new ImageView(this);
-//
-//        // Set the icon for each menu item
-//        menuOption1.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_settings));
-//        menuOption2.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_groups));
-//        menuOption3.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_alarm));
-//        menuOption4.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_contacts));
-//
-//        // Build the menu with default options: 90 degrees, 72dp radius.
-//        // Set 4 default SubActionButtons
-//        final FloatingActionMenu rightLowerMenu = new FloatingActionMenu.Builder(this)
-//                .addSubActionView(rLSubBuilder.setContentView(menuOption1).setLayoutParams(new FrameLayout.LayoutParams(150, 150)).build())
-//                .addSubActionView(rLSubBuilder.setContentView(menuOption2).setLayoutParams(new FrameLayout.LayoutParams(150, 150)).build())
-//                .addSubActionView(rLSubBuilder.setContentView(menuOption3).setLayoutParams(new FrameLayout.LayoutParams(150, 150)).build())
-//                .addSubActionView(rLSubBuilder.setContentView(menuOption4).setLayoutParams(new FrameLayout.LayoutParams(150, 150)).build())
-//                .attachTo(floatingActionButton)
-//                //.setStartAngle(360)
-//                .build();
-//
-//        // Listen for menu open and close events to animate the button content view
-//        rightLowerMenu.setStateChangeListener(new FloatingActionMenu.MenuStateChangeListener() {
-//            @Override
-//            public void onMenuOpened(FloatingActionMenu menu) {
-//                // Rotate the icon of rightLowerButton 45 degrees clockwise
-////                fabIconNew.setRotation(0);
-////                PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, 45);
-////                ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(fabIconNew, pvhR);
-////                animation.start();
-//            }
-//
-//            @Override
-//            public void onMenuClosed(FloatingActionMenu menu) {
-//                // Rotate the icon of rightLowerButton 45 degrees counter-clockwise
-////                fabIconNew.setRotation(45);
-////                PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, 0);
-////                ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(fabIconNew, pvhR);
-////                animation.start();
-//            }
-//        });
-//
-//        // OnClickListeners for each menu item
-//        menuOption1.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "Option 1", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        menuOption2.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "Option 2", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        menuOption3.setOnClickListener(new View.OnClickListener() {                                     // limitScore and CountDownTimer dialog
-//            @Override
-//            public void onClick(View v) {
-//                // open dialog with info of your limitScore and otherwise leftTime
-//                LimitScoreLeftTimeDialog dialog = new LimitScoreLeftTimeDialog();
-//                dialog.show(getFragmentManager(), getString(R.string.open_dialog));
-//            }
-//        });
-//
-//        menuOption4.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "Option 4", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
-
     public void checkLimitScoreValue(String limitScore){
         int limitScoreInteger = Integer.parseInt(limitScore);
+        Log.d(TAG, "checkLimitScoreValue: " + limitScoreInteger);
         if(limitScoreInteger == 0){
             menu.findItem(R.id.generateQERCODE).setEnabled(false);
             menu.findItem(R.id.makeRequest).setEnabled(false);
@@ -979,8 +934,15 @@ public class dashboard_activity extends AppCompatActivity implements View.OnClic
     }
 
     public void updateLimitScore(){
-        mRef.child(currentUserGroup).child(currentUser.getEmail().replace(".", ""))
-                .child("limitScore").setValue("5000");
+        student$db.whereEqualTo("email", currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    student.setLimitScore("5000");
+                }
+            }
+        });
     }
 
 

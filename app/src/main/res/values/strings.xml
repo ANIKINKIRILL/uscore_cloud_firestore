@@ -7,8 +7,18 @@
     <string name="email_pref" translatable="false">email_preference</string>
     <string name="password_pref" translatable="false">password_preference</string>
     <string name="group_pref" translatable="false">group_pref</string>
+    <string name="groupName" translatable="false">groupName</string>
+    <string name="currentStudentID" translatable="false">currentStudentID</string>
+    <string name="studentStatusID" translatable="false">studentStatusID</string>
+    <string name="teacherStatusID" translatable="false">teacherStatusID</string>
     <string name="username_pref" translatable="false">username_pref</string>
     <string name="group_pref_from_profile_group_fragment" translatable="false">group_pref</string>
+
+
+    <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
+    <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
+    
+    <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
 
     <!--// all strings for change language-->
 
@@ -29,7 +39,7 @@
     <string name="statusStudent">Студент</string>
     <string name="statusTeacher">Учитель</string>
 
-    <string name="currentStudentGroup" translatable="false">currentStudentGroup</string>
+    <string name="currentStudentGroupID" translatable="false">currentStudentGroupID</string>
     <string name="currentStudentUsername" translatable="false">currentStudentUsername</string>
     <string name="currentStudentRateInGroup" translatable="false">currentStudentRateInGroup</string>
     <string name="currentStudentRateInSchool" translatable="false">currentStudentRateInSchool</string>
@@ -42,6 +52,7 @@
     <string name="intentUsername" translatable="false">intentUsername</string>
     <string name="intentImage" translatable="false">intentImage</string>
     <string name="intentEmail" translatable="false">intentEmail</string>
+    <string name="intentGroupID" translatable="false">intentGroupID</string>
     <string name="intentSenderImage" translatable="false">intentSenderImage</string>
     <string name="intentLimitScore" translatable="false">intentLimitScore</string>
 
@@ -305,5 +316,8 @@
     <string name="rules_text">Регламент</string>
     <string name="make_penalty">Понизить очки</string>
     <string name="shared_preferences">sharedPreferences</string>
+
+    <string-array name="teacherStatus">PGIg1vm8SrHN6YLeN0TD</string-array>
+    <string-array name="studentStatus">y1igExymzKFaV3BU8zH8</string-array>
 
 </resources>

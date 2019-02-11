@@ -25,8 +25,10 @@ import com.example.admin.uscore001.dialogs.TeacherSettingsDialog;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.OnImageClickListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -34,6 +36,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -55,26 +63,36 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     String email;
     String fullname;
     String image_path;
-    String position;
-    String subject;
+    String positionID;
+    String subjectID;
     int addedTimes = 0;
     byte[] mUploadBytes;
+    private String subject;
+    private String position;
 
     // Firebase
-    private FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://fir-01-ff46b.firebaseio.com/");
-    private DatabaseReference databaseReference = firebaseDatabase.getReference("RequestsAddingScore");
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mDatabaseRef = mDatabase.getReference("Teachers");
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference mRef = storage.getReference();
     FirebaseUser user = mAuth.getCurrentUser();
+
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference teachers$db = firebaseFirestore.collection("TEACHERS$DB");
+    CollectionReference requests$DB = firebaseFirestore.collection("REQUESTS$DB");
+    CollectionReference subjects$DB = firebaseFirestore.collection("SUBJECTS$DB");
+    CollectionReference positions$DB = firebaseFirestore.collection("POSITIONS$DB");
+    private String teacherRequestID;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.teacher_profile_layout);
+        init();
+        setTeacherInfo();
+    }
 
+    private void init(){
         imageView = findViewById(R.id.imageView);
         countAddedScore = findViewById(R.id.countAddedScore);
         usernameView = findViewById(R.id.username);
@@ -88,16 +106,14 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         email = sharedPreferences.getString(getString(R.string.intentTeacherEmail), "");
         fullname = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
         image_path = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
-        position = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
-        subject = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
+        positionID = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
+        subjectID = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
+        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
 
         back = findViewById(R.id.back);
         back.setOnClickListener(this);
         imageView.setOnClickListener(this);
-        profileSettings.setOnClickListener(this);
-
-        setTeacherInfo();
-
+//        profileSettings.setOnClickListener(this);
     }
 
     @Override
@@ -120,34 +136,47 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    private void getSubjectPositionByID(String subjectID, String positionID){
+        subject = (String)subjects$DB.document(subjectID).get().getResult().get("name");
+        position = (String)positions$DB.document(positionID).get().getResult().get("name");
+    }
+
     public void setTeacherInfo(){
+        getSubjectPositionByID(subjectID, positionID);
         Glide.with(TeacherProfile.this).load(image_path).into(imageView);
         usernameView.setText(fullname);
         status.setText(getResources().getString(R.string.statusTeacher));
         emailAddress.setText(email);
         positionView.setText(position);
         subjectView.setText(subject);
-        getTeacherAddedTimes(fullname);
+        getTeacherAddedTimes(teacherRequestID);
     }
 
-    private void getTeacherAddedTimes(String teacherName){
-        databaseReference.child(teacherName).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot student : dataSnapshot.getChildren()){
-                    for(DataSnapshot studentRequest : student.getChildren()){
-                        if(studentRequest.getValue(RequestAddingScore.class).isAnswer()){
-                           addedTimes++;
-                        }
+    private void getTeacherAddedTimes(String teacherRequestID){
+        requests$DB
+            .document(teacherRequestID)
+            .collection("STUDENTS")
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot
+                            .getReference()
+                            .collection("REQUEST")
+                            .whereEqualTo("answered", true)
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if(task.isSuccessful()){
+                                        addedTimes += task.getResult().getDocuments().size();
+                                        countAddedScore.setText(addedTimes);
+                                    }
+                                }
+                            });
                     }
                 }
-                countAddedScore.setText(Integer.toString(addedTimes));
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+            });
     }
 
     @Override
@@ -223,20 +252,14 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                final Uri downloadUri = taskSnapshot.getDownloadUrl();
-                mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                Task<Uri> uriTask = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+                teachers$db.whereEqualTo("email", user.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for(DataSnapshot teacher : dataSnapshot.getChildren()){
-                            if(teacher.getValue(Teacher.class).getEmail().equals(user.getEmail())){
-                                teacher.getRef().child("image_path").setValue(downloadUri.toString());
-                            }
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                            Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                            teacher.setImage_path(uriTask.getResult().toString());
                         }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(TeacherProfile.this, "Canceled", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

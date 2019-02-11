@@ -1,7 +1,9 @@
 package com.example.admin.uscore001.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.StudentRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -26,6 +29,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,13 +52,19 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     DatabaseReference mRef = mDatabase.getReference("Students");
 
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
+    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
+    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
+
     // vars
     ArrayList<Student> students = new ArrayList<>();
     ArrayList<Student> students1 = new ArrayList<>();
     String score;
     String image_path;
     String username;
-    String group;
+    String groupID;
     String email;
     StudentRecyclerAdapter adapter;
     static Student currentStudentClass;
@@ -68,13 +83,18 @@ public class EntireSchoolTopScoreFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         currentStudentRate = view.findViewById(R.id.currentStudentRate);
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String studentStatusID = sharedPreferences.getString(getString(R.string.studentStatusID), "");
+        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
+
+
         if(!currentUser.getEmail().contains("teacher")) {
             try {
                 loadStudent();
             }catch (Exception e){
                 Log.d(TAG, "onCreateView: " + e.getMessage());
             }
-        }else{
+        }else if(currentUser.getEmail().contains("teacher")){
             try {
                 loadTeacher();
             }catch (Exception e){
@@ -87,108 +107,97 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     }
 
     public void loadStudent(){
+        Log.d(TAG, "loadStudent: method started");
         students.clear();
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    for (DataSnapshot groups : dataSnapshot.getChildren()) {
-                        for (DataSnapshot student : groups.getChildren()) {
-                            if (student.getKey().equals(currentUser.getEmail().replace(".", ""))) {
-                                score = student.getValue(Student.class).getScore();
-                                group = student.getValue(Student.class).getGroup();
-                                image_path = student.getValue(Student.class).getImage_path();
-                                username = student.getValue(Student.class).getUsername();
-                                email = student.getValue(Student.class).getEmail();
-                                if (score.trim().isEmpty()) {
-                                    score = "In process...";
-                                }
-                                if (image_path.isEmpty()) {
-                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                                }
-                                currentStudentClass = new Student(score, username, image_path, group, email);
-                            } else {
-                                score = student.getValue(Student.class).getScore();
-                                if (score.trim().isEmpty()) {
-                                    score = "In process...";
-                                }
-                                image_path = student.getValue(Student.class).getImage_path();
-                                if (image_path.isEmpty()) {
-                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                                }
-                                group = student.getValue(Student.class).getGroup();
-                                username = student.getValue(Student.class).getUsername();
-                                email = student.getValue(Student.class).getEmail();
-                                Student new_student = new Student(score, username, image_path, group, email);
+        students$DB
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                            Student student = documentSnapshot.toObject(Student.class);
+                            score = student.getScore();
+                            groupID = student.getGroupID();
+                            image_path = student.getImage_path();
+                            username = student.getFirstName() + " " + student.getSecondName();
+                            email = student.getEmail();
+                            if (score.trim().isEmpty()) {
+                                score = "In process...";
+                            }
+                            if (image_path.isEmpty()) {
+                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                            }
+                            if(email.equals(currentUser.getEmail())){
+                                currentStudentClass =
+                                        new Student(
+                                                score,
+                                                username,
+                                                image_path,
+                                                groupID,
+                                                email,
+                                                student.getFirstName(),
+                                                student.getSecondName(),
+                                                "",
+                                                ""
+                                        );
+                            }else{
+                                Student new_student =
+                                        new Student(
+                                                score,
+                                                username,
+                                                image_path,
+                                                groupID,
+                                                email,
+                                                student.getFirstName(),
+                                                student.getSecondName(),
+                                                "",
+                                                ""
+                                        );
                                 students.add(new_student);
-
                             }
                         }
+                        students.add(currentStudentClass);
+                        bubbleSortStudents(students);
+                        Collections.reverse(students);
+                        String you_are_onText = currentStudentRate.getText().toString();
+                        currentStudentRateSchool = students.indexOf(currentStudentClass)+1;
+                        you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateSchool) + " ";
+                        try {
+                            currentStudentRate.setText(you_are_onText + getResources().getString(R.string.place_with) + " " + currentStudentClass.getScore() + " " + getResources().getString(R.string.points));
+                        }catch (Exception e1){
+                            Log.d(TAG, "onDataChange: " + e1.getMessage());
+                        }
+                        adapter = new StudentRecyclerAdapter(students);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        recyclerView.setAdapter(adapter);
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                students.add(currentStudentClass);
-                bubbleSortStudents(students);
-                Collections.reverse(students);
-                String you_are_onText = currentStudentRate.getText().toString();
-                currentStudentRateSchool = students.indexOf(currentStudentClass)+1;
-                you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateSchool) + " ";
-                try {
-                    currentStudentRate.setText(you_are_onText + getResources().getString(R.string.place_with) + " " + currentStudentClass.getScore() + " " + getResources().getString(R.string.points));
-                }catch (Exception e ){
-                    Log.d(TAG, "onDataChange: " + e.getMessage());
-                }
-                adapter = new StudentRecyclerAdapter(students);
-                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                recyclerView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+                });
     }
 
     public void loadTeacher(){
         students1.clear();
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    for (DataSnapshot groups : dataSnapshot.getChildren()) {
-                        for (DataSnapshot student : groups.getChildren()) {
-                            score = student.getValue(Student.class).getScore();
-                            if (score.trim().isEmpty()) {
-                                score = "In process...";
-                            }
-                            image_path = student.getValue(Student.class).getImage_path();
+        teachers$DB
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                            Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                            image_path = teacher.getImage_path();
+                            groupID = teacher.getGroupID();
+                            username = teacher.getFirstName() + " " + teacher.getLastName();
+                            email = teacher.getResponsible_email();
                             if (image_path.isEmpty()) {
                                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
                             }
-                            group = student.getValue(Student.class).getGroup();
-                            username = student.getValue(Student.class).getUsername();
-                            email = student.getValue(Student.class).getEmail();
-                            Student new_student = new Student(score, username, image_path, group, email);
+                            Student new_student = new Student(score, username, image_path, groupID, email, teacher.getFirstName(), "", teacher.getLastName(),"");
                             students1.add(new_student);
                         }
+                        bubbleSortStudents(students1);
+                        Collections.reverse(students1);
+                        adapter = new StudentRecyclerAdapter(students1);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                        recyclerView.setAdapter(adapter);
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                bubbleSortStudents(students1);
-                Collections.reverse(students1);
-                adapter = new StudentRecyclerAdapter(students1);
-                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                recyclerView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+                });
     }
 
     public void bubbleSortStudents(ArrayList<Student> students){

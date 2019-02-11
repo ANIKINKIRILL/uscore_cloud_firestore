@@ -2,31 +2,41 @@ package com.example.admin.uscore001.models;
 
 public class Option {
 
-    private int score;
-    private String option;
+    private String id;
+    private String points;
+    private String name;
 
-    public Option(int score, String option) {
-        this.score = score;
-        this.option = option;
+    public Option(String id, String points, String name) {
+        this.id = id;
+        this.points = points;
+        this.name = name;
     }
 
     Option(){
 
     }
 
-    public String getOption() {
-        return option;
+    public String getId() {
+        return id;
     }
 
-    public void setOption(String option) {
-        this.option = option;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public int getScore() {
-        return score;
+    public String getPoints() {
+        return points;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public void setPoints(String points) {
+        this.points = points;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

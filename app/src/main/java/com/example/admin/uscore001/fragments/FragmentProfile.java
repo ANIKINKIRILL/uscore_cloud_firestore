@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +22,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class FragmentProfile extends Fragment {
 
@@ -32,6 +39,13 @@ public class FragmentProfile extends Fragment {
     FirebaseUser currentUser = mAuth.getCurrentUser();
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     DatabaseReference mDatabaseRef = mDatabase.getReference("Students");
+
+    // Firestore
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
+    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
+    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
+    private String currentUserGroupName;
 
     // vars
 
@@ -51,33 +65,40 @@ public class FragmentProfile extends Fragment {
     }
 
     public void setCurrentUserInfo(){
-        mDatabaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot groups: dataSnapshot.getChildren()){
-                    for(DataSnapshot student : groups.getChildren()){
-                        if(student.getKey().equals(currentUser.getEmail().replace(".", ""))){
-                            String currentUserUsername = student.getValue(Student.class).getUsername();
-                            String currentUserGroup = student.getValue(Student.class).getGroup();
-                            String currentUserScore = student.getValue(Student.class).getScore();
-                            email.setText(currentUser.getEmail());
-                            username.setText(currentUserUsername);
-                            group.setText(currentUserGroup);
-                            if(currentUserScore.equals("")) {
-                                score.setText("0");
-                            }else{
-                                score.setText(currentUserScore);
-                            }
-
+        students$DB
+                .whereEqualTo("email", currentUser.getEmail())
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                        Student student = documentSnapshot.toObject(Student.class);
+                        String currentUserUsername = student.getFirstName() + " " + student.getSecondName();
+                        String currentUserGroupID = student.getGroupID();
+                        findGroupNameByGroupID(currentUserGroupID);
+                        String currentUserScore = student.getScore();
+                        email.setText(currentUser.getEmail());
+                        username.setText(currentUserUsername);
+                        group.setText(currentUserGroupName);
+                        if(currentUserScore.equals("")) {
+                            score.setText("0");
+                        }else{
+                            score.setText(currentUserScore);
                         }
                     }
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                });
 
-            }
-        });
+    }
+
+    private void findGroupNameByGroupID(String groupID){
+        groups$DB.whereEqualTo("id", groupID)
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    DocumentSnapshot documentSnapshot = (DocumentSnapshot) queryDocumentSnapshots.getDocuments();
+                    Group group = documentSnapshot.toObject(Group.class);
+                    currentUserGroupName = group.getName();
+                }
+            });
     }
 
 }
