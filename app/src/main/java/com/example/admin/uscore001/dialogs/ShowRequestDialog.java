@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.util.RequestsAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -59,9 +61,11 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
         closeImageView.setOnClickListener(this);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String teacher = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
         String teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         Log.d(TAG, "onCreateView: " + teacherRequestID);
+
+        requests.clear();
+
         loadRequest(teacherRequestID);
 
         return view;
@@ -78,68 +82,133 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
     }
 
     public void loadRequest(final String teacherRequestID){
-        requests.clear();
             requests$DB
                 .document(teacherRequestID)
                 .collection("STUDENTS")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                            documentSnapshot
-                                .getReference()
-                                .collection("REQUESTS")
-                                .whereEqualTo("answered", false)
-                                .whereEqualTo("canceled", false)
-                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                        for(DocumentSnapshot documents : queryDocumentSnapshots.getDocuments()){
-                                            RequestAddingScore request = documents.toObject(RequestAddingScore.class);
-                                            String id = request.getId();
-                                            String body = request.getBody();
-                                            String date = request.getDate();
-                                            String getter = request.getGetter();
-                                            String image_path = request.getImage_path();
-                                            String senderEmail = request.getSenderEmail();
-                                            String firstName = request.getFirstName();
-                                            String secondName = request.getSecondName();
-                                            String lastName = request.getLastName();
-                                            int score = request.getScore();
-                                            String groupID = request.getGroupID();
-                                            String requestID = request.getRequestID();
-                                            String optionID = request.getOptionID();
-                                            boolean answered = request.isAnswered();
-                                            boolean canceled = request.isCanceled();
-                                            String senderID = request.getSenderID();
-                                            RequestAddingScore requestClass = new RequestAddingScore(
-                                                    id,
-                                                    body,
-                                                    date,
-                                                    getter,
-                                                    image_path,
-                                                    senderEmail,
-                                                    firstName,
-                                                    secondName,
-                                                    lastName,
-                                                    score,
-                                                    groupID,
-                                                    requestID,
-                                                    optionID,
-                                                    answered,
-                                                    canceled,
-                                                    senderID
-                                            );
-                                            requests.add(requestClass);
-                                        }
-                                        RequestsAdapter adapter = new RequestsAdapter(requests);
-                                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                                        recyclerView.setAdapter(adapter);
-                                    }
-                                });
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                                documentSnapshot
+                                        .getReference()
+                                        .collection("REQUESTS")
+                                        .whereEqualTo("answered", false)
+                                        .whereEqualTo("canceled", false)
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                for(DocumentSnapshot documents : task.getResult().getDocuments()){
+                                                    RequestAddingScore request = documents.toObject(RequestAddingScore.class);
+                                                    String id = request.getId();
+                                                    String body = request.getBody();
+                                                    String date = request.getDate();
+                                                    String getter = request.getGetter();
+                                                    String image_path = request.getImage_path();
+                                                    String senderEmail = request.getSenderEmail();
+                                                    String firstName = request.getFirstName();
+                                                    String secondName = request.getSecondName();
+                                                    String lastName = request.getLastName();
+                                                    int score = request.getScore();
+                                                    String groupID = request.getGroupID();
+                                                    String requestID = request.getRequestID();
+                                                    String optionID = request.getOptionID();
+                                                    boolean answered = request.isAnswered();
+                                                    boolean canceled = request.isCanceled();
+                                                    String senderID = request.getSenderID();
+                                                    RequestAddingScore requestClass = new RequestAddingScore(
+                                                            id,
+                                                            body,
+                                                            date,
+                                                            getter,
+                                                            image_path,
+                                                            senderEmail,
+                                                            firstName,
+                                                            secondName,
+                                                            lastName,
+                                                            score,
+                                                            groupID,
+                                                            requestID,
+                                                            optionID,
+                                                            answered,
+                                                            canceled,
+                                                            senderID
+                                                    );
+                                                    requests.add(requestClass);
+                                                }
+                                                Log.d(TAG, "all requests that in in process: " + requests.size());
+                                                RequestsAdapter adapter = new RequestsAdapter(requests);
+                                                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                                                recyclerView.setAdapter(adapter);
+                                            }
+                                        });
+                            }
                         }
                     }
                 });
+
+
+
+//                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                            documentSnapshot
+//                                .getReference()
+//                                .collection("REQUESTS")
+//                                .whereEqualTo("answered", false)
+//                                .whereEqualTo("canceled", false)
+//                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                                    @Override
+//                                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                                        for(DocumentSnapshot documents : queryDocumentSnapshots.getDocuments()){
+//                                            RequestAddingScore request = documents.toObject(RequestAddingScore.class);
+//                                            String id = request.getId();
+//                                            String body = request.getBody();
+//                                            String date = request.getDate();
+//                                            String getter = request.getGetter();
+//                                            String image_path = request.getImage_path();
+//                                            String senderEmail = request.getSenderEmail();
+//                                            String firstName = request.getFirstName();
+//                                            String secondName = request.getSecondName();
+//                                            String lastName = request.getLastName();
+//                                            int score = request.getScore();
+//                                            String groupID = request.getGroupID();
+//                                            String requestID = request.getRequestID();
+//                                            String optionID = request.getOptionID();
+//                                            boolean answered = request.isAnswered();
+//                                            boolean canceled = request.isCanceled();
+//                                            String senderID = request.getSenderID();
+//                                            RequestAddingScore requestClass = new RequestAddingScore(
+//                                                    id,
+//                                                    body,
+//                                                    date,
+//                                                    getter,
+//                                                    image_path,
+//                                                    senderEmail,
+//                                                    firstName,
+//                                                    secondName,
+//                                                    lastName,
+//                                                    score,
+//                                                    groupID,
+//                                                    requestID,
+//                                                    optionID,
+//                                                    answered,
+//                                                    canceled,
+//                                                    senderID
+//                                            );
+//                                            requests.add(requestClass);
+//                                        }
+//                                        RequestsAdapter adapter = new RequestsAdapter(requests);
+//                                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//                                        recyclerView.setAdapter(adapter);
+//                                    }
+//                                });
+//                        }
+//                    }
+//                });
 
     }
 

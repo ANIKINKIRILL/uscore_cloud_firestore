@@ -154,19 +154,23 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
     }
 
     private void loadAllTeachers(){
-        teachers$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                    Teacher teacher = documentSnapshot.toObject(Teacher.class);
-                    teachers.add(teacher);
+        try {
+            teachers$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                        Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                        teachers.add(teacher);
+                    }
+                    RequestAddingScoreAdapter pickTeacherAdapter = new RequestAddingScoreAdapter(getContext(), android.R.layout.simple_spinner_item, teachers);
+                    pickTeacherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    teacherSpinner.setAdapter(pickTeacherAdapter);
+                    teacherSpinner.setOnItemSelectedListener(DialogRequestAddingScore.this);
                 }
-                RequestAddingScoreAdapter pickTeacherAdapter = new RequestAddingScoreAdapter(getContext(), android.R.layout.simple_spinner_item, teachers);
-                pickTeacherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                teacherSpinner.setAdapter(pickTeacherAdapter);
-                teacherSpinner.setOnItemSelectedListener(DialogRequestAddingScore.this);
-            }
-        });
+            });
+        }catch (Exception e){
+            Log.d(TAG, "loadAllTeachers: " + e.getMessage());
+        }
     }
 
     @Override
@@ -279,8 +283,12 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
                                         canceled,
                                         currentStudentID
                                 );
-                                Toast.makeText(getContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
-                                getDialog().dismiss();
+                                try {
+                                    Toast.makeText(getContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
+                                    getDialog().dismiss();
+                                }catch (Exception e1){
+                                    Log.d(TAG, "toast message: " + e1.getMessage());
+                                }
                             }
                         }
                     });

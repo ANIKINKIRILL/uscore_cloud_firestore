@@ -58,6 +58,7 @@ public class AllRequestsFragment extends Fragment {
 
     // teacher arraylists
     ArrayList<RecentRequestItem> recentRequestItemsTeacher = new ArrayList<>();
+    private String teacherRequestID;
 
     // Firebase
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -83,19 +84,20 @@ public class AllRequestsFragment extends Fragment {
         String statusTeacher = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         selectedTeacher = sharedPreferences.getString(getString(R.string.selectedTeacher), "");
+        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
 
         if(!currentUser.getEmail().contains("teacher")) { // is a STUDENT
             loadAllUserRequests();
-        }else if(!statusStudent.isEmpty() && !selectedTeacher.isEmpty()){
+        }else if(!currentUser.getEmail().contains("teacher") && !selectedTeacher.isEmpty()){
             filterSelectedTeacherRequests(selectedTeacher);
-        }else if(!statusTeacher.isEmpty() && statusStudent.isEmpty()){                         // is a TEACHER
+        }else if(currentUser.getEmail().contains("teacher")){   // is a TEACHER
             loadAllTeacherRequests();
         }
 
         return view;
     }
 
-    private void selectedTeacherRequestID(String selectedTeacher){
+    private void selectedTeacherRequestID(String teacherID){
         String[] selectedTeacherNameWords = selectedTeacher.split(" ");
         teachers$DB
             .whereEqualTo("firstName", selectedTeacherNameWords[0])
@@ -137,10 +139,10 @@ public class AllRequestsFragment extends Fragment {
                                     String date = request.getDate();
                                     String teacherName = request.getGetter();
                                     if(request.isAnswered() && !request.isCanceled()){
-                                        result = "Added";
+                                        result = "Confirmed";
                                         confirmedRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
                                     }else if(!request.isAnswered() && request.isCanceled()){
-                                        result = "Canceled";
+                                        result = "Denied";
                                         deniedRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
                                     }else{
                                         result = "In Process...";
@@ -161,34 +163,39 @@ public class AllRequestsFragment extends Fragment {
 
     public void loadAllTeacherRequests(){
         recentRequestItemsTeacher.clear();
-                requests$DB
-                        .document(selectedTeacherRequestID)
-                        .collection("STUDENTS")
-                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                for(DocumentSnapshot studentRequests : queryDocumentSnapshots.getDocuments()){
-                                    RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
-                                    String score = Integer.toString(request.getScore());
-                                    String date = request.getDate();
-                                    String teacherName = request.getGetter();
-                                    String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
-                                    if(request.isAnswered() && !request.isCanceled()){
-                                        result = "Added";
-                                    }else if(!request.isAnswered() && request.isCanceled()){
-                                        result = "Canceled";
-                                    }else{
-                                        result = "In Process...";
-                                    }
-                                    RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
-                                    recentRequestItemsTeacher.add(recentRequestItem);
+        requests$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                    documentSnapshot.getReference().collection("REQUESTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                            for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                String score = Integer.toString(request.getScore());
+                                String date = request.getDate();
+                                String teacherName = request.getGetter();
+                                String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
+                                if(request.isAnswered() && !request.isCanceled()){
+                                    result = "Confirmed";
+                                }else if(!request.isAnswered() && request.isCanceled()){
+                                    result = "Denied";
+                                }else{
+                                    result = "In Process...";
                                 }
+                                RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
+                                recentRequestItemsTeacher.add(recentRequestItem);
                             }
-                        });
-                RecentRequestsAdapter adapter = new RecentRequestsAdapter(recentRequestItemsTeacher);
-                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                recyclerView.setAdapter(adapter);
-                progressBar.setVisibility(View.GONE);
+                            RecentRequestsAdapter adapter = new RecentRequestsAdapter(recentRequestItemsTeacher);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            recyclerView.setAdapter(adapter);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            }
+        });
+
     }
 
     public void filterSelectedTeacherRequests(final String selectedTeacherName){

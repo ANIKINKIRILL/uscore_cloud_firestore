@@ -175,20 +175,59 @@ public class EntireSchoolTopScoreFragment extends Fragment {
 
     public void loadTeacher(){
         students1.clear();
-        teachers$DB
+//        teachers$DB
+//                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                            Teacher teacher = documentSnapshot.toObject(Teacher.class);
+//                            image_path = teacher.getImage_path();
+//                            groupID = teacher.getGroupID();
+//                            username = teacher.getFirstName() + " " + teacher.getLastName();
+//                            email = teacher.getResponsible_email();
+//                            if (image_path.isEmpty()) {
+//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                            }
+//                            Student new_student = new Student(score, username, image_path, groupID, email, teacher.getFirstName(), "", teacher.getLastName(),"");
+//                            students1.add(new_student);
+//                        }
+//                        bubbleSortStudents(students1);
+//                        Collections.reverse(students1);
+//                        adapter = new StudentRecyclerAdapter(students1);
+//                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//                        recyclerView.setAdapter(adapter);
+//                    }
+//                });
+
+        students$DB
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                         for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                            Teacher teacher = documentSnapshot.toObject(Teacher.class);
-                            image_path = teacher.getImage_path();
-                            groupID = teacher.getGroupID();
-                            username = teacher.getFirstName() + " " + teacher.getLastName();
-                            email = teacher.getResponsible_email();
+                            Student student = documentSnapshot.toObject(Student.class);
+                            score = student.getScore();
+                            groupID = student.getGroupID();
+                            image_path = student.getImage_path();
+                            username = student.getFirstName() + " " + student.getSecondName();
+                            email = student.getEmail();
+                            if (score.trim().isEmpty()) {
+                                score = "In process...";
+                            }
                             if (image_path.isEmpty()) {
                                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
                             }
-                            Student new_student = new Student(score, username, image_path, groupID, email, teacher.getFirstName(), "", teacher.getLastName(),"");
+                            Student new_student =
+                                    new Student(
+                                            score,
+                                            username,
+                                            image_path,
+                                            groupID,
+                                            email,
+                                            student.getFirstName(),
+                                            student.getSecondName(),
+                                            "",
+                                            ""
+                                    );
                             students1.add(new_student);
                         }
                         bubbleSortStudents(students1);
@@ -198,6 +237,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
                         recyclerView.setAdapter(adapter);
                     }
                 });
+
     }
 
     public void bubbleSortStudents(ArrayList<Student> students){

@@ -7,6 +7,75 @@
     android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/firstNameLayout"
+        android:layout_marginBottom="7dp"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:gravity="center"
+            android:layout_weight="70"
+            android:text="Имя: "
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" />
+        <EditText
+            android:id="@+id/firstName"
+            android:gravity="center"
+            android:hint="Илья"
+            android:layout_weight="30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/secondNameLayout"
+        android:layout_below="@id/firstNameLayout"
+        android:layout_marginBottom="7dp"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:gravity="center"
+            android:layout_weight="70"
+            android:text="Фамилия: "
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" />
+        <EditText
+            android:id="@+id/secondName"
+            android:gravity="center"
+            android:hint="Аникеев"
+            android:layout_weight="30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_below="@id/secondNameLayout"
+        android:id="@+id/lastNameLayout"
+        android:layout_marginBottom="7dp"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:gravity="center"
+            android:layout_weight="70"
+            android:text="Отчество: "
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" />
+        <EditText
+            android:id="@+id/lastName"
+            android:gravity="center"
+            android:hint="Аркадьевич"
+            android:layout_weight="30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_below="@id/lastNameLayout"
         android:id="@+id/positionLayout"
         android:layout_marginBottom="7dp"
         android:orientation="horizontal"

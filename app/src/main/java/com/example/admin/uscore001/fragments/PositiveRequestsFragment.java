@@ -50,6 +50,7 @@ public class PositiveRequestsFragment extends Fragment {
     // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    private String teacherRequestID;
 
     @Nullable
     @Override
@@ -64,6 +65,7 @@ public class PositiveRequestsFragment extends Fragment {
         String statusStudent = sharedPreferences.getString(getString(R.string.statusStudent), "");
         String statusTeacher = sharedPreferences.getString(getString(R.string.statusTeacher), "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
+        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         Log.d(TAG, "currentStudentID: " + currentStudentID);
         if(!FirebaseAuth.getInstance().getCurrentUser().getEmail().contains("teacher")) {                                       // is a STUDENT
             loadAllUserPositiveRequests(currentStudentID);
@@ -95,7 +97,7 @@ public class PositiveRequestsFragment extends Fragment {
                                     String score = Integer.toString(request.getScore());
                                     String date = request.getDate();
                                     String teacherName = request.getGetter();
-                                    String result = "Added";
+                                    String result = "Confirmed";
                                     positiveRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
                                 }
                                 RecentRequestsAdapter adapter = new RecentRequestsAdapter(positiveRequestsItems);
@@ -112,36 +114,36 @@ public class PositiveRequestsFragment extends Fragment {
 
 
     public void loadAllPositiveTeacherRequests(String teacherFullName){
-//        positiveRequestsItemsTeacher.clear();
-//        mDatabaseRef.child(teacherFullName)
-//        .addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot student : dataSnapshot.getChildren()){
-//                    for(DataSnapshot studentRequest : student.getChildren()){
-//                        boolean answer = studentRequest.getValue(RequestAddingScore.class).isAnswer();
-//                        boolean cancel = studentRequest.getValue(RequestAddingScore.class).isCancel();
-//                        String date = studentRequest.getValue(RequestAddingScore.class).getDate();
-//                        String score = Integer.toString(studentRequest.getValue(RequestAddingScore.class).getScore());
-//                        String result = "";
-//                        String requestStudentUsername = studentRequest.getValue(RequestAddingScore.class).getSenderUsername();
-//                        if(answer && !cancel) {
-//                            result = "Added";
-//                            RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
-//                            positiveRequestsItemsTeacher.add(recentRequestItem);
-//                        }
-//                    }
-//                }
-//                RecentRequestsAdapter adapter = new RecentRequestsAdapter(positiveRequestsItemsTeacher);
-//                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//                recyclerView.setAdapter(adapter);
-//                progressBar.setVisibility(View.GONE);
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
+        positiveRequestsItemsTeacher.clear();
+        requests$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                    documentSnapshot.getReference().collection("REQUESTS")
+                            .whereEqualTo("answered", true)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                            for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                String score = Integer.toString(request.getScore());
+                                String date = request.getDate();
+                                String teacherName = request.getGetter();
+                                String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
+                                String result = "Confirmed";
+                                RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
+                                positiveRequestsItemsTeacher.add(recentRequestItem);
+                            }
+                            RecentRequestsAdapter adapter = new RecentRequestsAdapter(positiveRequestsItemsTeacher);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            recyclerView.setAdapter(adapter);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            }
+        });
+
     }
 
 }

@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -64,10 +65,14 @@ import com.google.zxing.integration.android.IntentResult;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -129,6 +134,10 @@ public class dashboard_activity extends AppCompatActivity implements
     private String groupName;
     private String currentStudentID;
     private String statusID;
+    private String intentMessageDecoded;
+    private String studentID;
+    private String scoreString;
+    private String currentUserScore;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -234,24 +243,22 @@ public class dashboard_activity extends AppCompatActivity implements
     }
 
     public void changeNotificationAlarmImage(){
-        if(requestCounter == 0){
+        if(requestNumber.getText().toString().equals("0")){
             notification_alarm.setImageResource(R.drawable.ic_notifications_paused);
-        }else if (requestCounter > 0){
+        }else if (!requestNumber.getText().toString().equals("0")){
             notification_alarm.setImageResource(R.drawable.ic_notifications_ring);
         }
     }
 
     private void putGroupNameByGroupIDToSharedPref(String groupID){
-        groups$DB.whereEqualTo("id", groupID).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        groups$DB.document(groupID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    groupName = documentSnapshot.get("name").toString();
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(getString(R.string.groupName), groupName);
-                    editor.apply();
-                }
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                groupName = documentSnapshot.get("name").toString();
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(getString(R.string.groupName), groupName);
+                editor.apply();
             }
         });
     }
@@ -412,6 +419,10 @@ public class dashboard_activity extends AppCompatActivity implements
                     String requestID = teacher.getRequestID();
                     String statusID = teacher.getStatusID();
                     String teacherRequestID = teacher.getRequestID();
+                    String teacherID = teacher.getId();
+                    String teacherFirstName = teacher.getFirstName();
+                    String teacherSecondName = teacher.getSecondName();
+                    String teacherLastName = teacher.getLastName();
                     Log.d(TAG, "teacher statusID: " + statusID);
                     if (image_path.isEmpty()) {
                         image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
@@ -423,29 +434,35 @@ public class dashboard_activity extends AppCompatActivity implements
                     editor.putString(getString(R.string.intentTeacherImage_path), image_path);
                     editor.putString(getString(R.string.intentTeacherPosition), positionID);
                     editor.putString(getString(R.string.intentTeacherSubject), subjectID);
+                    editor.putString("teacherID", teacherID);
                     editor.putString("intentTeacherRequestID", requestID);
+                    editor.putString("teacherLastName", teacherLastName);
+                    editor.putString("teacherSecondName", teacherSecondName);
+                    editor.putString("teacherFirstName", teacherFirstName);
                     editor.putString(getString(R.string.teacherStatusID), statusID);
                     editor.apply();
-                    getTeacherRequestsNumber(teacherRequestID);
-                    Log.d(TAG, "teacherRequestID: " + teacherRequestID);
+//                    getTeacherRequestsNumber(teacherRequestID);
                 }
             }
         });
     }
 
     public void getTeacherRequestsNumber(String teacherRequestID){
+        requestCounter = 0;
         requests$DB
             .document(teacherRequestID)
             .collection("STUDENTS")
             .addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    requestCounter = 0;
                     for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                         documentSnapshot
                             .getReference()
                             .collection("REQUESTS")
                             .whereEqualTo("answered", false)
                             .whereEqualTo("canceled", false)
+                            /*
                             .get()
                             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                 @Override
@@ -460,8 +477,18 @@ public class dashboard_activity extends AppCompatActivity implements
                                     }
                                 }
                             });
+                            */
+
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    requestCounter += queryDocumentSnapshots.getDocuments().size();
+                                    Log.d(TAG, "requestCounter: " + requestCounter);
+                                }
+                            });
                         Log.d(TAG, "student request amount of answered canceled being false: " + requestCounter);
                     }
+                    requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
                     changeNotificationAlarmImage();
                 }
             });
@@ -503,31 +530,31 @@ public class dashboard_activity extends AppCompatActivity implements
         }
     }
 
-    public void addScore(final int score, final String email, final String group){
-        // query request here
-        Query query = mRef.child(group).orderByChild("email").equalTo(email);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(counter != 1) {
-                    for (DataSnapshot selectedStudent : dataSnapshot.getChildren()) {
-                        String old_score = selectedStudent.getValue(Student.class).getScore();
-                        int old_score_int = Integer.parseInt(old_score);
-                        int result = old_score_int + score;
-                        String result_str = Integer.toString(result);
-                        selectedStudent.getRef().child("score").setValue(result_str);
-                        counter = 1;
-                        Toast.makeText(dashboard_activity.this, getResources().getString(R.string.added_to) + " " + email + "/" + group + "->" + score, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
+//    public void addScore(final int score, final String email, final String group){
+//        // query request here
+//        Query query = mRef.child(group).orderByChild("email").equalTo(email);
+//        query.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                if(counter != 1) {
+//                    for (DataSnapshot selectedStudent : dataSnapshot.getChildren()) {
+//                        String old_score = selectedStudent.getValue(Student.class).getScore();
+//                        int old_score_int = Integer.parseInt(old_score);
+//                        int result = old_score_int + score;
+//                        String result_str = Integer.toString(result);
+//                        selectedStudent.getRef().child("score").setValue(result_str);
+//                        counter = 1;
+//                        Toast.makeText(dashboard_activity.this, getResources().getString(R.string.added_to) + " " + email + "/" + group + "->" + score, Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
     @Override
     protected void onResume() {
@@ -544,43 +571,72 @@ public class dashboard_activity extends AppCompatActivity implements
         }
         else{
             final AlertDialog alertDialog = new AlertDialog.Builder(dashboard_activity.this).create();
-            alertDialog.setMessage(getResources().getString(R.string.requestScore) + result.getContents());
+            String intentMessage = result.getContents().toString();
+            try {
+                intentMessageDecoded = URLDecoder.decode(intentMessage, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+//                                      wqrwrwmflawmASDs
+//             requestedScore           Очки: 200
+//                                      ФИО: Аникин Кирилл
+//                                      Группа: 10-6
+
+                // score
+                String messageWithoutSpaces = intentMessageDecoded.replace(" ", "");
+                int indexOfI = messageWithoutSpaces.indexOf("и");
+                int indexOfF = messageWithoutSpaces.indexOf("Ф");
+                Log.d(TAG, "index of i: " + indexOfI);
+                Log.d(TAG, "index of F: " + indexOfF);
+                scoreString = messageWithoutSpaces.substring(indexOfI+1, indexOfF);
+                Log.d(TAG, "scoreString: " + scoreString.substring(1));
+
+
+                // student id
+                int indexOfO = messageWithoutSpaces.indexOf("О");
+                Log.d(TAG, "index of O: " + indexOfO);
+                studentID = messageWithoutSpaces.substring(0, indexOfO);
+                Log.d(TAG, "studentID: " + studentID);
+
+                // student current score
+                int indexOfA = messageWithoutSpaces.lastIndexOf("а");
+                currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
+                Log.d(TAG, "currentUserScore: " + currentUserScore);
+
+
+            }catch (Exception e){
+                Log.d(TAG, "matching failed die to: " + e.getMessage());
+                Log.d(TAG, "message: " + intentMessageDecoded);
+            }
+
+            alertDialog.setMessage(intentMessageDecoded.replace(studentID,""));
             alertDialog.setTitle(getResources().getString(R.string.confirm));
             alertDialog.setButton(Dialog.BUTTON_POSITIVE, getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if(result.getContents() != null) {
-                        int stop_moment = result.getContents().indexOf("|");
-                        int start_moment_username = result.getContents().indexOf(":");
-                        int end_moment_username = result.getContents().indexOf(",");
-                        int start_moment_email = result.getContents().indexOf(",");
-                        int end_moment_email = result.getContents().indexOf("/");
-                        int start_moment_group = result.getContents().indexOf("/");
-                        int end_moment_group = result.getContents().length();
-                        String requestScore = result.getContents().substring(0, stop_moment);
-                        String requestUsername = result.getContents().substring(start_moment_username, end_moment_username).replace(":", "").trim();
-                        String requestEmail = result.getContents().substring(start_moment_email, end_moment_email).replace(",", "").trim();
-                        String requestGroup = result.getContents().substring(start_moment_group, end_moment_group).replace("/", "").trim();
-                        addScore(Integer.parseInt(requestScore), requestEmail, requestGroup);
-//                    Toast.makeText(dashboard_activity.this, requestScore + getResources().getString(R.string.addedPerson) + requestUsername + " " + requestGroup, Toast.LENGTH_SHORT).show();
-//                    Toast.makeText(dashboard_activity.this, requestEmail, Toast.LENGTH_SHORT).show();
-                        alertDialog.dismiss();
-                    }else{
-                        alertDialog.dismiss();
-                        Toast.makeText(dashboard_activity.this, "You canceled scanning", Toast.LENGTH_SHORT).show();
-                    }
+                    addScore();
+                    alertDialog.dismiss();
                 }
             });
             alertDialog.setButton(Dialog.BUTTON_NEGATIVE, getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                    alertDialog.dismiss();
-                    Toast.makeText(dashboard_activity.this, getResources().getString(R.string.addingProccessCanceled)+"", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(dashboard_activity.this, getResources().getString(R.string.addingProccessCanceled)+"", Toast.LENGTH_SHORT).show();
                 }
             });
             alertDialog.show();
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void addScore(){
+        int result = Integer.parseInt(currentUserScore)
+                + Integer.parseInt(scoreString.substring(1).trim());
+        student$db.document(studentID.trim()).update("score", Integer.toString(result));
+        Toast.makeText(this, "Вы успешно добавили очки", Toast.LENGTH_SHORT).show();
     }
 
     public void findCurrentUserInfo(){
@@ -760,6 +816,7 @@ public class dashboard_activity extends AppCompatActivity implements
                         activity.senderImage = student.getImage_path();
                         activity.limitScore = student.getLimitScore();
                         activity.currentStudentID = student.getId();
+                        Log.d(TAG, "currentStudentID: " + activity.currentStudentID);
                         activity.statusID = student.getStatusID();
                         Log.d(TAG, "student statusID: " + activity.statusID);
                         activity.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);

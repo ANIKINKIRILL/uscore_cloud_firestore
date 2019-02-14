@@ -46,6 +46,7 @@ public class NegativeRequestsFragment extends Fragment {
     ArrayList<RecentRequestItem> negativeRequestsItems = new ArrayList<>();
     ArrayList<RecentRequestItem> negativeRequestsItemsTeacher = new ArrayList<>();
     private String currentStudentID;
+    private String teacherRequestID;
 
     // Firebase
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -64,50 +65,50 @@ public class NegativeRequestsFragment extends Fragment {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         Log.d(TAG, "currentStudentID: " + currentStudentID);
 
         if(!currentUser.getEmail().contains("teacher")) {                                       // is a STUDENT
-            loadAllUserNegativeRequests(currentStudentID);
+            loadAllUserNegativeRequests();
         }else{                                                                                  // is a TEACHER
-            loadAllNegativeTeacherRequests(teacherFullName);
+            loadAllNegativeTeacherRequests(teacherRequestID);
         }
 
         return view;
     }
 
 
-    public void loadAllUserNegativeRequests(String currentStudentID){
+    public void loadAllUserNegativeRequests(){
         negativeRequestsItems.clear();
         requests$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                 for(DocumentSnapshot teachersRequestID : queryDocumentSnapshots.getDocuments()){
                     teachersRequestID
-                        .getReference()
-                        .collection("STUDENTS")
-                        .document(currentStudentID)
-                        .collection("REQUESTS")
-                        .whereEqualTo("canceled", true)
-                        .whereEqualTo("answered", false)
-                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                for(DocumentSnapshot studentRequests : queryDocumentSnapshots.getDocuments()){
-                                    RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
-                                    String score = Integer.toString(request.getScore());
-                                    String date = request.getDate();
-                                    String teacherName = request.getGetter();
-                                    String result = "";
-                                    result = "Canceled";
-                                    negativeRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
+                            .getReference()
+                            .collection("STUDENTS")
+                            .document(currentStudentID)
+                            .collection("REQUESTS")
+                            .whereEqualTo("answered", false)
+                            .whereEqualTo("canceled", true)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    for(DocumentSnapshot studentRequests : queryDocumentSnapshots.getDocuments()){
+                                        RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
+                                        String score = Integer.toString(request.getScore());
+                                        String date = request.getDate();
+                                        String teacherName = request.getGetter();
+                                        String result = "Denied";
+                                        negativeRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
+                                    }
+                                    RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItems);
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                                    recyclerView.setAdapter(adapter);
+                                    progressBar.setVisibility(View.GONE);
                                 }
-                                RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItems);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                                recyclerView.setAdapter(adapter);
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        });
+                            });
                 }
             }
         });
@@ -117,35 +118,36 @@ public class NegativeRequestsFragment extends Fragment {
 
     public void loadAllNegativeTeacherRequests(String teacherRequestID){
         negativeRequestsItemsTeacher.clear();
-//        requests$DB.child(teacherFullName)
-//                .addValueEventListener(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(DataSnapshot dataSnapshot) {
-//                        for(DataSnapshot student : dataSnapshot.getChildren()){
-//                            for(DataSnapshot studentRequest : student.getChildren()){
-//                                boolean answer = studentRequest.getValue(RequestAddingScore.class).isAnswer();
-//                                boolean cancel = studentRequest.getValue(RequestAddingScore.class).isCancel();
-//                                String date = studentRequest.getValue(RequestAddingScore.class).getDate();
-//                                String score = Integer.toString(studentRequest.getValue(RequestAddingScore.class).getScore());
-//                                String result = "";
-//                                String requestStudentUsername = studentRequest.getValue(RequestAddingScore.class).getSenderUsername();
-//                                if(!answer && cancel) {
-//                                    result = "Canceled";
-//                                    RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
-//                                    negativeRequestsItemsTeacher.add(recentRequestItem);
-//                                }
-//                            }
-//                        }
-//                        RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItemsTeacher);
-//                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//                        recyclerView.setAdapter(adapter);
-//                        progressBar.setVisibility(View.GONE);
-//                    }
-//                    @Override
-//                    public void onCancelled(DatabaseError databaseError) {
-//
-//                    }
-//                });
+        requests$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                    documentSnapshot.getReference().collection("REQUESTS")
+                            .whereEqualTo("canceled", true)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                        String score = Integer.toString(request.getScore());
+                                        String date = request.getDate();
+                                        String teacherName = request.getGetter();
+                                        String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
+                                        String result = "Denied";
+                                        RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
+                                        negativeRequestsItemsTeacher.add(recentRequestItem);
+                                    }
+                                    RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItemsTeacher);
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                                    recyclerView.setAdapter(adapter);
+                                    progressBar.setVisibility(View.GONE);
+                                }
+                            });
+                }
+            }
+        });
+
+
     }
 
 }

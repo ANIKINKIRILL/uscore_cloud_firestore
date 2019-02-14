@@ -310,19 +310,27 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void loadPickedTeacherEmail(String firstLastName){
-        String[] firstLastNameWords = firstLastName.split(" ");
-        teachers$DB
-            .whereEqualTo("firstName", firstLastNameWords[0])
-            .whereEqualTo("lastName", firstLastNameWords[1])
-            .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                    List<DocumentSnapshot> teachersSnapshot = queryDocumentSnapshots.getDocuments();
-                    Teacher teacher = teachersSnapshot.get(0).toObject(Teacher.class);
-                    pickedTeacherEmail = teacher.getResponsible_email();
-                    Log.d(TAG, "selectedTeacherEmail: " + pickedTeacherEmail);
-                }
-            });
+        try {
+            String[] firstLastNameWords = firstLastName.split(" ");
+            teachers$DB
+                    .whereEqualTo("firstName", firstLastNameWords[0])
+                    .whereEqualTo("lastName", firstLastNameWords[1])
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                            try {
+                                List<DocumentSnapshot> teachersSnapshot = queryDocumentSnapshots.getDocuments();
+                                Teacher teacher = teachersSnapshot.get(0).toObject(Teacher.class);
+                                pickedTeacherEmail = teacher.getResponsible_email();
+                                Log.d(TAG, "selectedTeacherEmail: " + pickedTeacherEmail);
+                            }catch (Exception e1){
+                                Log.d(TAG, "loadPickedTeacherEmail: " + e1.getMessage());
+                            }
+                        }
+                    });
+        }catch (Exception e){
+            Log.d(TAG, "loadPickedTeacherEmail: " + e.getMessage());
+        }
     }
 
 }

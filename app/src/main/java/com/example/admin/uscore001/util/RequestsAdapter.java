@@ -155,26 +155,28 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
         requestsViewHolder.requestID.setText(request.getId());
         requestsViewHolder.senderID.setText(request.getSenderID());
 
-        Log.d(TAG, "studentID: " + requestsViewHolder.senderID + " requestID: " + requestsViewHolder.requestID);
-
         requestsViewHolder.ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addScore(Integer.parseInt(requestsViewHolder.score.getText().toString()), requestsViewHolder.senderID.getText().toString(), v);
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
-                changeAnswerValue(requestsViewHolder.teacherRequestID,
+                counter = 0;
+                addScore(Integer.parseInt(requestsViewHolder.score.getText().toString()),
                         requestsViewHolder.senderID.getText().toString(),
+                        v,
+                        requestsViewHolder.teacherRequestID,
                         requestsViewHolder.requestID.getText().toString());
+                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
+                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
             }
         });
 
         requestsViewHolder.cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
                 cancelScore(requestsViewHolder.teacherRequestID,
                         requestsViewHolder.senderID.getText().toString(),
                         requestsViewHolder.requestID.getText().toString());
+                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
+                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
             }
         });
 
@@ -201,39 +203,19 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
 
     }
 
-    public void addScore(final int score, final String studentID,final View view){
-//        Query query = mDatabaseRef.child(group).orderByChild("email").equalTo(studentEmailAddress);
-//        query.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if(counter != 1) {
-//                    for (DataSnapshot selectedStudent : dataSnapshot.getChildren()) {
-//                        String old_score = selectedStudent.getValue(Student.class).getScore();
-//                        int old_score_int = Integer.parseInt(old_score);
-//                        int result = old_score_int + score;
-//                        String result_str = Integer.toString(result);
-//                        selectedStudent.getRef().child("score").setValue(result_str);
-//                        Toast.makeText(view.getContext(), "Successfully added to " + studentEmailAddress, Toast.LENGTH_SHORT).show();
-//                        counter = 1;
-//                    }
-//                }
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-
-        students$DB.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+    public void addScore(final int score, final String studentID,final View view, String teacherRequestID, String requestID){
+        students$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if(counter != 1) {
-                    Student selectedStudent = documentSnapshot.toObject(Student.class);
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(counter != 1){
+                    Student selectedStudent = task.getResult().toObject(Student.class);
                     String old_score = selectedStudent.getScore();
                     int old_score_int = Integer.parseInt(old_score);
                     int result = old_score_int + score;
                     String result_str = Integer.toString(result);
-                    selectedStudent.setScore(result_str);
+                    students$DB.document(studentID).update("score", result_str);
+                    reqeusts$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+                            .document(requestID).update("answered", true);
                     Toast.makeText(view.getContext(),
                             "Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName(),
                             Toast.LENGTH_SHORT).show();
@@ -244,36 +226,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
 
     }
 
-    public void changeAnswerValue(String teacherRequestID, String studentID, String id){
-//        mDatabaseRequestRef.child(teacherName).child(studentEmail.replace(".",""))
-//                .child(requestID).child("answer").setValue(true);
-//        requests.clear();
-
-        reqeusts$DB
-                .document(teacherRequestID)
-                .collection("STUDENTS")
-                .document(studentID)
-                .collection("REQUESTS")
-                .document(id)
-                .update("answered", true)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Log.d(TAG, "request answered field just has been changed: true");
-                }else{
-                    Log.d(TAG, "request answered field han not been changed: false die to" + task.getException().getMessage());
-                }
-            }
-        });
-
-    }
-
     public void cancelScore(String teacherRequestID, String studentID, String id){
-//        mDatabaseRequestRef.child(teacherName).child(studentEmail.replace(".", ""))
-//                .child(requestID).child("cancel").setValue(true);
-//        requests.clear();
-
         reqeusts$DB
                 .document(teacherRequestID)
                 .collection("STUDENTS")

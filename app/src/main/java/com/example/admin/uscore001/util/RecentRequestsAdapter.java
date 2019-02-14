@@ -80,12 +80,12 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
            requestsViewHolder.teacherName.setText(request.getTeacher());
        }
 
-       if(requestsViewHolder.result.getText().equals("Added")){
+       if(requestsViewHolder.result.getText().equals("Confirmed")){
            requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
                                                 getResources().getColor(R.color.addedColor));
        }
 
-       if(requestsViewHolder.result.getText().equals("Canceled")){
+       if(requestsViewHolder.result.getText().equals("Denied")){
            requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
                    getResources().getColor(R.color.canceledColor));
        }
