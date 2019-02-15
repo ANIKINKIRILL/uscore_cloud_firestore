@@ -1,7 +1,9 @@
 package com.example.admin.uscore001.dialogs;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Option;
+import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.Student;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -28,13 +31,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnItemSelectedListener{
@@ -43,7 +50,7 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
 
     // widgets
     private Spinner groupsPickerSpinner, studentPickerSpinner, optionSpinner;
-    private TextView scoreTextView, ok, cancel;
+    private TextView scoreTextView, ok, cancel, optionID, studentIDTextView;
 
     // vars
     private String selectedGroup;
@@ -58,12 +65,15 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
     private String selectedEmailStudentFromPickedGroup;
     private int counter = 1;
     private String pickedGroupID;
+    private String studentID;
+    private String currentTeacherRequestID;
 
     // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
     CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
     CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
+    CollectionReference reqeusts$DB = firebaseFirestore.collection("REQEUSTS$DB");
 
     @Nullable
     @Override
@@ -81,12 +91,17 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
 
     private void init(View view){
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        currentTeacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
+
         getDialog().setTitle("Понизить очки");
 
         groupsPickerSpinner = view.findViewById(R.id.groupsPickerSpinner);
         studentPickerSpinner = view.findViewById(R.id.studentPickerSpinner);
         optionSpinner = view.findViewById(R.id.optionSpinner);
         scoreTextView = view.findViewById(R.id.scoreTextView);
+        studentIDTextView = view.findViewById(R.id.studentIDTextView);
+        optionID = view.findViewById(R.id.optionID);
         ok = view.findViewById(R.id.ok);
         cancel = view.findViewById(R.id.cancel);
 
@@ -146,21 +161,6 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
     public void onNothingSelected(AdapterView<?> adapterView){}
 
     public void getSelectedOptionScore(String selectedOption){
-//        mDatabaseOptionsRef.child(selectedOption).addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                try {
-//                    int optionScore = dataSnapshot.getValue(Option.class).getScore();
-//                    Log.d(TAG, "onDataChange: " + optionScore);
-//                    scoreTextView.setText(Integer.toString(optionScore));
-//                }catch (Exception e){
-//                    Log.d(TAG, "onDataChange: " + e.getMessage());
-//                }
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError){}
-//        });
-
         options$DB
                 .document(getString(R.string.penaltiesID))
                 .collection("options")
@@ -171,12 +171,14 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
                         for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                             Option option = documentSnapshot.toObject(Option.class);
                             String optionScore = option.getPoints();
+                            String optionIDValue = option.getId();
                             scoreTextView.setText(optionScore);
+                            optionID.setText(optionIDValue);
                             Log.d(TAG, "optionScore: " + scoreTextView.getText().toString());
+                            Log.d(TAG, "optionID: " + optionID.getText().toString());
                         }
                     }
                 });
-
     }
 
     public void loadAllGroupStudents(String pickedGroupID){
@@ -202,6 +204,7 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedStudent = adapterView.getSelectedItem().toString();
+                getStudentIDByGroupIDAndCredentials(pickedGroupID, selectedStudent);
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView){}
@@ -210,10 +213,54 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
             @Override
             public void onClick(View view) {
                 loadPickedStudentEmail(pickedGroupID, selectedStudent);
+                // add penalty to the history "recent page"
+                String optionIDValue = optionID.getText().toString();
+                addPenaltyToHistory(optionIDValue, pickedGroupID, studentIDTextView.getText().toString(), scoreTextView.getText().toString());
                 getDialog().dismiss();
                 Toast.makeText(context, "Вы оштрафовали " + selectedStudent + " на " + scoreTextView.getText().toString(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void getStudentIDByGroupIDAndCredentials(String pickedGroupID, String selectedStudent){
+        String[] selectedStudentNameWords = selectedStudent.split(" ");
+        students$DB
+                .whereEqualTo("groupID", pickedGroupID)
+                .whereEqualTo("firstName", selectedStudentNameWords[0])
+                .whereEqualTo("secondName", selectedStudentNameWords[1])
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                            Student student = documentSnapshot.toObject(Student.class);
+                            studentIDTextView.setText(student.getId());
+                        }
+                    }
+                });
+    }
+
+    private void addPenaltyToHistory(String optionID, String groupID, String studentID, String score){
+        Log.d(TAG, "addPenaltyToHistory: optionId: " + optionID + "groupID: " + groupID + "studentID: " + studentID + "scoreID: " + score);
+        Penalty penalty = new Penalty("", optionID, groupID, studentID, score);
+        reqeusts$DB.document(currentTeacherRequestID).collection("STUDENTS").document(studentID).collection("PENALTY").add(penalty)
+                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if(task.isSuccessful()){
+                            String penaltyDocumentID = task.getResult().getId();
+                            task.getResult().update("id", penaltyDocumentID);
+                            Map<String, String> idField = new HashMap<>();
+                            idField.put("id", penaltyDocumentID);
+                            reqeusts$DB
+                                    .document(currentTeacherRequestID)
+                                    .collection("STUDENTS")
+                                    .document(studentID)
+                                    .collection("PENALTY")
+                                    .document(penaltyDocumentID)
+                                    .set(idField, SetOptions.merge());
+                        }
+                    }
+                });
     }
 
     private void decreaseStudentScore(String groupID, String points, String selectedEmailStudentFromPickedGroup){
