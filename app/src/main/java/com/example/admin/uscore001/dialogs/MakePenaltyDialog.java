@@ -58,15 +58,16 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
     private String selectedOption;
     private ArrayList<String> allStudentsFromPickedGroup = new ArrayList<>();
     private Context context;
-
-    // Firebase
-    DatabaseReference mDatabaseOptionsRef = FirebaseDatabase.getInstance().getReference("DefaultPenalty");
-    DatabaseReference mRefStudents = FirebaseDatabase.getInstance().getReference("Students");
     private String selectedEmailStudentFromPickedGroup;
     private int counter = 1;
     private String pickedGroupID;
     private String studentID;
     private String currentTeacherRequestID;
+    private String currentTeacherID;
+
+    // Firebase
+    DatabaseReference mDatabaseOptionsRef = FirebaseDatabase.getInstance().getReference("DefaultPenalty");
+    DatabaseReference mRefStudents = FirebaseDatabase.getInstance().getReference("Students");
 
     // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
@@ -93,6 +94,7 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         currentTeacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
+        currentTeacherID = sharedPreferences.getString("teacherID", "");
 
         getDialog().setTitle("Понизить очки");
 
@@ -241,26 +243,26 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
 
     private void addPenaltyToHistory(String optionID, String groupID, String studentID, String score){
         Log.d(TAG, "addPenaltyToHistory: optionId: " + optionID + "groupID: " + groupID + "studentID: " + studentID + "scoreID: " + score);
-        Penalty penalty = new Penalty("", optionID, groupID, studentID, score);
+        Penalty penalty = new Penalty("", optionID, groupID, studentID, score, currentTeacherID);
         reqeusts$DB.document(currentTeacherRequestID).collection("STUDENTS").document(studentID).collection("PENALTY").add(penalty)
-                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if(task.isSuccessful()){
-                            String penaltyDocumentID = task.getResult().getId();
-                            task.getResult().update("id", penaltyDocumentID);
-                            Map<String, String> idField = new HashMap<>();
-                            idField.put("id", penaltyDocumentID);
-                            reqeusts$DB
-                                    .document(currentTeacherRequestID)
-                                    .collection("STUDENTS")
-                                    .document(studentID)
-                                    .collection("PENALTY")
-                                    .document(penaltyDocumentID)
-                                    .set(idField, SetOptions.merge());
-                        }
+            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentReference> task) {
+                    if(task.isSuccessful()){
+                        String penaltyDocumentID = task.getResult().getId();
+                        task.getResult().update("id", penaltyDocumentID);
+                        Map<String, String> idField = new HashMap<>();
+                        idField.put("id", penaltyDocumentID);
+                        reqeusts$DB
+                            .document(currentTeacherRequestID)
+                            .collection("STUDENTS")
+                            .document(studentID)
+                            .collection("PENALTY")
+                            .document(penaltyDocumentID)
+                            .set(idField, SetOptions.merge());
                     }
-                });
+                }
+            });
     }
 
     private void decreaseStudentScore(String groupID, String points, String selectedEmailStudentFromPickedGroup){

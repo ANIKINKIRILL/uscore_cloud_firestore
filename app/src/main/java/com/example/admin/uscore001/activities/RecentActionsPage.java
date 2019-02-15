@@ -17,6 +17,7 @@ import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.dialogs.FilterRequestsDialog;
 import com.example.admin.uscore001.fragments.AllRequestsFragment;
 import com.example.admin.uscore001.fragments.NegativeRequestsFragment;
+import com.example.admin.uscore001.fragments.PenaltyFragment;
 import com.example.admin.uscore001.fragments.PositiveRequestsFragment;
 import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.GlideAppModule;
@@ -87,6 +88,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
         adapter.addFragment(new AllRequestsFragment(), getResources().getString(R.string.all_tab));
         adapter.addFragment(new PositiveRequestsFragment(), getResources().getString(R.string.positive_tab));
         adapter.addFragment(new NegativeRequestsFragment(), getResources().getString(R.string.negative_tab));
+        adapter.addFragment(new PenaltyFragment(), "Штрафы");
         viewPager.setAdapter(adapter);
         tabs.setupWithViewPager(viewPager);
     }

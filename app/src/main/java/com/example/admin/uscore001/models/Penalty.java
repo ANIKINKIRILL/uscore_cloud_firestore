@@ -6,13 +6,27 @@ public class Penalty {
     String groupID;
     String studentID;
     String score;
+    String teacherID;
 
-    public Penalty(String id, String optionID, String groupID, String studentID, String score) {
+    public Penalty(String id, String optionID, String groupID, String studentID, String score, String teacherID) {
         this.id = id;
         this.optionID = optionID;
         this.groupID = groupID;
         this.studentID = studentID;
         this.score = score;
+        this.teacherID = teacherID;
+    }
+
+    public Penalty(){
+
+    }
+
+    public String getTeacherID() {
+        return teacherID;
+    }
+
+    public void setTeacherID(String teacherID) {
+        this.teacherID = teacherID;
     }
 
     public String getId() {
