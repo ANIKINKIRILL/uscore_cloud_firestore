@@ -19,6 +19,7 @@
     <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
     
     <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
+    <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>
 
     <!--// all strings for change language-->
 
@@ -298,7 +299,7 @@
     </string>
 
     <string name="introSlide4Text" translatable="false">
-        Однако можно воспользоваться запросом. Учитель примет решение. Нужно лишь набраться терепения
+        Однако можно воспользоваться запросом. Учитель примет решение. Нужно лишь набраться терпения
     </string>
 
     <string name="introSlide5Text" translatable="false">

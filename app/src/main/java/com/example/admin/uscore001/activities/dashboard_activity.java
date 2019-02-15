@@ -530,32 +530,6 @@ public class dashboard_activity extends AppCompatActivity implements
         }
     }
 
-//    public void addScore(final int score, final String email, final String group){
-//        // query request here
-//        Query query = mRef.child(group).orderByChild("email").equalTo(email);
-//        query.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if(counter != 1) {
-//                    for (DataSnapshot selectedStudent : dataSnapshot.getChildren()) {
-//                        String old_score = selectedStudent.getValue(Student.class).getScore();
-//                        int old_score_int = Integer.parseInt(old_score);
-//                        int result = old_score_int + score;
-//                        String result_str = Integer.toString(result);
-//                        selectedStudent.getRef().child("score").setValue(result_str);
-//                        counter = 1;
-//                        Toast.makeText(dashboard_activity.this, getResources().getString(R.string.added_to) + " " + email + "/" + group + "->" + score, Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -566,12 +540,12 @@ public class dashboard_activity extends AppCompatActivity implements
     protected void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
 
         final IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(result == null){
+        if(data == null || requestCode == RESULT_CANCELED){
             Toast.makeText(this, getResources().getString(R.string.cancelScanProccess), Toast.LENGTH_SHORT).show();
         }
         else{
             final AlertDialog alertDialog = new AlertDialog.Builder(dashboard_activity.this).create();
-            String intentMessage = result.getContents().toString();
+            String intentMessage = result.getContents();
             try {
                 intentMessageDecoded = URLDecoder.decode(intentMessage, "UTF-8");
             } catch (UnsupportedEncodingException e) {

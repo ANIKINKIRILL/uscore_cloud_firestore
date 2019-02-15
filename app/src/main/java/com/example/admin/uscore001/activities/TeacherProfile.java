@@ -10,12 +10,14 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +63,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     CircleImageView imageView;
     TextView usernameView, status, emailAddress, positionView, subjectView, countAddedScore;
     Button profileSettings;
+    LinearLayout showAllComments;
 
     // vars
     String email;
@@ -105,6 +108,8 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         positionView = findViewById(R.id.position);
         subjectView = findViewById(R.id.subject);
         profileSettings = findViewById(R.id.profileSettings);
+        showAllComments = findViewById(R.id.showAllComments);
+        showAllComments.setOnClickListener(this);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         email = sharedPreferences.getString(getString(R.string.intentTeacherEmail), "");
@@ -136,6 +141,10 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
             case R.id.profileSettings:{
                 TeacherSettingsDialog dialog = new TeacherSettingsDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                break;
+            }
+            case R.id.showAllComments:{
+                Snackbar.make(v, "Эта функция пока не доступна", Snackbar.LENGTH_LONG).show();
                 break;
             }
         }
