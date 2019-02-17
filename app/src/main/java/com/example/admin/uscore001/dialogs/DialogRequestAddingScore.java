@@ -59,6 +59,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 
 public class DialogRequestAddingScore extends DialogFragment implements AdapterView.OnItemSelectedListener,
@@ -241,6 +242,7 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ok: {
+                Log.d(TAG, "onClick: ok button was clicked");
                 String id = "";
                 String body = requestBody.getText().toString();
                 String date = addedDate;
@@ -260,10 +262,15 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
                         public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                             Student student = documentSnapshot.toObject(Student.class);
                             int currentLimitScore = Integer.parseInt(student.getLimitScore());
-                            if (currentLimitScore < scoreValue) {
-                                Toast.makeText(getContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
-                                YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
-                            } else if (currentLimitScore >= scoreValue) {
+                            Log.d(TAG, "currentStudentLimitScore: " + currentLimitScore);
+                            if (currentLimitScore + 5 < scoreValue) {
+                                try {
+                                    Toast.makeText(getContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
+                                    YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
+                                }catch (Exception e1){
+                                    Log.d(TAG, "onEvent: " + e1.getMessage());
+                                }
+                            } else if (currentLimitScore + 5 >= scoreValue) {
                                 decreaseLimitScore(scoreValue);
                                 sendRequest(
                                         id,
@@ -373,13 +380,17 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
                         String limitScore = student.getLimitScore();
                         int limitScoreInteger = Integer.parseInt(limitScore);
                         int result = limitScoreInteger - requestedScoreValue;
+                        String resultString = Integer.toString(result);
                         if(result <= 0){
-                            student.setLimitScore("0");
-                        }else{
-                            String resultString = Integer.toString(result);
-                            student.setLimitScore(resultString);
-                            Log.d(TAG, "decreaseLimitScore: " + resultString);
+                            resultString = "0";
+                            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+                            Date currentDate = calendar.getTime();
+                            Map<String, Date> map = new HashMap<>();
+                            map.put("spendLimitScoreDate", currentDate);
+                            students$db.document(currentStudentID).set(map, SetOptions.merge());
                         }
+                        students$db.document(currentStudentID).update("limitScore", resultString);
+                        Log.d(TAG, "decreaseLimitScore: " + resultString);
                         isDone = true;
                     }
                 }

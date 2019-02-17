@@ -1,5 +1,7 @@
 package com.example.admin.uscore001.models;
 
+import com.google.firebase.Timestamp;
+
 public class Student {
     String email;
     String groupID;
@@ -12,6 +14,7 @@ public class Student {
     String secondName;
     String lastName;
     String statusID;
+    Timestamp spendLimitScoreDate;
 
     public Student(
             String email,
@@ -65,6 +68,14 @@ public class Student {
         this.secondName = secondName;
         this.lastName = lastName;
         this.statusID = statusID;
+    }
+
+    public Timestamp getSpendLimitScoreDate() {
+        return spendLimitScoreDate;
+    }
+
+    public void setSpendLimitScoreDate(Timestamp spendLimitScoreDate) {
+        this.spendLimitScoreDate = spendLimitScoreDate;
     }
 
     public String getStatusID() {

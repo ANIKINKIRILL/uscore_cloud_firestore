@@ -58,7 +58,7 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
     @NonNull
     @Override
     public PenaltyRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recent_request_item, null);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recent_request_item, viewGroup, false);
         PenaltyRecyclerViewHolder viewHolder = new PenaltyRecyclerViewHolder(view);
         return viewHolder;
     }
@@ -66,7 +66,7 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
     @Override
     public void onBindViewHolder(@NonNull PenaltyRecyclerViewHolder penaltyRecyclerViewHolder, int i) {
         Penalty penalty = penaltyArrayList.get(i);
-        String date = "";
+        String date = penalty.getDate();
         String groupID = penalty.getGroupID();
         String optionID = penalty.getOptionID();
         String score = penalty.getScore();
@@ -74,11 +74,11 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
         String teacherID = penalty.getTeacherID();
 
         if(isTeacher){
-            setOptionScoreStudent(optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, true, false);
+            setOptionScoreStudent(date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, true, false);
         }
 
         if(isStudent){
-            setOptionScoreStudent(optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, false, true);
+            setOptionScoreStudent(date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, false, true);
         }
 
     }
@@ -88,7 +88,9 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
         return penaltyArrayList.size();
     }
 
-    private void setOptionScoreStudent(String optionID, String score, String studentID, String teacherID, PenaltyRecyclerViewHolder penaltyRecyclerViewHolder, boolean isTeacher, boolean isStudent){
+    private void setOptionScoreStudent(String date, String optionID, String score, String studentID,
+                                       String teacherID, PenaltyRecyclerViewHolder penaltyRecyclerViewHolder,
+                                       boolean isTeacher, boolean isStudent){
         options$db.document("6oemB2Fxo1hyrWrrNQ07").collection("options").document(optionID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -97,6 +99,7 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
             }
         });
         penaltyRecyclerViewHolder.score.setText(score);
+        penaltyRecyclerViewHolder.date.setText(date);
         if(isTeacher) {
             students$DB.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override

@@ -8,6 +8,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -31,6 +32,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RecentActionsPage extends AppCompatActivity implements View.OnClickListener{
 
+    private static final String TAG = "RecentActionsPage";
+
     // widgets
     ViewPager viewPager;
     TabLayout tabs;
@@ -48,6 +51,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
 
         viewPager = findViewById(R.id.viewpager_container);
         tabs = findViewById(R.id.tabs);
+        tabs.setOnTabSelectedListener(baseOnTabSelectedListener);
         collapsingToolbarLayout = findViewById(R.id.collapsingToolbarLayout);
         studentImageView = findViewById(R.id.studentImageView);
         backArrow = findViewById(R.id.backArrow);
@@ -82,6 +86,41 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
             }
         }
     }
+
+    TabLayout.BaseOnTabSelectedListener baseOnTabSelectedListener = new TabLayout.BaseOnTabSelectedListener() {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {
+            switch (tab.getPosition()){
+                case 0:{
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.startblue_transparent));
+                    Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
+                    break;
+                }
+                case 1:{
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.addedColor));
+                    Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
+                    break;
+                }
+                case 2:{
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.canceledColor));
+                    Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
+                    break;
+                }
+                case 3:{
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.graylight));
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {
+        }
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+        }
+    };
 
     public void setViewPagerWithAdapter(){
         RequestsSectionPageAdapter adapter = new RequestsSectionPageAdapter(getSupportFragmentManager());

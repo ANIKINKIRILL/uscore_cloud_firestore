@@ -35,12 +35,18 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.net.URLEncoder;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 
 public class QRCODE_activity extends AppCompatActivity implements View.OnClickListener {
 
@@ -127,60 +133,80 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
             }
             case R.id.generateButton:{
                 String scoreValue = score.getText().toString();
-                if(!scoreValue.trim().isEmpty()) {
-                    try {
-                        String message = URLEncoder.encode(
-                            currentStudentID + "\n" +
-                            "Очки: " + scoreValue + "\n" +
-                            "ФИО: " + currentStudentUsername + "\n" +
-                            "Группа: " + currentStudentGroupName + "\n" +
-                            "Баллы ученика: " + currentScore, "UTF-8");
 
-                        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-                        BitMatrix bitMatrix = multiFormatWriter.encode(
-                                message,
-                                BarcodeFormat.QR_CODE,
-                                300, 300);
-                        BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-                        Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
-                        qrcode_image.setImageBitmap(bitmap);
-                        decreaseLimitScore(Integer.parseInt(scoreValue), currentStudentID);
-                    } catch (Exception e) {
-                        Log.d(TAG, "onClick: " + e.getMessage());
+                students$DB.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        Student student = documentSnapshot.toObject(Student.class);
+                        int currentLimitScore = Integer.parseInt(student.getLimitScore());
+
+                        if(currentLimitScore < Integer.parseInt(scoreValue)){
+                            try {
+                                Toast.makeText(getApplicationContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
+                                YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(score);
+                            }catch (Exception e1){
+                                Log.d(TAG, "onEvent: " + e1.getMessage());
+                            }
+                        }
+                        else if(currentLimitScore >= Integer.parseInt(scoreValue)){
+                            if(!scoreValue.trim().isEmpty()) {
+                                try {
+                                    String message = URLEncoder.encode(
+                                            currentStudentID + "\n" +
+                                                    "Очки: " + scoreValue + "\n" +
+                                                    "ФИО: " + currentStudentUsername + "\n" +
+                                                    "Группа: " + currentStudentGroupName + "\n" +
+                                                    "Баллы ученика: " + currentScore, "UTF-8");
+
+                                    MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+                                    BitMatrix bitMatrix = multiFormatWriter.encode(
+                                            message,
+                                            BarcodeFormat.QR_CODE,
+                                            300, 300);
+                                    BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                                    Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
+                                    qrcode_image.setImageBitmap(bitmap);
+                                    decreaseLimitScore(Integer.parseInt(scoreValue));
+                                } catch (Exception e1) {
+                                    Log.d(TAG, "onClick: " + e1.getMessage());
+                                }
+                            }else{
+                                Toast.makeText(QRCODE_activity.this, "Введите очки", Toast.LENGTH_SHORT).show();
+                            }
+                        }
                     }
-                }else{
-                    Toast.makeText(this, "Введите очки", Toast.LENGTH_SHORT).show();
-                }
+                });
                 break;
             }
         }
     }
 
-    public void decreaseLimitScore(int requestedScoreValue, String currentStudentID){
+    public void decreaseLimitScore(int requestedScoreValue){
         students$DB
-            .document(currentStudentID)
-            .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    if (!isDone) {
-                        try {
+                .document(currentStudentID)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        Student student = documentSnapshot.toObject(Student.class);
+                        if(!isDone) {
                             String limitScore = student.getLimitScore();
                             int limitScoreInteger = Integer.parseInt(limitScore);
                             int result = limitScoreInteger - requestedScoreValue;
-                            if (result <= 0) {
-                                student.setLimitScore("0");
-                            } else {
-                                String resultString = Integer.toString(result);
-                                student.setLimitScore(resultString);
+                            String resultString = Integer.toString(result);
+                            if(result <= 0){
+                                resultString = "0";
+                                Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+                                Date currentDate = calendar.getTime();
+                                Map<String, Date> map = new HashMap<>();
+                                map.put("spendLimitScoreDate", currentDate);
+                                students$DB.document(currentStudentID).set(map, SetOptions.merge());
                             }
+                            students$DB.document(currentStudentID).update("limitScore", resultString);
+                            Log.d(TAG, "decreaseLimitScore: " + resultString);
                             isDone = true;
-                        }catch (Exception e1){
-                            Log.d("decreaseLimitScore ", e1.getMessage());
                         }
                     }
-                }
-            });
+                });
     }
 
 }

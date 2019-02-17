@@ -1,12 +1,20 @@
 package com.example.admin.uscore001.models;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Penalty {
+
     String id;
     String optionID;
     String groupID;
     String studentID;
     String score;
     String teacherID;
+    String date;
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    String addedDate = simpleDateFormat.format(new Date());
 
     public Penalty(String id, String optionID, String groupID, String studentID, String score, String teacherID) {
         this.id = id;
@@ -15,10 +23,19 @@ public class Penalty {
         this.studentID = studentID;
         this.score = score;
         this.teacherID = teacherID;
+        this.date = addedDate;
     }
 
     public Penalty(){
 
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getTeacherID() {

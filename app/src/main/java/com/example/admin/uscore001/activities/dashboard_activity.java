@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -45,6 +46,7 @@ import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -69,8 +71,13 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Locale;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
+import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,10 +133,6 @@ public class dashboard_activity extends AppCompatActivity implements
     int confirmedRequestsNumber = 0;
     int deniedRequestsNumber = 0;
     Menu menu;
-    private static final long START_TIME_IN_MILLIS = 30000; // 60 SECONDS
-    private long TimeLeftInMillis = START_TIME_IN_MILLIS;
-    private boolean timerRunning;
-    private CountDownTimer countDownTimer;
     private ModalBottomSheetDialogFragment modalBottomSheetDialogFragment;
     private String groupName;
     private String currentStudentID;
@@ -139,50 +142,32 @@ public class dashboard_activity extends AppCompatActivity implements
     private String scoreString;
     private String currentUserScore;
 
+    private Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+    private Date currentTimeMoskow = calendar.getTime();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadLocal();
         setContentView(R.layout.activity_dashboard);
         init();
+        Log.d(TAG, "current time: " + calendar.getTime());
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if(!currentUser.getEmail().contains("teacher")) {
-            SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_preferences), MODE_PRIVATE);
-            TimeLeftInMillis = sharedPreferences.getLong("timeLeftInMills", START_TIME_IN_MILLIS);
-            timerRunning = sharedPreferences.getBoolean("timeRunning", false);
-            updateCountDownText();
-            Log.d(TAG, "onStart: " + TimeLeftInMillis);
-            if (TimeLeftInMillis < 0) {
-                TimeLeftInMillis = 0;
-                timerRunning = false;
-                updateCountDownText();
-            } else if(TimeLeftInMillis > 0){
-                startTimer();
-            }
-        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(!currentUser.getEmail().contains("teacher")) {
-            SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shared_preferences), MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putLong("timeLeftInMills", TimeLeftInMillis);
-            editor.putBoolean("timeRunning", timerRunning);
-            editor.apply();
-        }
     }
 
     private void init(){
         requestNumber = findViewById(R.id.requestNumber);
         notification_alarm = findViewById(R.id.notification_alarm);
         limitScoreView = findViewById(R.id.limitScore);
-        timer = findViewById(R.id.timer);
 
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -315,7 +300,7 @@ public class dashboard_activity extends AppCompatActivity implements
                     DialogRequestAddingScore dialogRequestAddingScore = new DialogRequestAddingScore();
                     dialogRequestAddingScore.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 }else{
-                    Toast.makeText(getApplicationContext(), getString(R.string.enableAddScoreMessage), Toast.LENGTH_SHORT).show();
+                    checkSpendLimitScoreDateAndCurrentDate(menu);
                 }
                 break;
             }
@@ -324,7 +309,7 @@ public class dashboard_activity extends AppCompatActivity implements
                     Intent intent = new Intent(dashboard_activity.this, QRCODE_activity.class);
                     startActivity(intent);
                 }else{
-                    Toast.makeText(getApplicationContext(), getString(R.string.enableAddScoreMessage), Toast.LENGTH_SHORT).show();
+                    checkSpendLimitScoreDateAndCurrentDate(menu);
                 }
                 break;
             }
@@ -803,14 +788,16 @@ public class dashboard_activity extends AppCompatActivity implements
                         editor.putString(activity.myProfileCardView.getContext().getString(R.string.studentStatusID), activity.statusID);
                         editor.apply();
                     }
-                    try{
-                        activity.checkLimitScoreValue(activity.limitScore);
-                    }catch (Exception e1){
-                        Log.d(TAG, "onEvent: " + e1.getMessage());
+                    if(Integer.parseInt(activity.limitScore) == 0){
+//                        activity.disableMenuItems(activity.menu);
+                        activity.limitScoreView.setText("В данный момент ты не можешь добавлять быллы");
+//                        activity.menu.findItem(R.id.generateQERCODE).setOnMenuItemClickListener(activity.menuItemClickListener);
+//                        activity.menu.findItem(R.id.makeRequest).setOnMenuItemClickListener(activity.menuItemClickListener);
+                    }else{
+                        String leftText = activity.limitScoreView.getText().toString();
+                        String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
+                        activity.limitScoreView.setText(result);
                     }
-                    String leftText = activity.limitScoreView.getText().toString();
-                    String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
-                    activity.limitScoreView.setText(result);
                     activity.rateStudentInGroup(activity.currentUserGroupID);
                     activity.confirmedAndDeniedRequestsNumber(activity.currentStudentID);
                 }
@@ -828,6 +815,69 @@ public class dashboard_activity extends AppCompatActivity implements
             Log.d(TAG, "onPostExecute: current user info loading is finished");
         }
     }
+
+    MenuItem.OnMenuItemClickListener menuItemClickListener = new MenuItem.OnMenuItemClickListener() {
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            student$db.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    // дата, когда студен потратил все свои очки
+                    Timestamp timestamp = student.getSpendLimitScoreDate();
+                    Log.d(TAG, "getSpendLimitScoreDate: " + timestamp.toString());
+                    // дата в данный момент по Москве
+                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+                    Date currentDate = calendar.getTime();
+
+                }
+            });
+            return true;
+        }
+    };
+
+    private void disableMenuItems(Menu menu){
+        if(menu != null) {
+            menu.getItem(2).setEnabled(false);
+            menu.getItem(5).setEnabled(false);
+        }else{
+            Log.d(TAG, "disableMenuItems: menu is null");
+        }
+    }
+
+    private void checkSpendLimitScoreDateAndCurrentDate(Menu menu){
+        student$db.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                Student student = documentSnapshot.toObject(Student.class);
+                // дата, когда студен потратил все свои очки
+                Date studentSpendLimitScoreDate = student.getSpendLimitScoreDate().toDate();
+                Log.d(TAG, "studentSpendLimitScoreDate: " + studentSpendLimitScoreDate.toString());
+                // дата в данный момент по Москве
+                Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+                Date currentDate = calendar.getTime();
+                Log.d(TAG, "currentDate: " + currentDate.toString());
+                // сравниваем эти две даты
+                long difference = currentDate.getTime() - studentSpendLimitScoreDate.getTime();
+                long seconds = difference / 1000;
+                long minutes = seconds / 60;
+                long hours = minutes / 60;
+                long days = hours / 24;
+                Log.d(TAG, "difference in second: " + seconds);
+                Log.d(TAG, "difference in minutes: " + minutes);
+                Log.d(TAG, "difference in hours: " + hours);
+                Log.d(TAG, "difference in days: " + days);
+                if(minutes >= 1){
+                    if(Integer.parseInt(limitScore) == 0) {
+                        student$db.document(currentStudentID).update("limitScore", "15");
+                    }
+                }else{
+                    Toast.makeText(dashboard_activity.this, "На сегодня лимит исчерпан. Приходите завтра", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
 
     public static class rateStudentInSchoolBackGroundTask extends AsyncTask<Void, Void, Void>{
 
@@ -918,63 +968,5 @@ public class dashboard_activity extends AppCompatActivity implements
             return null;
         }
     }
-
-    public void checkLimitScoreValue(String limitScore){
-        int limitScoreInteger = Integer.parseInt(limitScore);
-        Log.d(TAG, "checkLimitScoreValue: " + limitScoreInteger);
-        if(limitScoreInteger == 0){
-            menu.findItem(R.id.generateQERCODE).setEnabled(false);
-            menu.findItem(R.id.makeRequest).setEnabled(false);
-            limitScoreView.setVisibility(View.INVISIBLE);
-            timer.setVisibility(View.VISIBLE);
-            startTimer();
-        }else{
-            menu.findItem(R.id.generateQERCODE).setEnabled(true);
-            menu.findItem(R.id.makeRequest).setEnabled(true);
-            timer.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private void startTimer(){
-        countDownTimer = new CountDownTimer(TimeLeftInMillis, 1000) {
-            @Override
-            public void onTick(long l) {
-                TimeLeftInMillis = l;
-                updateCountDownText();
-            }
-
-            @Override
-            public void onFinish() {
-                timerRunning = false;
-                updateLimitScore();
-                timer.setVisibility(View.INVISIBLE);
-                limitScoreView.setVisibility(View.VISIBLE);
-                TimeLeftInMillis = START_TIME_IN_MILLIS;
-
-            }
-        }.start();
-        timerRunning = true;
-
-    }
-
-    private void updateCountDownText() {
-        int minutes = (int) TimeLeftInMillis / 1000 / 60;
-        int second = (int) TimeLeftInMillis / 1000 % 60;
-        String timeLeftFormatted = String.format(Locale.getDefault(),"%02d:%02d", minutes, second);
-        timer.setText(timeLeftFormatted);
-    }
-
-    public void updateLimitScore(){
-        student$db.whereEqualTo("email", currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    student.setLimitScore("5000");
-                }
-            }
-        });
-    }
-
 
 }

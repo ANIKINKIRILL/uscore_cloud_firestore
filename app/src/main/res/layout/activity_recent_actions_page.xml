@@ -72,7 +72,6 @@
             android:fadeScrollbars="false"
             app:tabGravity="fill"
             app:tabMode="scrollable"
-            app:tabIndicatorColor="@color/startblue_transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
