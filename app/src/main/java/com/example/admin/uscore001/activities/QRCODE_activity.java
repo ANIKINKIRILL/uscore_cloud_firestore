@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.Entity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -41,6 +44,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.File;
 import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
@@ -83,8 +87,12 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.qrcode_page);
 
-        back = findViewById(R.id.back);
-        back.setOnClickListener(this);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("QR CODE");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+
         qrcode_image = findViewById(R.id.qrcode_image);
         score = findViewById(R.id.score);
         generateButton = findViewById(R.id.generateButton);
@@ -125,31 +133,36 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.back:{
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{
                 finish();
                 break;
             }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
             case R.id.generateButton:{
                 String scoreValue = score.getText().toString();
+                if(!scoreValue.trim().isEmpty()) {
+                    students$DB.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                            Student student = documentSnapshot.toObject(Student.class);
+                            int currentLimitScore = Integer.parseInt(student.getLimitScore());
 
-                students$DB.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        Student student = documentSnapshot.toObject(Student.class);
-                        int currentLimitScore = Integer.parseInt(student.getLimitScore());
-
-                        if(currentLimitScore < Integer.parseInt(scoreValue)){
-                            try {
-                                Toast.makeText(getApplicationContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
-                                YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(score);
-                            }catch (Exception e1){
-                                Log.d(TAG, "onEvent: " + e1.getMessage());
-                            }
-                        }
-                        else if(currentLimitScore >= Integer.parseInt(scoreValue)){
-                            if(!scoreValue.trim().isEmpty()) {
+                            if (currentLimitScore < Integer.parseInt(scoreValue)) {
+                                try {
+                                    Toast.makeText(getApplicationContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
+                                    YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(score);
+                                } catch (Exception e1) {
+                                    Log.d(TAG, "onEvent: " + e1.getMessage());
+                                }
+                            } else if (currentLimitScore >= Integer.parseInt(scoreValue)) {
                                 try {
                                     String message = URLEncoder.encode(
                                             currentStudentID + "\n" +
@@ -170,12 +183,13 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                                 } catch (Exception e1) {
                                     Log.d(TAG, "onClick: " + e1.getMessage());
                                 }
-                            }else{
-                                Toast.makeText(QRCODE_activity.this, "Введите очки", Toast.LENGTH_SHORT).show();
                             }
                         }
-                    }
-                });
+                    });
+                }else{
+                    YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(score);
+                    score.setError("Введите очки");
+                }
                 break;
             }
         }

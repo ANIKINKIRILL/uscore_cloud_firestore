@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,8 +12,10 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -99,6 +102,13 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
     }
 
     private void init(){
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Мой профиль");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+
         rateInSchool = findViewById(R.id.rateInSchool);
         rateInGroup = findViewById(R.id.rateInGroup);
 
@@ -126,9 +136,7 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
             setCurrentUserInfo(currentStudentID);
         }
 
-        backArraw = findViewById(R.id.back);
         userAvatar.setOnClickListener(this);
-        backArraw.setOnClickListener(this);
 
         addCommentButton.setOnClickListener(this);
 
@@ -142,6 +150,17 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         }else {
             userStatus.setText(R.string.statusTeacher);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{
+                finish();
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void setCurrentUserInfo(String studentID){
@@ -171,10 +190,6 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
             case R.id.imageView:{
                 ImageDialog dialog = new ImageDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
-                break;
-            }
-            case R.id.back: {
-                finish();
                 break;
             }
             case R.id.addCommentButton:{

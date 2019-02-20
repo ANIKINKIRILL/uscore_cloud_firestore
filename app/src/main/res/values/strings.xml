@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">USCORE001</string>
+    <string name="app_name" translatable="false">USCORE</string>
 
     <string name="open_dialog" translatable="false">open_dialog</string>
 

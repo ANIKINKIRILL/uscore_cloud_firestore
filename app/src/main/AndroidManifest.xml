@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        android:theme="@style/AppTheme">
 
         <activity android:name=".activities.AppIntroActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -25,7 +25,7 @@
         </activity>
 
         <activity android:name=".activities.login_activity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.LOGIN" />
 
@@ -34,7 +34,7 @@
         </activity>
 
         <activity android:name=".activities.dashboard_activity"
-            android:theme="@style/Theme.Design.Light.NoActionBar"
+            android:theme="@style/ActivityNoActionBar"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.DASHBOARD" />
@@ -43,17 +43,22 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.register_activity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.register_activity">
             <intent-filter>
-                <action android:name="android.intent.action.REGISTER" />
+                <action android:name="android.intent.action.RegisterActivity"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
 
-                <category android:name="android.intent.category.DEFAULT" />
+        <activity android:name=".activities.StudentRegisterRequestActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.StudentRegisterRequestActivity"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
         <activity android:name=".activities.TopScore_acivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.TOPSCORE" />
 
@@ -61,8 +66,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.QRCODE_activity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.QRCODE_activity">
             <intent-filter>
                 <action android:name="android.intent.action.QRCODE" />
 
@@ -71,8 +75,7 @@
         </activity>
 
         <activity android:name=".activities.StudentProfile_activity2"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.STUDENT2" />
 
@@ -80,8 +83,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.StudentDetailPage"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.StudentDetailPage">
             <intent-filter>
                 <action android:name="android.intent.action.StudentDetailPage" />
 
@@ -90,7 +92,7 @@
         </activity>
 
         <activity android:name=".activities.CommentsPage"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.CommentPage" />
 
@@ -98,8 +100,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.TeacherProfile"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activities.TeacherProfile">
             <intent-filter>
                 <action android:name="android.intent.action.TeacherProfile" />
 
@@ -108,7 +109,7 @@
         </activity>
 
         <activity android:name=".activities.RecentActionsPage"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.RECENTACTIONS" />
 
@@ -117,7 +118,7 @@
         </activity>
 
         <activity android:name=".activities.RequestDetailView"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.RequestDetail" />
 

@@ -40,9 +40,6 @@ public class TopScore_acivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_topscore);
 
-        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
-        ImageLoader.getInstance().init(configuration);
-
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 

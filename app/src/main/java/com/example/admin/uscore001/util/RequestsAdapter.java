@@ -174,7 +174,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
             public void onClick(View v) {
                 cancelScore(requestsViewHolder.teacherRequestID,
                         requestsViewHolder.senderID.getText().toString(),
-                        requestsViewHolder.requestID.getText().toString());
+                        requestsViewHolder.requestID.getText().toString(), v);
                 requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
                 requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
             }
@@ -226,7 +226,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
 
     }
 
-    public void cancelScore(String teacherRequestID, String studentID, String id){
+    public void cancelScore(String teacherRequestID, String studentID, String id, View view){
         reqeusts$DB
                 .document(teacherRequestID)
                 .collection("STUDENTS")
@@ -239,6 +239,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             Log.d(TAG, "request canceled field just has been changed: true");
+                            Toast.makeText(view.getContext(), "Вы отклонили запрос", Toast.LENGTH_SHORT).show();
                         }else{
                             Log.d(TAG, "request canceled field han not been changed: false die to" + task.getException().getMessage());
                         }

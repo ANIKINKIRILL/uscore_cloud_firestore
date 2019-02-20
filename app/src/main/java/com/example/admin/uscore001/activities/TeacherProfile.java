@@ -3,6 +3,7 @@ package com.example.admin.uscore001.activities;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,9 +12,11 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -100,6 +103,13 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     }
 
     private void init(){
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle("Мой профиль");
+
         imageView = findViewById(R.id.imageView);
         countAddedScore = findViewById(R.id.countAddedScore);
         usernameView = findViewById(R.id.username);
@@ -120,8 +130,8 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         teacherID = sharedPreferences.getString("teacherID", "");
 
-        back = findViewById(R.id.back);
-        back.setOnClickListener(this);
+//        back = findViewById(R.id.back);
+//        back.setOnClickListener(this);
         imageView.setOnClickListener(this);
         profileSettings.setOnClickListener(this);
     }
@@ -129,10 +139,6 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.back:{
-                finish();
-                break;
-            }
             case R.id.imageView:{
                 ImageDialog dialog = new ImageDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
@@ -148,6 +154,17 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{
+                finish();
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void getSubjectPositionByID(String subjectID, String positionID){

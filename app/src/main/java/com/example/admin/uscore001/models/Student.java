@@ -70,6 +70,22 @@ public class Student {
         this.statusID = statusID;
     }
 
+    public Student(
+            String firstName,
+            String secondName,
+            String lastName,
+            String email,
+            String groupID,
+            String teacherID
+    ){
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.groupID = groupID;
+        this.email = email;
+        this.teacherID = teacherID;
+    }
+
     public Timestamp getSpendLimitScoreDate() {
         return spendLimitScoreDate;
     }

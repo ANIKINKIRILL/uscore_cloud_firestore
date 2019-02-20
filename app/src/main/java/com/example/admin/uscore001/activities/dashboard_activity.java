@@ -333,6 +333,11 @@ public class dashboard_activity extends AppCompatActivity implements
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
+            case R.id.studentRegisterRequests:{
+                Intent intent = new Intent(dashboard_activity.this, StudentRegisterRequestActivity.class);
+                startActivity(intent);
+                break;
+            }
         }
         return true;
     }

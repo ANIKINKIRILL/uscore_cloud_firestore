@@ -92,8 +92,6 @@
             android:layout_height="50dp" />
 
         <TextView
-            android:visibility="invisible"
-            android:enabled="false"
             android:id="@+id/register"
             android:textSize="20dp"
             android:layout_margin="25dp"

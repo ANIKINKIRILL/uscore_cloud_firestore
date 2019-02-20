@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/signOut"
@@ -41,6 +42,13 @@
         android:id="@+id/makePenalty"
         android:title="@string/make_penalty"
         android:icon="@drawable/ic_dashboard_black_24dp">
+    </item>
+
+    <item
+        android:id="@+id/studentRegisterRequests"
+        android:title="Запросы на регистрацию"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_fiber_new_white">
     </item>
 
 </menu>

@@ -2,11 +2,14 @@ package com.example.admin.uscore001.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -72,6 +75,12 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile2);
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Мой профиль");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+
         Bundle intent = getIntent().getExtras();
         String intentImageView = intent.getString(getString(R.string.intentImage));
         String intentUsername = intent.getString(getString(R.string.intentUsername));
@@ -93,8 +102,6 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         username = findViewById(R.id.username);
         rateInGroup = findViewById(R.id.rateInGroup);
         rateInSchool = findViewById(R.id.rateInSchool);
-        backArraw = findViewById(R.id.back);
-        backArraw.setOnClickListener(this);
         addCommentButton = findViewById(R.id.addCommentButton);
         addCommentButton.setOnClickListener(this);
         status = findViewById(R.id.status);
@@ -129,12 +136,19 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.back:{
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{
                 finish();
                 break;
             }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
             case R.id.addCommentButton:{
                 Intent intent = new Intent(StudentDetailPage.this, CommentsPage.class);
                 intent.putExtra("to_whom_send_email", emailAddress.getText().toString());

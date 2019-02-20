@@ -1,175 +1,232 @@
 package com.example.admin.uscore001.activities;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.Patterns;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.example.admin.uscore001.R;
-import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Group;
+import com.example.admin.uscore001.models.StudentRegisterRequestModel;
+import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.util.RegisterActivityGroupAdapter;
+import com.example.admin.uscore001.util.RegisterActivityTeacherAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
-public class register_activity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener,
-        AdapterView.OnItemSelectedListener{
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
-    // Firebase STUFF
-    FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mRef = mDatabase.getReference();
+/**
+ * Активити для регистарции ученкиов в системе
+ */
+
+public class register_activity extends AppCompatActivity {
+
+    private static final String TAG = "register_activity";
 
     // widgets
-    EditText email, password, username, group;
-    Button registerButton;
-    TextView loginPage, welcomeTitle;
-    Spinner groupsPickerSpinner;
+    EditText firstName,secondName,lastName,email;
+    Button register;
+    Spinner groupsPickerSpinner, teacherPickerSpinner;
+
+    // Firebase
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    CollectionReference teacher$db = firebaseFirestore.collection("TEACHERS$DB");
+    CollectionReference groups$db = firebaseFirestore.collection("GROUPS$DB");
+    CollectionReference student_register_requests = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
 
     // vars
-    String emailText, passwordText, usernameText, groupText;
-    boolean isChecked = true;
+    ArrayList<Teacher> teachers = new ArrayList<>();
+    ArrayList<Group> groups = new ArrayList<>();
+    String selectedTeacherID;
+    private String selectedGroupID;
+
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Регистрация ученика");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+        actionBar.setElevation(0);
+
+        init();
+    }
+
+    /**
+     * Находим виджеты
+     */
+
+    private void init(){
+        firstName = findViewById(R.id.firstName);
+        secondName = findViewById(R.id.secondName);
+        lastName = findViewById(R.id.lastName);
         email = findViewById(R.id.email);
-        password = findViewById(R.id.password);
-        username = findViewById(R.id.username);
-//        group = findViewById(R.id.group);
-        registerButton = findViewById(R.id.register);
-        loginPage = findViewById(R.id.loginPage);
-        loginPage.setOnClickListener(this);
-        registerButton.setOnClickListener(this);
-
+        register = findViewById(R.id.register);
+        register.setOnClickListener(sendRegistrationRequestOnClickListener);
         groupsPickerSpinner = findViewById(R.id.groupsPickerSpinner);
+        teacherPickerSpinner = findViewById(R.id.teacherPickerSpinner);
 
-        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(this, R.array.groups, android.R.layout.simple_spinner_item);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        groupsPickerSpinner.setAdapter(arrayAdapter);
-        groupsPickerSpinner.setOnItemSelectedListener(this);
-
-        welcomeTitle = findViewById(R.id.welcomeTitle);
-        YoYo.with(Techniques.BounceIn).duration(800).repeat(0).playOn(welcomeTitle);
-
-        email.setOnFocusChangeListener(this);
-        password.setOnFocusChangeListener(this);
-        username.setOnFocusChangeListener(this);
-//        group.setOnFocusChangeListener(this);
+        setItemsIntoSpinners();
 
     }
 
+    /**
+     * Установим items в spinners
+     */
 
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        if(!hasFocus){
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-            inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-        }
+    private void setItemsIntoSpinners(){
+        // Выгружаем группы из бд и загружаем в groupsPickerSpinner
+        groups$db.addSnapshotListener(groups$dbEventListener);
     }
+    /**
+     * Listener для выгрузки учителей из бд
+     */
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.register:{
-                getTextFromViews(email, password, username);
-                registerStudent(emailText, passwordText, v);
-                break;
+    EventListener<QuerySnapshot> teacher$dbEventListener = new EventListener<QuerySnapshot>() {
+        @Override
+        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+            for(DocumentSnapshot teacher : queryDocumentSnapshots.getDocuments()){
+                Teacher teacherObj = teacher.toObject(Teacher.class);
+                teachers.add(teacherObj);
             }
-            case R.id.loginPage:{
-                Intent intent = new Intent(register_activity.this, login_activity.class);
-                startActivity(intent);
-                break;
-            }
+            RegisterActivityTeacherAdapter adapter = new RegisterActivityTeacherAdapter(register_activity.this, teachers);
+            teacherPickerSpinner.setAdapter(adapter);
+            teacherPickerSpinner.setOnItemSelectedListener(teacherSpinnerOnItemSelectedListener);
         }
-    }
+    };
 
-    public void getTextFromViews(EditText email, EditText password, EditText username){
-        emailText = email.getText().toString().toLowerCase();
-        passwordText = password.getText().toString();
-        usernameText = username.getText().toString();
-    }
+    /**
+     * Listener для выгрузыки групп из бд
+     */
 
-    public void registerStudent(final String emailValue, String passwordValue, View v){
+    EventListener<QuerySnapshot> groups$dbEventListener = new EventListener<QuerySnapshot>() {
+        @Override
+        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+            for(DocumentSnapshot group : queryDocumentSnapshots.getDocuments()){
+                Group groupObj = group.toObject(Group.class);
+                groups.add(groupObj);
+            }
+            RegisterActivityGroupAdapter adapter = new RegisterActivityGroupAdapter(register_activity.this, groups);
+            groupsPickerSpinner.setAdapter(adapter);
+            groupsPickerSpinner.setOnItemSelectedListener(groupsSpinnerOnItemSelectedListener);
+        }
+    };
 
-        doValidationFields(email, password, v);
-        if(isChecked) {
-            mAuth.createUserWithEmailAndPassword(emailValue, passwordValue)
-            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(register_activity.this, "Successfully registered", Toast.LENGTH_SHORT).show();
-                        String uID = mRef.push().getKey();
-                        Student student = new Student(emailValue, usernameText, groupText, "", "0", uID, "5000", "", getString(R.string.studentStatusValue));
-                        mRef.child("Students").child(groupText).child(emailValue.replace(".", "")).setValue(student);
-                        Intent intent = new Intent(register_activity.this, login_activity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                    }else{
-                        Toast.makeText(register_activity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+    AdapterView.OnItemSelectedListener teacherSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+
+    AdapterView.OnItemSelectedListener groupsSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            Group group = (Group) parent.getSelectedItem();
+            selectedGroupID = group.getId();
+            selectedTeacherID = group.getTeacherID(); // id классного рукаводителя
+            Log.d(TAG, "selected groupID: " + selectedGroupID);
+            Log.d(TAG, "selected teacherID: " + selectedTeacherID);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
+        }
+    };
+
+    View.OnClickListener sendRegistrationRequestOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(isValid()){
+                // отправка запрса на регистрацию классному рукаводителю
+                String firstNameValue = firstName.getText().toString();
+                String secondNameValue = secondName.getText().toString();
+                String lastNameValue = lastName.getText().toString();
+                String emailValue = email.getText().toString();
+                String groupID = selectedGroupID;
+                String teacherID = selectedTeacherID;
+                boolean confirmed = false;
+                boolean denied = false;
+                StudentRegisterRequestModel model = new StudentRegisterRequestModel(firstNameValue, secondNameValue,
+                        lastNameValue, emailValue, groupID, teacherID, confirmed, denied);
+                student_register_requests.add(model).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        task.getResult().update("id", task.getResult().getId());
+                        Toast.makeText(register_activity.this, "Вы успешно отправили запрос на регистрацию", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
-                }
-            });
+                });
+            }
         }
-    }
+    };
 
-    public void doValidationFields(EditText emailEditText, EditText passwordEditText, View view){
-        isChecked = true;
-        if(emailEditText.getText().toString().trim().isEmpty()){
-            emailEditText.setError("Field is required");
-            emailEditText.requestFocus();
-            isChecked = false;
+    /**
+     *  Проверка на ошибки ввода данных для регистрации
+     */
+    private boolean isValid(){
+        if(firstName.getText().toString().trim().isEmpty()){
+            firstName.setError("Поле обязательно");
+            firstName.requestFocus();
+            return false;
         }
-        if(!Patterns.EMAIL_ADDRESS.matcher(emailEditText.getText().toString()).matches()){
-            emailEditText.setError("Wrong input...");
-            emailEditText.requestFocus();
-            isChecked = false;
+        if(secondName.getText().toString().trim().isEmpty()){
+            secondName.setError("Поле обязательно");
+            secondName.requestFocus();
+            return false;
         }
-        if(passwordEditText.getText().toString().trim().isEmpty()){
-            passwordEditText.setError("Field is required");
-            passwordEditText.requestFocus();
-            isChecked = false;
+        if(email.getText().toString().trim().isEmpty()){
+            email.setError("Поле обязательно");
+            email.requestFocus();
+            return false;
         }
-        if(usernameText.trim().isEmpty()){
-            username.setError("Field is required");
-            isChecked = false;
-            username.requestFocus();
+        if(!Patterns.EMAIL_ADDRESS.matcher(email.getText().toString().trim()).matches()){
+            email.setError("Неверная почта");
+            email.requestFocus();
+            return false;
         }
-//        if(groupText.trim().isEmpty() || !groupText.contains("-")){
-//            group.setError("Field is required/ Wrong input");
-//            Toast.makeText(getApplicationContext(), "Example: 10-6 (must contain '-')", Toast.LENGTH_SHORT).show();
-//            group.requestFocus();
-//            isChecked = false;
-//        }
+        return true;
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        groupText = adapterView.getSelectedItem().toString();
-    }
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
-
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{
+                finish();
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
