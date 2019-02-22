@@ -272,6 +272,7 @@ public class dashboard_activity extends AppCompatActivity implements
             menu.findItem(R.id.scanQRCODE).setVisible(false);
             menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.makePenalty).setVisible(false);
+            menu.findItem(R.id.studentRegisterRequests).setVisible(false);
         }else {                                                     // is TEACHER
             menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.generateQERCODE).setVisible(false);

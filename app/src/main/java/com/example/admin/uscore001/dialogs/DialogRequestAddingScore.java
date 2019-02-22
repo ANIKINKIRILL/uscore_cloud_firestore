@@ -85,6 +85,7 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
     int optionScore;
     boolean isDone = false;
     private int counter = 1;
+    private int counter1 = 0;
     private ArrayList<Teacher> teachers = new ArrayList<>();
     private String optionID;
     private String firstName;
@@ -211,31 +212,34 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
                 answered,
                 canceled,
                 senderID);
-        requests$db
-                .document(teacherRequestID)
-                .collection("STUDENTS")
-                .document(currentStudentID)
-                .collection("REQUESTS")
-                .add(request)
-                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
-                if(task.isSuccessful()) {
-                    Log.d(TAG, "sendRequest: " + "teacherRequestID:" + teacherRequestID + "; currentStudentID:" + currentStudentID);
-                    String requestDocumentID = task.getResult().getId();
-                    task.getResult().update("id", requestDocumentID);
-                    Map<String, String> idField = new HashMap<>();
-                    idField.put("id", currentStudentID);
-                    requests$db
-                            .document(teacherRequestID)
-                            .collection("STUDENTS")
-                            .document(currentStudentID)
-                            .set(idField, SetOptions.merge());
-                }else{
-                    Toast.makeText(getContext(), "Запрос не был отправлен", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        if(counter1 == 0) {
+            requests$db
+                    .document(teacherRequestID)
+                    .collection("STUDENTS")
+                    .document(currentStudentID)
+                    .collection("REQUESTS")
+                    .add(request)
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "sendRequest: " + "teacherRequestID:" + teacherRequestID + "; currentStudentID:" + currentStudentID);
+                                String requestDocumentID = task.getResult().getId();
+                                task.getResult().update("id", requestDocumentID);
+                                Map<String, String> idField = new HashMap<>();
+                                idField.put("id", currentStudentID);
+                                requests$db
+                                        .document(teacherRequestID)
+                                        .collection("STUDENTS")
+                                        .document(currentStudentID)
+                                        .set(idField, SetOptions.merge());
+                            } else {
+                                Toast.makeText(getContext(), "Запрос не был отправлен", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+            counter1 = 1;
+        }
     }
 
     @Override

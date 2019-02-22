@@ -260,6 +260,9 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
                             .collection("PENALTY")
                             .document(penaltyDocumentID)
                             .set(idField, SetOptions.merge());
+                        HashMap<String, String> idMap = new HashMap<>();
+                        idMap.put("id", studentID);
+                        reqeusts$DB.document(currentTeacherRequestID).collection("STUDENTS").document(studentID).set(idMap,  SetOptions.merge());
                     }
                 }
             });
