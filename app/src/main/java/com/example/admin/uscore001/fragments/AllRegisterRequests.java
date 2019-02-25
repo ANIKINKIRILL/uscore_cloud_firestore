@@ -58,18 +58,18 @@ public class AllRegisterRequests extends Fragment {
     }
 
     private void loadAllRequests(){
-        requestModels.clear();
         student_register_requests.whereEqualTo("teacherID", teacherID).addSnapshotListener(allTeacherRegisterRequests);
     }
 
     EventListener<QuerySnapshot> allTeacherRegisterRequests = new EventListener<QuerySnapshot>() {
         @Override
         public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+            requestModels.clear();
             for(DocumentSnapshot request : queryDocumentSnapshots.getDocuments()){
                 StudentRegisterRequestModel model = request.toObject(StudentRegisterRequestModel.class);
                 requestModels.add(model);
             }
-            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requestModels);
+            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requestModels, getContext());
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
         }

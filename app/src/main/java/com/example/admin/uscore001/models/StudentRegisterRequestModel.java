@@ -9,6 +9,7 @@ public class StudentRegisterRequestModel {
     String teacherID;
     boolean confirmed;
     boolean denied;
+    String id;
 
     public StudentRegisterRequestModel(String firstName, String secondName, String lastName, String email, String groupID, String teacherID, boolean confirmed, boolean denied) {
         this.firstName = firstName;
@@ -23,6 +24,14 @@ public class StudentRegisterRequestModel {
 
     public StudentRegisterRequestModel(){
 
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getFirstName() {

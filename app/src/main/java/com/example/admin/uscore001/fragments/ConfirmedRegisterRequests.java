@@ -48,7 +48,7 @@ public class ConfirmedRegisterRequests extends Fragment {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         teacherID = sharedPreferences.getString("teacherID", "");
         init(view);
-        loadAllRequests();
+        loadConfirmedRequests();
         return view;
     }
 
@@ -56,8 +56,7 @@ public class ConfirmedRegisterRequests extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
     }
 
-    private void loadAllRequests(){
-        requestConfirmedModels.clear();
+    private void loadConfirmedRequests(){
         student_register_requests
                 .whereEqualTo("teacherID", teacherID)
                 .whereEqualTo("confirmed", true)
@@ -68,11 +67,12 @@ public class ConfirmedRegisterRequests extends Fragment {
     EventListener<QuerySnapshot> confirmedTeacherRegisterRequests = new EventListener<QuerySnapshot>() {
         @Override
         public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+            requestConfirmedModels.clear();
             for(DocumentSnapshot request : queryDocumentSnapshots.getDocuments()){
                 StudentRegisterRequestModel model = request.toObject(StudentRegisterRequestModel.class);
                 requestConfirmedModels.add(model);
             }
-            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requestConfirmedModels);
+            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requestConfirmedModels, getContext());
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
         }

@@ -85,6 +85,9 @@ dependencies {
 
     // Material SearchView library
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+
+    // Library to Restart Application
+    implementation 'com.jakewharton:process-phoenix:2.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

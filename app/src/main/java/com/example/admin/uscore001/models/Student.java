@@ -18,6 +18,31 @@ public class Student {
 
     public Student(
             String email,
+            String groupID,
+            String image_path,
+            String score,
+            String id,
+            String limitScore,
+            String teacherID,
+            String firstName,
+            String secondName,
+            String lastName,
+            String statusID) {
+        this.email = email;
+        this.groupID = groupID;
+        this.image_path = image_path;
+        this.score = score;
+        this.id = id;
+        this.limitScore = limitScore;
+        this.teacherID = teacherID;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.statusID = statusID;
+    }
+
+    public Student(
+            String email,
             String username,
             String groupID,
             String image_path,
