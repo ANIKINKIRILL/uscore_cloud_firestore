@@ -43,8 +43,8 @@ public class NegativeRequestsFragment extends Fragment {
     ProgressBar progressBar;
 
     // vars
-    ArrayList<RecentRequestItem> negativeRequestsItems = new ArrayList<>();
-    ArrayList<RecentRequestItem> negativeRequestsItemsTeacher = new ArrayList<>();
+    ArrayList<RequestAddingScore> negativeRequestsItems = new ArrayList<>();
+    ArrayList<RequestAddingScore> negativeRequestsItemsTeacher = new ArrayList<>();
     private String currentStudentID;
     private String teacherRequestID;
 
@@ -97,11 +97,7 @@ public class NegativeRequestsFragment extends Fragment {
                                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                                     for(DocumentSnapshot studentRequests : queryDocumentSnapshots.getDocuments()){
                                         RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
-                                        String score = Integer.toString(request.getScore());
-                                        String date = request.getDate();
-                                        String teacherName = request.getGetter();
-                                        String result = "Denied";
-                                        negativeRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
+                                        negativeRequestsItems.add(request);
                                     }
                                     RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItems);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -129,13 +125,7 @@ public class NegativeRequestsFragment extends Fragment {
                                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                                     for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
                                         RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
-                                        String score = Integer.toString(request.getScore());
-                                        String date = request.getDate();
-                                        String teacherName = request.getGetter();
-                                        String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
-                                        String result = "Denied";
-                                        RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
-                                        negativeRequestsItemsTeacher.add(recentRequestItem);
+                                        negativeRequestsItemsTeacher.add(request);
                                     }
                                     RecentRequestsAdapter adapter = new RecentRequestsAdapter(negativeRequestsItemsTeacher);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

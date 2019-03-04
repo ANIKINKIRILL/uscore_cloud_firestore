@@ -18,6 +18,7 @@
     <color name="currentStudentCardViewColor">#adb8c4</color>
 
     <color name="addedColor">#5ca95c</color>
+    <color name="newColor">#a9a55c</color>
     <color name="canceledColor">#d95335</color>
     <color name="inProcessColor">#5aa4d2</color>
 

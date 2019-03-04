@@ -1,12 +1,15 @@
 package com.example.admin.uscore001.activities;
 
+import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.admin.uscore001.R;
@@ -34,7 +37,7 @@ public class StudentRegisterRequestActivity extends AppCompatActivity {
         setContentView(R.layout.student_register_request_activity);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Запросы на регистрацию");
+        actionBar.setTitle("Регистарция ученика");
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
@@ -85,13 +88,37 @@ public class StudentRegisterRequestActivity extends AppCompatActivity {
     };
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.info_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:{
                 finish();
                 break;
             }
+            case R.id.info:{
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog
+                .setMessage("Как учитель, Вы можете принимать или отклонять заявки на регистрацию учеников в ВАШ КЛАСС. Если Вы приняли заявку, то ученик будет добавлен в Ваш класс, иначе он не будет добавлен в систему USCORE. Добавляйте ученка, если он действительно из Вашего Класса");
+                alertDialog.setTitle("Подробная информация");
+                alertDialog.setPositiveButton("Спасибо", positivieButtonOnClickListener);
+                alertDialog.show();
+                break;
+            }
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
+
+
+    DialogInterface.OnClickListener positivieButtonOnClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+        }
+    };
+
 }

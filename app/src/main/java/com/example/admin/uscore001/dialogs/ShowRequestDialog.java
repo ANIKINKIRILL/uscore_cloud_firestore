@@ -54,10 +54,10 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.show_request_dialog, container, false);
+        View view = inflater.inflate(R.layout.show_request_dialog, container, true);
         recyclerView = view.findViewById(R.id.recyclerView);
-        closeImageView = view.findViewById(R.id.close);
 
+        closeImageView = view.findViewById(R.id.close);
         closeImageView.setOnClickListener(this);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());

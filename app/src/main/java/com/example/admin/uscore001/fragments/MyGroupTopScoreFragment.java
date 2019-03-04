@@ -51,10 +51,11 @@ public class MyGroupTopScoreFragment extends Fragment {
     String score;
     String image_path;
     String username;
-    StudentRecyclerAdapter adapter;
+    public static StudentRecyclerAdapter adapter;
     Student currentStudentClass;
     String currentStudentGroupID;
     private String currentUserGroupName;
+    private String teacherGroupID;
 
     // widgets
     TextView title;
@@ -80,14 +81,24 @@ public class MyGroupTopScoreFragment extends Fragment {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         currentStudentGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "not found");
-        findGroupNameByGroupID(currentStudentGroupID);
-        title.setText(currentUserGroupName);
+        teacherGroupID = sharedPreferences.getString("teacherGroupID", "");
 
         if(getActivity() != null && isAdded()) {
-            loadCurrentUserGroupMembers(currentStudentGroupID);
+            if(!currentUser.getEmail().contains("teacher")) {
+                findGroupNameByGroupID(currentStudentGroupID);
+                loadCurrentUserGroupMembers(currentStudentGroupID);
+            }else{
+                findGroupNameByGroupID(teacherGroupID);
+                loadCurrentUserGroupMembersTeacher(teacherGroupID);
+                currentStudentRate.setVisibility(View.GONE);
+            }
         }
 
         return view;
+    }
+
+    public static StudentRecyclerAdapter getAdapter() {
+        return adapter;
     }
 
     private void findGroupNameByGroupID(String groupID){
@@ -95,8 +106,42 @@ public class MyGroupTopScoreFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 currentUserGroupName = task.getResult().get("name").toString();
+                title.setText("Рейтинг учеников по группе " + currentUserGroupName);
             }
         });
+    }
+
+    public void loadCurrentUserGroupMembersTeacher(String foundGroupID){
+        students.clear();
+        students$DB
+                .whereEqualTo("groupID", foundGroupID)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                        students.clear();
+                        Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
+                        try {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                Student student = documentSnapshot.toObject(Student.class);
+                                score = student.getScore();
+                                image_path = student.getImage_path();
+                                if (image_path.isEmpty()) {
+                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                                }
+                                username = student.getFirstName() + " " + student.getSecondName();
+                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
+                                students.add(studentClass);
+                            }
+                            bubbleSortStudents(students);
+                            Collections.reverse(students);
+                            adapter = new StudentRecyclerAdapter(students);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            recyclerView.setAdapter(adapter);
+                        }catch (Exception e1){
+                            Log.d(TAG, "onEvent: " + e1.getMessage());
+                        }
+                    }
+                });
     }
 
     public void loadCurrentUserGroupMembers(String foundGroupID){
@@ -130,7 +175,7 @@ public class MyGroupTopScoreFragment extends Fragment {
                         String you_are_onText = currentStudentRate.getText().toString();
                         int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
                         you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateGroup);
-                        currentStudentRate.setText(you_are_onText+" "+getResources().getString(R.string.place_with)+" "+ currentStudentClass.getScore()+ " " + getResources().getString(R.string.points));
+                        currentStudentRate.setText(you_are_onText+" "+" месте с"+ " " + currentStudentClass.getScore() + " очками");
                         adapter = new StudentRecyclerAdapter(students);
                         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                         recyclerView.setAdapter(adapter);

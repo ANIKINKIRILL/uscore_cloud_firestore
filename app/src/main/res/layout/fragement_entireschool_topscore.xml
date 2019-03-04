@@ -10,10 +10,14 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="12dp"
-        android:text="Рейтинг по школе"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="Рейтинг учеников по школе"
         android:textColor="@android:color/darker_gray"
-        android:textSize="30sp" />
+        android:textSize="25sp" />
 
     <TextView
         android:textStyle="bold"
@@ -24,7 +28,7 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="16dp"
         android:layout_marginTop="10dp"
-        android:text="@string/you_are_on"
+        android:text="Ты на"
         android:textColor="@android:color/darker_gray"
         android:textSize="20sp" />
 

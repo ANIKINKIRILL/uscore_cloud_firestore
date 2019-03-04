@@ -1,17 +1,19 @@
 package com.example.admin.uscore001.activities;
 
+import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -34,7 +36,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 /**
  * Активити для регистарции ученкиов в системе
@@ -220,13 +221,36 @@ public class register_activity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.info_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:{
                 finish();
                 break;
             }
+            case R.id.info:{
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog
+                .setMessage("Для начала мониторинга своих очков и баллов. Тебе следует зарегистрироваться. Выбирай свою группу и продолжай побеждать");
+                alertDialog.setTitle("Ознакомление");
+                alertDialog.setPositiveButton("Спасибо", positivieButtonOnClickListener);
+                alertDialog.show();
+                break;
+            }
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
+
+    DialogInterface.OnClickListener positivieButtonOnClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+        }
+    };
+
 }

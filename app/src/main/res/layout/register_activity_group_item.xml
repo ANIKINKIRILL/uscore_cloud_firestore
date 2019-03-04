@@ -5,8 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
+        android:padding="3dp"
+        android:layout_margin="10dp"
         android:id="@+id/groupName"
-        android:textSize="20sp"
+        android:textSize="18sp"
         tools:text="GROUP NAME"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

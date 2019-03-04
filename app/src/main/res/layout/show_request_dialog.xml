@@ -11,7 +11,7 @@
 
     <TextView
         android:layout_centerVertical="true"
-        android:padding="10dp"
+        android:padding="5dp"
         android:gravity="top|center_horizontal"
         android:textSize="20sp"
         android:id="@+id/title"

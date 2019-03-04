@@ -33,12 +33,16 @@ import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,9 +54,14 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -121,7 +130,8 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 allStudentsNamesFromPickedGroup.clear();
                 allTeachersNames.clear();
                 pickedObject = adapterView.getSelectedItem().toString();
-                if(!pickedObject.equals("Учителя")) {                       // group
+                if(!pickedObject.equals("Учителя")) {// group
+                    haveStudentsInGroup = false;
                     loadAllGroupStudents(pickedObject);
                 }else{                                                      // teachers
                     loadAllTeachers();
@@ -163,8 +173,10 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 if(isValid(passwordView)){
                     if(studentEmailFromPickedGroup != null) {
                         doSignIn(studentEmailFromPickedGroup, passwordView.getText().toString().trim());
+                        signIn.setEnabled(false);
                     }else if(pickedTeacherEmail != null){
                         doSignIn(pickedTeacherEmail, passwordView.getText().toString().trim());
+                        signIn.setEnabled(false);
                     }
                 }
                 break;
@@ -194,6 +206,30 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+//                    String tokenID = FirebaseInstanceId.getInstance().getToken();
+//                    if(!email.contains("teacher")) {
+//                        students$DB.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                                    Map<String, Object> tokenIDMap = new HashMap<>();
+//                                    tokenIDMap.put("deviceTokenID", tokenID);
+//                                    documentSnapshot.getReference().update(tokenIDMap);
+//                                }
+//                            }
+//                        });
+//                    }else{
+//                        teachers$DB.whereEqualTo("responsible_email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                            @Override
+//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+//                                    Map<String, Object> tokenIDMap = new HashMap<>();
+//                                    tokenIDMap.put("deviceTokenID", tokenID);
+//                                    documentSnapshot.getReference().update(tokenIDMap);
+//                                }
+//                            }
+//                        });
+//                    }
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(login_activity.this);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(getString(R.string.password_pref), password);
@@ -213,38 +249,53 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
+    boolean haveStudentsInGroup = false;
+
     public void loadAllGroupStudents(String pickedGroup){
+        signIn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
-        Log.d(TAG, "loadAllGroupStudents: " + allStudentsNamesFromPickedGroup.size());
-        groups$DB.whereEqualTo("name", pickedGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        groups$DB.whereEqualTo("name", pickedGroup).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Group group = documentSnapshot.toObject(Group.class);
-                    pickedGroupID = group.getId();
-                    students$DB.whereEqualTo("groupID", pickedGroupID).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            for (DocumentSnapshot studentDocumentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                                Student student = studentDocumentSnapshot.toObject(Student.class);
-                                allStudentsNamesFromPickedGroup.add(student.getFirstName() + " " + student.getSecondName());
-                            }
-                            Log.d(TAG, "onEvent: " + allStudentsNamesFromPickedGroup.size());
-                            if (allStudentsNamesFromPickedGroup.size() == 0) {
-                                Toast.makeText(login_activity.this, "В этой группе пока нет учеников", Toast.LENGTH_SHORT).show();
-                                progressBar.setVisibility(View.INVISIBLE);
-                            } else {
-                                createStudentsAdapter();
-                            }
-                        }
-                    });
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                for(DocumentSnapshot groups : task.getResult().getDocuments()){
+                    Group group = groups.toObject(Group.class);
+                    String groupID = group.getId();
+                    isHaveStudentsInGroup(groupID);
                 }
             }
         });
     }
 
-    public void createStudentsAdapter(){
-        ArrayAdapter<String> studentsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allStudentsNamesFromPickedGroup);
+    private void isHaveStudentsInGroup(String pickedGroupID){
+        final int[] studentsSize = new int[1];
+        Log.d(TAG, "isHaveStudentsInGroup pickedGroupID: " + pickedGroupID);
+        students$DB.whereEqualTo("groupID", pickedGroupID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                studentsSize[0] = task.getResult().size();
+                Log.d(TAG, "isHaveStudentsInGroup studentsSize: " + studentsSize[0]);
+                if(studentsSize[0] != 0){
+                    students$DB.whereEqualTo("groupID", pickedGroupID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                                Student student = documentSnapshot.toObject(Student.class);
+                                allStudentsNamesFromPickedGroup.add(student.getFirstName() + " " + student.getSecondName());
+                            }
+                            createStudentsAdapter(allStudentsNamesFromPickedGroup, pickedGroupID);
+                        }
+                    });
+                }else{
+                    Toast.makeText(login_activity.this, "В этой группе нет учеников, попробуйте зарегистрироваться", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+    }
+
+    public void createStudentsAdapter(ArrayList<String> students, String pickedGroupID){
+        signIn.setEnabled(true);
+        ArrayAdapter<String> studentsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, students);
         studentsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         studentsSpinner.setAdapter(studentsAdapter);
         progressBar.setVisibility(View.INVISIBLE);
@@ -253,8 +304,10 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 loadPickedStudentEmail(pickedGroupID, adapterView.getSelectedItem().toString());
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView){}
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
         });
     }
 
@@ -270,14 +323,17 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 for(DocumentSnapshot studentsSnapshots : queryDocumentSnapshots.getDocuments()) {
                     Student student = studentsSnapshots.toObject(Student.class);
                     studentEmailFromPickedGroup = student.getEmail();
+                    signIn.setEnabled(true);
                 }
                 Log.d(TAG, "picked student email: " + studentEmailFromPickedGroup);
                 Log.d(TAG, "firstName: " + firstSecondNameWords[0] + " secondName: " + firstSecondNameWords[1]);
             }
         });
+        Log.d(TAG, "signInButton is enable");
     }
 
     public void loadAllTeachers(){
+        signIn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
         teachers$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -289,6 +345,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 createTeachersAdapter();
             }
         });
+        signIn.setEnabled(true);
     }
 
     public void createTeachersAdapter(){
@@ -310,6 +367,8 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void loadPickedTeacherEmail(String firstLastName){
+        signIn.setEnabled(false);
+        Log.d(TAG, "signInButton is not enable");
         try {
             String[] firstLastNameWords = firstLastName.split(" ");
             teachers$DB
@@ -322,6 +381,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                                 List<DocumentSnapshot> teachersSnapshot = queryDocumentSnapshots.getDocuments();
                                 Teacher teacher = teachersSnapshot.get(0).toObject(Teacher.class);
                                 pickedTeacherEmail = teacher.getResponsible_email();
+                                signIn.setEnabled(true);
                                 Log.d(TAG, "selectedTeacherEmail: " + pickedTeacherEmail);
                             }catch (Exception e1){
                                 Log.d(TAG, "loadPickedTeacherEmail: " + e1.getMessage());
@@ -331,6 +391,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         }catch (Exception e){
             Log.d(TAG, "loadPickedTeacherEmail: " + e.getMessage());
         }
+        Log.d(TAG, "signInButton is enable");
     }
 
 }

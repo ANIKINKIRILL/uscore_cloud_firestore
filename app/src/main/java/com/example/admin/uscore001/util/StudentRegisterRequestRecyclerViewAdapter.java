@@ -70,7 +70,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
     @NonNull
     @Override
     public StudentRegisterRequestRecyclerViewViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.student_register_request_recyeler_view_item, null);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.student_register_request_recyeler_view_item, viewGroup, false);
         StudentRegisterRequestRecyclerViewViewHolder holder = new StudentRegisterRequestRecyclerViewViewHolder(view);
         return holder;
     }
@@ -138,7 +138,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                         // В данный момент пользователем является тот ученик который был только что зарегистрирован
                                         // чтобы перезайти на учительский аккаунт делаем перезапуск приложения
                                         Intent intent = new Intent(studentRegisterRequestRecyclerViewViewHolder.cardView.getContext(), login_activity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         studentRegisterRequestRecyclerViewViewHolder.cardView.getContext().startActivity(intent);
                                     }else{
                                         Toast.makeText(alertDialog.getContext(), "Возможно, ученик с этим email уже есть в системе", Toast.LENGTH_SHORT).show();

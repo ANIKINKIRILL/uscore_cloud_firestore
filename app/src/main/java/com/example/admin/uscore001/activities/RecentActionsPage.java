@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.resources.TextAppearance;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -18,6 +19,7 @@ import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.dialogs.FilterRequestsDialog;
 import com.example.admin.uscore001.fragments.AllRequestsFragment;
 import com.example.admin.uscore001.fragments.NegativeRequestsFragment;
+import com.example.admin.uscore001.fragments.NewRequestsFragment;
 import com.example.admin.uscore001.fragments.PenaltyFragment;
 import com.example.admin.uscore001.fragments.PositiveRequestsFragment;
 import com.example.admin.uscore001.util.GlideApp;
@@ -58,10 +60,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
         backArrow.setOnClickListener(this);
         filterMenu = findViewById(R.id.filterMenu);
         filterMenu.setOnClickListener(this);
-
-        if(currentUser.getEmail().contains("teacher")){
-            filterMenu.setVisibility(View.INVISIBLE);
-        }
+        filterMenu.setEnabled(false);
 
         setViewPagerWithAdapter();
 
@@ -97,17 +96,22 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
                     break;
                 }
                 case 1:{
-                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.addedColor));
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.startblue_transparent));
                     Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
                     break;
                 }
                 case 2:{
-                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.canceledColor));
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.addedColor));
                     Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
                     break;
                 }
                 case 3:{
-                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.graylight));
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.canceledColor));
+                    Log.d(TAG, "setViewPagerWithAdapter: selected tab" + tabs.getSelectedTabPosition());
+                    break;
+                }
+                case 4:{
+                    tabs.setSelectedTabIndicatorColor(getResources().getColor(R.color.recentCardViewUsername));
                     break;
                 }
             }
@@ -125,6 +129,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
     public void setViewPagerWithAdapter(){
         RequestsSectionPageAdapter adapter = new RequestsSectionPageAdapter(getSupportFragmentManager());
         adapter.addFragment(new AllRequestsFragment(), getResources().getString(R.string.all_tab));
+        adapter.addFragment(new NewRequestsFragment(), "Новые");
         adapter.addFragment(new PositiveRequestsFragment(), getResources().getString(R.string.positive_tab));
         adapter.addFragment(new NegativeRequestsFragment(), getResources().getString(R.string.negative_tab));
         adapter.addFragment(new PenaltyFragment(), "Штрафы");

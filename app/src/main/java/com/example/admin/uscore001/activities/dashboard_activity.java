@@ -58,6 +58,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -284,9 +285,26 @@ public class dashboard_activity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String teacherID = sharedPreferences.getString("teacherID", "");
+        String studentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         switch (item.getItemId()){
             case R.id.signOut:{
                 mAuth.signOut();
+//                if(currentUser.getEmail().contains("teacher")){
+//                    try {
+//                        teachers$DB.document(teacherID).update("deviceTokenID", FieldValue.delete());
+//                    }catch (Exception e){
+//                        Log.d(TAG, "onOptionsItemSelected: " + e.getMessage());
+//                    }
+//                }
+//                if(!currentUser.getEmail().contains("teacher")){
+//                    try{
+//                        student$db.document(studentID).update("deviceTokenID", FieldValue.delete());
+//                    }catch (Exception e){
+//                        Log.d(TAG, "onOptionsItemSelected: " + e.getMessage());
+//                    }
+//                }
                 Intent intent = new Intent(dashboard_activity.this, login_activity.class);
                 startActivity(intent);
                 break;
@@ -402,6 +420,7 @@ public class dashboard_activity extends AppCompatActivity implements
             public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                 for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                     Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                    String groupID = teacher.getGroupID();
                     String email = teacher.getResponsible_email();
                     String fullname = teacher.getFirstName() + " " + teacher.getLastName();
                     String image_path = teacher.getImage_path();
@@ -420,6 +439,7 @@ public class dashboard_activity extends AppCompatActivity implements
                     }
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("teacherGroupID", groupID);
                     editor.putString(getString(R.string.intentTeacherEmail), email);
                     editor.putString(getString(R.string.intentTeacherFullname), fullname);
                     editor.putString(getString(R.string.intentTeacherImage_path), image_path);
@@ -514,8 +534,9 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.rulesCardView:{
-                RulesBottomSheetFragment rulesBottomSheetFragment = new RulesBottomSheetFragment();
-                rulesBottomSheetFragment.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                Toast.makeText(this, "Это функция будет добвлена в скором времени", Toast.LENGTH_SHORT).show();
+//                RulesBottomSheetFragment rulesBottomSheetFragment = new RulesBottomSheetFragment();
+//                rulesBottomSheetFragment.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
         }

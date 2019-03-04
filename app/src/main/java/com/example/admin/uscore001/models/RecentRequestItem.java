@@ -1,32 +1,56 @@
 package com.example.admin.uscore001.models;
 
 public class RecentRequestItem {
-    String score;
+    String answered;
+    String body;
+    boolean canceled;
     String date;
-    String result;
-    String teacher;
+    String firstName;
+    String getter;
+    String groupID;
+    String id;
+    String image_path;
+    String option;
 
-    public RecentRequestItem(String score, String date, String result, String teacher) {
-        this.score = score;
+    public RecentRequestItem(String answered, String body, boolean canceled, String date, String firstName, String getter, String groupID, String id, String image_path, String option) {
+        this.answered = answered;
+        this.body = body;
+        this.canceled = canceled;
         this.date = date;
-        this.result = result;
-        this.teacher = teacher;
+        this.firstName = firstName;
+        this.getter = getter;
+        this.groupID = groupID;
+        this.id = id;
+        this.image_path = image_path;
+        this.option = option;
     }
 
-    public String getTeacher() {
-        return teacher;
+    public RecentRequestItem(){
+
     }
 
-    public void setTeacher(String teacher) {
-        this.teacher = teacher;
+    public String getAnswered() {
+        return answered;
     }
 
-    public String getScore() {
-        return score;
+    public void setAnswered(String answered) {
+        this.answered = answered;
     }
 
-    public void setScore(String score) {
-        this.score = score;
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        this.canceled = canceled;
     }
 
     public String getDate() {
@@ -37,11 +61,51 @@ public class RecentRequestItem {
         this.date = date;
     }
 
-    public String getResult() {
-        return result;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setResult(String result) {
-        this.result = result;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getGetter() {
+        return getter;
+    }
+
+    public void setGetter(String getter) {
+        this.getter = getter;
+    }
+
+    public String getGroupID() {
+        return groupID;
+    }
+
+    public void setGroupID(String groupID) {
+        this.groupID = groupID;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getImage_path() {
+        return image_path;
+    }
+
+    public void setImage_path(String image_path) {
+        this.image_path = image_path;
+    }
+
+    public String getOption() {
+        return option;
+    }
+
+    public void setOption(String option) {
+        this.option = option;
     }
 }

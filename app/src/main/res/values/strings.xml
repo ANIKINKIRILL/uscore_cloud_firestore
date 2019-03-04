@@ -321,4 +321,6 @@
     <string-array name="teacherStatus">PGIg1vm8SrHN6YLeN0TD</string-array>
     <string-array name="studentStatus">y1igExymzKFaV3BU8zH8</string-array>
 
+    <string name="teacher_confirm_request_notification_channel_id">TEACHER_CONFIRM_REQUEST_CHANNEL</string>
+
 </resources>

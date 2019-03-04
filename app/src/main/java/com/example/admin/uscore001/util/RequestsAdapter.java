@@ -1,7 +1,9 @@
 package com.example.admin.uscore001.util;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -184,6 +186,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
             @Override
             public void onClick(View v) {
                 Context context = requestsViewHolder.cardViewLayout.getContext();
+                /*
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(context.getString(R.string.requestDetailsBody), request.getBody());
@@ -197,11 +200,42 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
                 editor.apply();
                 Intent intent = new Intent(context.getApplicationContext(), RequestDetailView.class);
                 context.startActivity(intent);
+                */
 
+                String requestStatus = "";
+                if(request.isAnswered()){
+                    requestStatus = "Принята";
+                }else if(request.isCanceled()){
+                    requestStatus = "Отклонена";
+                }else if(!request.isCanceled() && !request.isAnswered()){
+                    requestStatus = "В процессе";
+                }
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+                alertDialog.setTitle("Подробная информация о запросе");
+                String requestBodyText = request.getBody();
+                if(requestBodyText.trim().isEmpty()){
+                    requestBodyText = "доп. текст отсутствует";
+                }
+                alertDialog.setMessage("Ученик: " + request.getFirstName() + " " + request.getSecondName() + "\n" +
+                                        "Класс: " + group + "\n" +
+                                        "Запрошиваемые очки: " + request.getScore() + "\n" +
+                                        "Причина: " + option + "\n" +
+                                        "Сообщение ученика: " + requestBodyText + "\n" +
+                                        "Дата: " + request.getDate() + "\n" +
+                                        "Статус заявки: " + requestStatus);
+                alertDialog.setPositiveButton("Хорошо", posititveButtonOnClickListener);
+                alertDialog.show();
             }
         });
-
     }
+
+    DialogInterface.OnClickListener posititveButtonOnClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+        }
+    };
 
     public void addScore(final int score, final String studentID,final View view, String teacherRequestID, String requestID){
         students$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {

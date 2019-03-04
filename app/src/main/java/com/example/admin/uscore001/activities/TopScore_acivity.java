@@ -7,17 +7,20 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.fragments.EntireSchoolTopScoreFragment;
 import com.example.admin.uscore001.fragments.MyGroupTopScoreFragment;
+import com.example.admin.uscore001.util.StudentRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -25,6 +28,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 public class TopScore_acivity extends AppCompatActivity {
+
+    private static final String TAG = "TopScore_acivity";
 
     // widgets
     FrameLayout frameLayout;
@@ -53,20 +58,14 @@ public class TopScore_acivity extends AppCompatActivity {
         frameLayout = findViewById(R.id.fragment_container);
         bottomNavigationView = findViewById(R.id.bottomNavView);
 
-        if(!currentUser.getEmail().contains("teacher")) {
-            doFragmentTransaction(new MyGroupTopScoreFragment());
-        }else if(currentUser.getEmail().contains("teacher")){
-            doFragmentTransaction(new EntireSchoolTopScoreFragment());
-        }
+        doFragmentTransaction(new MyGroupTopScoreFragment());
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.myGroup: {
-                        if(!currentUser.getEmail().contains("teacher")) {
-                            doFragmentTransaction(new MyGroupTopScoreFragment());
-                        }
+                        doFragmentTransaction(new MyGroupTopScoreFragment());
                         break;
                     }
                     case R.id.entireSchool: {
@@ -95,6 +94,24 @@ public class TopScore_acivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.top_score_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
         materialSearchView.setMenuItem(searchItem);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                MyGroupTopScoreFragment.adapter.getFilter().filter(newText);
+                try {
+                    EntireSchoolTopScoreFragment.adapter.getFilter().filter(newText);
+                }catch (Exception e){
+                    Log.d(TAG, "onQueryTextChange: " + e.getMessage());
+                }
+                return true;
+            }
+        });
         return true;
     }
 }

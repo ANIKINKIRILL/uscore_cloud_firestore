@@ -66,7 +66,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     String username;
     String groupID;
     String email;
-    StudentRecyclerAdapter adapter;
+    public static StudentRecyclerAdapter adapter;
     static Student currentStudentClass;
     int currentStudentRateSchool;
 
@@ -97,6 +97,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
         }else if(currentUser.getEmail().contains("teacher")){
             try {
                 loadTeacher();
+                currentStudentRate.setVisibility(View.GONE);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -162,7 +163,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
                         currentStudentRateSchool = students.indexOf(currentStudentClass)+1;
                         you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateSchool) + " ";
                         try {
-                            currentStudentRate.setText(you_are_onText + getResources().getString(R.string.place_with) + " " + currentStudentClass.getScore() + " " + getResources().getString(R.string.points));
+                            currentStudentRate.setText(you_are_onText + "месте с" + " " + currentStudentClass.getScore() + " очками");
                         }catch (Exception e1){
                             Log.d(TAG, "onDataChange: " + e1.getMessage());
                         }

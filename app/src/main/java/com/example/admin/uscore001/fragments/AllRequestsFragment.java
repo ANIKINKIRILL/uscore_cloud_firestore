@@ -47,17 +47,17 @@ public class AllRequestsFragment extends Fragment {
 
     // vars
     String currentUserEmail;
-    ArrayList<RecentRequestItem> recentRequestItems = new ArrayList<>();
-    ArrayList<RecentRequestItem> confirmedRequestsItems = new ArrayList<>();
-    ArrayList<RecentRequestItem> deniedRequestsItems = new ArrayList<>();
-    ArrayList<RecentRequestItem> filteredRequestItems = new ArrayList<>();
+    ArrayList<RequestAddingScore> recentRequestItems = new ArrayList<>();
+    ArrayList<RequestAddingScore> confirmedRequestsItems = new ArrayList<>();
+    ArrayList<RequestAddingScore> deniedRequestsItems = new ArrayList<>();
+    ArrayList<RequestAddingScore> filteredRequestItems = new ArrayList<>();
     String selectedTeacher;
     private String result;
     private String selectedTeacherRequestID;
     String currentStudentID;
 
     // teacher arraylists
-    ArrayList<RecentRequestItem> recentRequestItemsTeacher = new ArrayList<>();
+    ArrayList<RequestAddingScore> recentRequestItemsTeacher = new ArrayList<>();
     private String teacherRequestID;
 
     // Firebase
@@ -89,7 +89,7 @@ public class AllRequestsFragment extends Fragment {
         if(!currentUser.getEmail().contains("teacher")) { // is a STUDENT
             loadAllUserRequests();
         }else if(!currentUser.getEmail().contains("teacher") && !selectedTeacher.isEmpty()){
-            filterSelectedTeacherRequests(selectedTeacher);
+//            filterSelectedTeacherRequests(selectedTeacher);
         }else if(currentUser.getEmail().contains("teacher")){   // is a TEACHER
             loadAllTeacherRequests();
         }
@@ -134,21 +134,8 @@ public class AllRequestsFragment extends Fragment {
                             @Override
                             public void onEvent(QuerySnapshot queryDocumentSnapshots,FirebaseFirestoreException e) {
                                 for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                    RequestAddingScore request = documentSnapshot.toObject(RequestAddingScore.class);
-                                    String score = Integer.toString(request.getScore());
-                                    String date = request.getDate();
-                                    String teacherName = request.getGetter();
-                                    if(request.isAnswered() && !request.isCanceled()){
-                                        result = "Confirmed";
-                                        confirmedRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
-                                    }else if(!request.isAnswered() && request.isCanceled()){
-                                        result = "Denied";
-                                        deniedRequestsItems.add(new RecentRequestItem(score, date, result, teacherName));
-                                    }else{
-                                        result = "In Process...";
-                                    }
-                                    RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, teacherName);
-                                    recentRequestItems.add(recentRequestItem);
+                                    RequestAddingScore requestAddingScore = documentSnapshot.toObject(RequestAddingScore.class);
+                                    recentRequestItems.add(requestAddingScore);
                                 }
                                 RecentRequestsAdapter adapter = new RecentRequestsAdapter(recentRequestItems);
                                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -172,19 +159,7 @@ public class AllRequestsFragment extends Fragment {
                         public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                             for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
                                 RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
-                                String score = Integer.toString(request.getScore());
-                                String date = request.getDate();
-                                String teacherName = request.getGetter();
-                                String requestStudentUsername = request.getFirstName() + " " + request.getSecondName();
-                                if(request.isAnswered() && !request.isCanceled()){
-                                    result = "Confirmed";
-                                }else if(!request.isAnswered() && request.isCanceled()){
-                                    result = "Denied";
-                                }else{
-                                    result = "In Process...";
-                                }
-                                RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, requestStudentUsername);
-                                recentRequestItemsTeacher.add(recentRequestItem);
+                                recentRequestItemsTeacher.add(request);
                             }
                             RecentRequestsAdapter adapter = new RecentRequestsAdapter(recentRequestItemsTeacher);
                             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -224,8 +199,8 @@ public class AllRequestsFragment extends Fragment {
                                 } else {
                                     result = "In Process...";
                                 }
-                                RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, selectedTeacherName);
-                                filteredRequestItems.add(recentRequestItem);
+//                                RecentRequestItem recentRequestItem = new RecentRequestItem(score, date, result, selectedTeacherName);
+//                                filteredRequestItems.add(recentRequestItem);
                             }
                             RecentRequestsAdapter adapter = new RecentRequestsAdapter(filteredRequestItems);
                             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

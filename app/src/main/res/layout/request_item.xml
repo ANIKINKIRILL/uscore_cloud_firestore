@@ -100,7 +100,7 @@
             android:layout_marginEnd="40dp"
             android:layout_alignParentEnd="true"
             android:layout_below="@id/selectedOption"
-            android:text="OK"
+            android:text="Принять"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -112,7 +112,7 @@
             android:layout_marginEnd="35dp"
             android:layout_toLeftOf="@+id/ok"
             android:layout_below="@id/selectedOption"
-            android:text="CANCEL"
+            android:text="Отклонить"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

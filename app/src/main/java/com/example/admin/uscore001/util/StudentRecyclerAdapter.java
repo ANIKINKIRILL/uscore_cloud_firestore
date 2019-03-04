@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -36,7 +38,7 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecyclerAdapter.StudentRecyclerViewHolder> {
+public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecyclerAdapter.StudentRecyclerViewHolder> implements Filterable {
 
     private static final String TAG = "StudentRecyclerAdapter";
 
@@ -51,6 +53,7 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
     // vars
     private String groupName;
     private ArrayList<Student> students = new ArrayList<>();
+    private ArrayList<Student> studentsCopy;
 
     public class StudentRecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView userAvatar;
@@ -68,6 +71,7 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
 
     public StudentRecyclerAdapter(ArrayList<Student> students) {
         this.students = students;
+        this.studentsCopy = new ArrayList<>(students);
     }
 
     @NonNull
@@ -133,4 +137,37 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
     public int getItemCount() {
         return students.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    private Filter filter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            ArrayList<Student> filteredStudents = new ArrayList<>();
+            if(constraint.length() == 0 || constraint == null){
+                filteredStudents.addAll(studentsCopy);
+            }else{
+                String studentName = constraint.toString().toLowerCase().trim();
+                for(Student student : studentsCopy){
+                    if(student.getFirstName().toLowerCase().trim().contains(studentName) || student.getSecondName().toLowerCase().trim().contains(studentName)){
+                        filteredStudents.add(student);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredStudents;
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            students.clear();
+            students.addAll((ArrayList<Student>)results.values);
+            notifyDataSetChanged();
+        }
+    };
+
 }
