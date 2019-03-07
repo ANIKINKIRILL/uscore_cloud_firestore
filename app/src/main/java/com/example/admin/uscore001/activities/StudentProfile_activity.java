@@ -207,7 +207,7 @@ public class StudentProfile_activity extends AppCompatActivity implements View.O
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                final Uri downloadUri = taskSnapshot.getDownloadUrl();
+                final Uri downloadUri = taskSnapshot.getMetadata().getReference().getDownloadUrl().getResult();
                 mDatabaseRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
