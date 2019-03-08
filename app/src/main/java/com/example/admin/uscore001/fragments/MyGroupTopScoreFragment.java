@@ -86,10 +86,10 @@ public class MyGroupTopScoreFragment extends Fragment {
         if(getActivity() != null && isAdded()) {
             if(!currentUser.getEmail().contains("teacher")) {
                 findGroupNameByGroupID(currentStudentGroupID);
-                loadCurrentUserGroupMembers(currentStudentGroupID);
+//                loadCurrentUserGroupMembers(currentStudentGroupID);
             }else{
                 findGroupNameByGroupID(teacherGroupID);
-                loadCurrentUserGroupMembersTeacher(teacherGroupID);
+//                loadCurrentUserGroupMembersTeacher(teacherGroupID);
                 currentStudentRate.setVisibility(View.GONE);
             }
         }
@@ -111,80 +111,80 @@ public class MyGroupTopScoreFragment extends Fragment {
         });
     }
 
-    public void loadCurrentUserGroupMembersTeacher(String foundGroupID){
-        students.clear();
-        students$DB
-                .whereEqualTo("groupID", foundGroupID)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                        students.clear();
-                        Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
-                        try {
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                                Student student = documentSnapshot.toObject(Student.class);
-                                score = student.getScore();
-                                image_path = student.getImage_path();
-                                if (image_path.isEmpty()) {
-                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                                }
-                                username = student.getFirstName() + " " + student.getSecondName();
-                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-                                students.add(studentClass);
-                            }
-                            bubbleSortStudents(students);
-                            Collections.reverse(students);
-                            adapter = new StudentRecyclerAdapter(students);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                            recyclerView.setAdapter(adapter);
-                        }catch (Exception e1){
-                            Log.d(TAG, "onEvent: " + e1.getMessage());
-                        }
-                    }
-                });
-    }
+//    public void loadCurrentUserGroupMembersTeacher(String foundGroupID){
+//        students.clear();
+//        students$DB
+//                .whereEqualTo("groupID", foundGroupID)
+//                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+//                        students.clear();
+//                        Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
+//                        try {
+//                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                                Student student = documentSnapshot.toObject(Student.class);
+//                                score = student.getScore();
+//                                image_path = student.getImage_path();
+//                                if (image_path.isEmpty()) {
+//                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                                }
+//                                username = student.getFirstName() + " " + student.getSecondName();
+//                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
+//                                students.add(studentClass);
+//                            }
+//                            bubbleSortStudents(students);
+//                            Collections.reverse(students);
+//                            adapter = new StudentRecyclerAdapter(students);
+//                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//                            recyclerView.setAdapter(adapter);
+//                        }catch (Exception e1){
+//                            Log.d(TAG, "onEvent: " + e1.getMessage());
+//                        }
+//                    }
+//                });
+//    }
 
-    public void loadCurrentUserGroupMembers(String foundGroupID){
-        students.clear();
-        students$DB
-            .whereEqualTo("groupID", foundGroupID)
-            .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                    students.clear();
-                    Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
-                    try {
-                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                            Student student = documentSnapshot.toObject(Student.class);
-                            score = student.getScore();
-                            image_path = student.getImage_path();
-                            if (image_path.isEmpty()) {
-                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                            }
-                            username = student.getFirstName() + " " + student.getSecondName();
-                            if(student.getEmail().equals(currentUser.getEmail())) {
-                                currentStudentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-                            }else{
-                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-                                students.add(studentClass);
-                            }
-                        }
-                        students.add(currentStudentClass);
-                        bubbleSortStudents(students);
-                        Collections.reverse(students);
-                        String you_are_onText = currentStudentRate.getText().toString();
-                        int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-                        you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateGroup);
-                        currentStudentRate.setText(you_are_onText+" "+" месте с"+ " " + currentStudentClass.getScore() + " очками");
-                        adapter = new StudentRecyclerAdapter(students);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                        recyclerView.setAdapter(adapter);
-                    }catch (Exception e1){
-                        Log.d(TAG, "onEvent: " + e1.getMessage());
-                    }
-                }
-            });
-    }
+//    public void loadCurrentUserGroupMembers(String foundGroupID){
+//        students.clear();
+//        students$DB
+//            .whereEqualTo("groupID", foundGroupID)
+//            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                @Override
+//                public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+//                    students.clear();
+//                    Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
+//                    try {
+//                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                            Student student = documentSnapshot.toObject(Student.class);
+//                            score = student.getScore();
+//                            image_path = student.getImage_path();
+//                            if (image_path.isEmpty()) {
+//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                            }
+//                            username = student.getFirstName() + " " + student.getSecondName();
+//                            if(student.getEmail().equals(currentUser.getEmail())) {
+//                                currentStudentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
+//                            }else{
+//                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
+//                                students.add(studentClass);
+//                            }
+//                        }
+//                        students.add(currentStudentClass);
+//                        bubbleSortStudents(students);
+//                        Collections.reverse(students);
+//                        String you_are_onText = currentStudentRate.getText().toString();
+//                        int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
+//                        you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateGroup);
+//                        currentStudentRate.setText(you_are_onText+" "+" месте с"+ " " + currentStudentClass.getScore() + " очками");
+//                        adapter = new StudentRecyclerAdapter(students);
+//                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//                        recyclerView.setAdapter(adapter);
+//                    }catch (Exception e1){
+//                        Log.d(TAG, "onEvent: " + e1.getMessage());
+//                    }
+//                }
+//            });
+//    }
 
     public void bubbleSortStudents(ArrayList<Student> students){
         int size = students.size();

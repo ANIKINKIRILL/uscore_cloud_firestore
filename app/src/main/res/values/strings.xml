@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">USCORE</string>
 
+    <string name="settings">settings</string>
+    <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
+    <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
+
     <string name="open_dialog" translatable="false">open_dialog</string>
 
     <!-- shared preferences-->
@@ -15,8 +19,7 @@
     <string name="group_pref_from_profile_group_fragment" translatable="false">group_pref</string>
 
 
-    <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
-    <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
+
     
     <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
     <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>

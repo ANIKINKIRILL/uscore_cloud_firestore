@@ -630,63 +630,63 @@ public class dashboard_activity extends AppCompatActivity implements
         task.execute();
     }
 
-    public void rateStudentInGroup(final String foundGroup){
-        students.clear();
-        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    if(student.getEmail().equals(currentUser.getEmail())){
-                        score = student.getScore();
-                        currentStudentClass = new Student(
-                                "",
-                                student.getFirstName() + " " + student.getSecondName(),
-                                "",
-                                "",
-                                score,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                    }else{
-                        score = student.getScore();
-                        Student studentClass = new Student(
-                                "",
-                                student.getFirstName() + " " + student.getSecondName(),
-                                "",
-                                "",
-                                score,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                        students.add(studentClass);
-                    }
-                }
-                students.add(currentStudentClass);
-                bubbleSortStudents(students);
-                Collections.reverse(students);
-                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
-                editor.apply();
-            }
-        });
-    }
+//    public void rateStudentInGroup(final String foundGroup){
+//        students.clear();
+//        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
+//            @Override
+//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                    Student student = documentSnapshot.toObject(Student.class);
+//                    if(student.getEmail().equals(currentUser.getEmail())){
+//                        score = student.getScore();
+//                        currentStudentClass = new Student(
+//                                "",
+//                                student.getFirstName() + " " + student.getSecondName(),
+//                                "",
+//                                "",
+//                                score,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                    }else{
+//                        score = student.getScore();
+//                        Student studentClass = new Student(
+//                                "",
+//                                student.getFirstName() + " " + student.getSecondName(),
+//                                "",
+//                                "",
+//                                score,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                        students.add(studentClass);
+//                    }
+//                }
+//                students.add(currentStudentClass);
+//                bubbleSortStudents(students);
+//                Collections.reverse(students);
+//                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
+//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
+//                editor.apply();
+//            }
+//        });
+//    }
 
     public void rateStudentInSchool(){
-        rateStudentInSchoolBackGroundTask task = new rateStudentInSchoolBackGroundTask(this);
-        task.execute();
+//        rateStudentInSchoolBackGroundTask task = new rateStudentInSchoolBackGroundTask(this);
+//        task.execute();
     }
 
     public void bubbleSortStudents(ArrayList<Student> students){
@@ -825,7 +825,7 @@ public class dashboard_activity extends AppCompatActivity implements
                         String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
                         activity.limitScoreView.setText(result);
                     }
-                    activity.rateStudentInGroup(activity.currentUserGroupID);
+//                    activity.rateStudentInGroup(activity.currentUserGroupID);
                     activity.confirmedAndDeniedRequestsNumber(activity.currentStudentID);
                 }
             });
@@ -906,94 +906,94 @@ public class dashboard_activity extends AppCompatActivity implements
     }
 
 
-    public static class rateStudentInSchoolBackGroundTask extends AsyncTask<Void, Void, Void>{
-
-        // vars
-        private WeakReference<dashboard_activity> dashboardActivityWeakReference;
-
-        rateStudentInSchoolBackGroundTask(dashboard_activity activity){
-            dashboardActivityWeakReference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            final dashboard_activity activity = dashboardActivityWeakReference.get();
-            if(activity.isFinishing() || activity == null){
-                return null;
-            }
-
-            /*
-                        START CLOUD FIRESTORE
-             */
-            activity.student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
-                        Student student = studentSnapshot.toObject(Student.class);
-                        if(student.getEmail().equals(activity.currentUser.getEmail())){
-                            activity.score = student.getScore();
-                            activity.image_path = student.getImage_path();
-                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
-                            if (activity.score.trim().isEmpty()) {
-                                activity.score = "In process...";
-                            }
-                            if (activity.image_path.isEmpty()) {
-                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                            }
-                            activity.currentStudentClass = new Student(
-                                    "",
-                                    activity.usernameValue,
-                                    "",
-                                    activity.image_path,
-                                    activity.score,
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    ""
-                            );
-                        }else{
-                            activity.score = student.getScore();
-                            if (activity.score.trim().isEmpty()) {
-                                activity.score = "In process...";
-                            }
-                            activity.image_path = student.getImage_path();
-                            if (activity.image_path.isEmpty()) {
-                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                            }
-                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
-                            Student new_student = new Student(
-                                    "",
-                                    activity.usernameValue,
-                                    "",
-                                    activity.image_path,
-                                    activity.score,
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    "",
-                                    ""
-                            );
-                            activity.students2.add(new_student);
-                        }
-                    }
-                    activity.students2.add(activity.currentStudentClass);
-                    activity.bubbleSortStudents(activity.students2);
-                    Collections.reverse(activity.students2);
-                    activity.currentStudentRateSchool = activity.students2.indexOf(activity.currentStudentClass)+1;
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(activity.getString(R.string.currentStudentRateInSchool), Integer.toString(activity.currentStudentRateSchool));
-                    editor.apply();
-                }
-            });
-            return null;
-        }
-    }
+//    public static class rateStudentInSchoolBackGroundTask extends AsyncTask<Void, Void, Void>{
+//
+//        // vars
+//        private WeakReference<dashboard_activity> dashboardActivityWeakReference;
+//
+//        rateStudentInSchoolBackGroundTask(dashboard_activity activity){
+//            dashboardActivityWeakReference = new WeakReference<>(activity);
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//
+//            final dashboard_activity activity = dashboardActivityWeakReference.get();
+//            if(activity.isFinishing() || activity == null){
+//                return null;
+//            }
+//
+//            /*
+//                        START CLOUD FIRESTORE
+//             */
+//            activity.student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                @Override
+//                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                    for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
+//                        Student student = studentSnapshot.toObject(Student.class);
+//                        if(student.getEmail().equals(activity.currentUser.getEmail())){
+//                            activity.score = student.getScore();
+//                            activity.image_path = student.getImage_path();
+//                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
+//                            if (activity.score.trim().isEmpty()) {
+//                                activity.score = "In process...";
+//                            }
+//                            if (activity.image_path.isEmpty()) {
+//                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                            }
+//                            activity.currentStudentClass = new Student(
+//                                    "",
+//                                    activity.usernameValue,
+//                                    "",
+//                                    activity.image_path,
+//                                    activity.score,
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    ""
+//                            );
+//                        }else{
+//                            activity.score = student.getScore();
+//                            if (activity.score.trim().isEmpty()) {
+//                                activity.score = "In process...";
+//                            }
+//                            activity.image_path = student.getImage_path();
+//                            if (activity.image_path.isEmpty()) {
+//                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                            }
+//                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
+//                            Student new_student = new Student(
+//                                    "",
+//                                    activity.usernameValue,
+//                                    "",
+//                                    activity.image_path,
+//                                    activity.score,
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    "",
+//                                    ""
+//                            );
+//                            activity.students2.add(new_student);
+//                        }
+//                    }
+//                    activity.students2.add(activity.currentStudentClass);
+//                    activity.bubbleSortStudents(activity.students2);
+//                    Collections.reverse(activity.students2);
+//                    activity.currentStudentRateSchool = activity.students2.indexOf(activity.currentStudentClass)+1;
+//                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putString(activity.getString(R.string.currentStudentRateInSchool), Integer.toString(activity.currentStudentRateSchool));
+//                    editor.apply();
+//                }
+//            });
+//            return null;
+//        }
+//    }
 
 }

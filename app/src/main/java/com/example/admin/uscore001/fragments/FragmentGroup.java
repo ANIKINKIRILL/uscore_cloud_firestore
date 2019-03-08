@@ -89,7 +89,7 @@ public class FragmentGroup extends Fragment {
                         Student student = documentSnapshot.toObject(Student.class);
                         currentUserGroupID = student.getGroupID();
                         findGroupNameByGroupID(currentUserGroupID);
-                        loadCurrentUserGroupMembers(currentUserGroupID);
+//                        loadCurrentUserGroupMembers(currentUserGroupID);
                     }
                 });
 
@@ -107,32 +107,32 @@ public class FragmentGroup extends Fragment {
                 });
     }
 
-    public void loadCurrentUserGroupMembers(String foundGroupID){
-        students.clear();
-        students$DB
-                .whereEqualTo("groupID", foundGroupID)
-                .orderBy("score", Query.Direction.DESCENDING)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                            Student student = documentSnapshot.toObject(Student.class);
-                            score = student.getScore();
-                            image_path = student.getImage_path();
-                            if (image_path.isEmpty()) {
-                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                            }
-                            username = student.getFirstName() + " " + student.getSecondName();
-                            Student studentClass = new Student(score, username, image_path, foundGroupID, "", "", "", "", "");
-                            students.add(studentClass);
-                        }
-                        adapter = new StudentRecyclerAdapter(students);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                        recyclerView.setAdapter(adapter);
-                    }
-                });
-
-    }
+//    public void loadCurrentUserGroupMembers(String foundGroupID){
+//        students.clear();
+//        students$DB
+//                .whereEqualTo("groupID", foundGroupID)
+//                .orderBy("score", Query.Direction.DESCENDING)
+//                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                            Student student = documentSnapshot.toObject(Student.class);
+//                            score = student.getScore();
+//                            image_path = student.getImage_path();
+//                            if (image_path.isEmpty()) {
+//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+//                            }
+//                            username = student.getFirstName() + " " + student.getSecondName();
+//                            Student studentClass = new Student(score, username, image_path, foundGroupID, "", "", "", "", "");
+//                            students.add(studentClass);
+//                        }
+//                        adapter = new StudentRecyclerAdapter(students);
+//                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+//                        recyclerView.setAdapter(adapter);
+//                    }
+//                });
+//
+//    }
 
     public class CompareStudentsByScore implements Comparator<Student> {
         @Override

@@ -129,9 +129,9 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         score.setText(intentScore);
         group.setText(intentGroup);
 
-        rateStudentInGroup(intentGroupID);
+//        rateStudentInGroup(intentGroupID);
 
-        rateStudentInSchool();
+//        rateStudentInSchool();
 
     }
 
@@ -164,115 +164,115 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         }
     }
 
-    public void rateStudentInGroup(final String foundGroup){
-        Log.d(TAG, "rateStudentInGroup: " + intentEmail);
-        students.clear();
-        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    if(student.getEmail().equals(intentEmail)){
-                        scoreValue = student.getScore();
-                        currentStudentClass = new Student(
-                                "",
-                                student.getFirstName() + " " + student.getSecondName(),
-                                "",
-                                "",
-                                scoreValue,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                    }else{
-                        scoreValue = student.getScore();
-                        Student studentClass = new Student(
-                                "",
-                                student.getFirstName() + " " + student.getSecondName(),
-                                "",
-                                "",
-                                scoreValue,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                        students.add(studentClass);
-                    }
-                }
-                students.add(currentStudentClass);
-                bubbleSortStudents(students);
-                Collections.reverse(students);
-                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-                rateInGroup.setText(Integer.toString(currentStudentRateGroup));
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
-                editor.apply();
-            }
-        });
-    }
+//    public void rateStudentInGroup(final String foundGroup){
+//        Log.d(TAG, "rateStudentInGroup: " + intentEmail);
+//        students.clear();
+//        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
+//            @Override
+//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                    Student student = documentSnapshot.toObject(Student.class);
+//                    if(student.getEmail().equals(intentEmail)){
+//                        scoreValue = student.getScore();
+//                        currentStudentClass = new Student(
+//                                "",
+//                                student.getFirstName() + " " + student.getSecondName(),
+//                                "",
+//                                "",
+//                                scoreValue,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                    }else{
+//                        scoreValue = student.getScore();
+//                        Student studentClass = new Student(
+//                                "",
+//                                student.getFirstName() + " " + student.getSecondName(),
+//                                "",
+//                                "",
+//                                scoreValue,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                        students.add(studentClass);
+//                    }
+//                }
+//                students.add(currentStudentClass);
+//                bubbleSortStudents(students);
+//                Collections.reverse(students);
+//                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
+//                rateInGroup.setText(Integer.toString(currentStudentRateGroup));
+//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
+//                editor.apply();
+//            }
+//        });
+//    }
 
-    public void rateStudentInSchool(){
-        student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
-                    Student student = studentSnapshot.toObject(Student.class);
-                    if(student.getEmail().equals(intentEmail)){
-                        scoreValue = student.getScore();
-                        currentStudentClass = new Student(
-                                "",
-                                "",
-                                "",
-                                "",
-                                scoreValue,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                    }else{
-                        scoreValue = student.getScore();
-                        Student new_student = new Student(
-                                "",
-                                "",
-                                "",
-                                "",
-                                scoreValue,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                        );
-                        students2.add(new_student);
-                    }
-                }
-                students2.add(currentStudentClass);
-                bubbleSortStudents(students2);
-                Collections.reverse(students2);
-                currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
-                rateInSchool.setText(Integer.toString(currentStudentRateSchool));
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(getString(R.string.currentStudentRateInSchool), Integer.toString(currentStudentRateSchool));
-                editor.apply();
-            }
-        });
-    }
+//    public void rateStudentInSchool(){
+//        student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
+//            @Override
+//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
+//                    Student student = studentSnapshot.toObject(Student.class);
+//                    if(student.getEmail().equals(intentEmail)){
+//                        scoreValue = student.getScore();
+//                        currentStudentClass = new Student(
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                scoreValue,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                    }else{
+//                        scoreValue = student.getScore();
+//                        Student new_student = new Student(
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                scoreValue,
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                ""
+//                        );
+//                        students2.add(new_student);
+//                    }
+//                }
+//                students2.add(currentStudentClass);
+//                bubbleSortStudents(students2);
+//                Collections.reverse(students2);
+//                currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
+//                rateInSchool.setText(Integer.toString(currentStudentRateSchool));
+//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString(getString(R.string.currentStudentRateInSchool), Integer.toString(currentStudentRateSchool));
+//                editor.apply();
+//            }
+//        });
+//    }
 
     public void bubbleSortStudents(ArrayList<Student> students){
         int size = students.size();

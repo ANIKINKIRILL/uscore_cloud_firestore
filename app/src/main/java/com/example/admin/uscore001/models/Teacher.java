@@ -1,17 +1,26 @@
 package com.example.admin.uscore001.models;
 
+import com.example.admin.uscore001.AsyncTaskArguments;
+import com.example.admin.uscore001.AsyncTaskDataArgument;
+import com.example.admin.uscore001.Callback;
+import com.example.admin.uscore001.FirebaseServer;
+
+/**
+ * Учитель
+ */
+
 public class Teacher {
-    String responsible_email;
-    String image_path;
-    String positionID;
-    String subjectID;
-    String firstName;
-    String secondName;
-    String lastName;
-    String groupID;
-    String id;
-    String requestID;
-    String statusID;
+   private String responsible_email;
+   private String image_path;
+   private String positionID;
+   private String subjectID;
+   private String firstName;
+   private String secondName;
+   private String lastName;
+   private String groupID;
+   private String id;
+   private String requestID;
+   private String statusID;
 
     public Teacher(
             String responsible_email,
@@ -132,4 +141,34 @@ public class Teacher {
     public String toString() {
         return this.getFirstName() + " " + this.getLastName();
     }
+
+    /*
+                        METHODS SECTION
+     */
+
+    /**
+     * Выгрузка всех учителей
+     * @param callback
+     */
+
+    public static void loadAllTeachers(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.LoadAllTeachers loadAllTeachers = new FirebaseServer.LoadAllTeachers();
+        loadAllTeachers.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Извлечение почты учителя
+     * @param firstName
+     * @param lastName
+     * @param callback
+     */
+
+    public static void getTeacherEmail(String firstName, String lastName, Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(firstName, lastName));
+        FirebaseServer.GetTeacherEmail getTeacherEmail = new FirebaseServer.GetTeacherEmail();
+        getTeacherEmail.execute(asyncTaskArguments);
+    }
+
+
 }

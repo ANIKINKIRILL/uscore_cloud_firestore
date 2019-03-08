@@ -29,10 +29,14 @@ import android.widget.Toast;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.example.admin.uscore001.AsyncTaskArguments;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
 import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -67,43 +71,55 @@ import javax.annotation.Nullable;
 
 import static android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
 
+/**
+ * Авторизация пользователя
+ */
 
 public class login_activity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener,
         CompoundButton.OnCheckedChangeListener{
 
-
     private static final String TAG = "login_activity";
 
+    // Виджеты
+    private EditText passwordView;
+    private Button signIn;
+    private TextView register;
+    private CheckBox checkBox;
+    public static ProgressBar progressBar;
+    private Spinner groupsSpinner, usersSpinner;
 
-    // Firebase and Firestore
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
-    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
-    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
-    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    // Переменные
+    private String pickedObject;
+    boolean haveStudentsInGroup = false;
+    String email;
 
-    //widgets
-    EditText passwordView;
-    Button signIn;
-    TextView register;
-    CheckBox checkBox;
-    ProgressBar progressBar;
-    Spinner groupsSpinner, studentsSpinner;
-
-    //vars
-    String pickedObject;
-    ArrayList<String> allStudentsNamesFromPickedGroup = new ArrayList<>();
-    ArrayList<String> allTeachersNames = new ArrayList<>();
-    String pickedTeacherEmail;
-    private String pickedGroupID;
-    private String studentEmailFromPickedGroup;
+    // Постоянные переменные
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         init();
+        populateGroupSpinnerAdapter();
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(User.isAuthenticated){
+            Log.d(TAG, "onStart: already authenticated");
+            Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
+            goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(goToDashboard);
+            finish();
+        }else{
+            Log.d(TAG, "onStart: not authenticated");
+        }
+    }
+
+    /**
+     * Инициализация
+     */
 
     private void init(){
         register = findViewById(R.id.register);
@@ -120,27 +136,35 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         passwordView.setOnFocusChangeListener(this);
 
         groupsSpinner = findViewById(R.id.groupsPickerSpinner);
-        studentsSpinner = findViewById(R.id.studentPickerSpinner);
+        usersSpinner = findViewById(R.id.studentPickerSpinner);
+
+    }
+
+    /**
+     * Наполняем спиннер с группами и устанавливаем OnItemSelectedListener
+     */
+
+    public void populateGroupSpinnerAdapter(){
         ArrayAdapter<CharSequence> groupsAdapter = ArrayAdapter.createFromResource(this, R.array.groups, android.R.layout.simple_spinner_item);
         groupsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         groupsSpinner.setAdapter(groupsAdapter);
-        groupsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                allStudentsNamesFromPickedGroup.clear();
-                allTeachersNames.clear();
-                pickedObject = adapterView.getSelectedItem().toString();
-                if(!pickedObject.equals("Учителя")) {// group
-                    haveStudentsInGroup = false;
-                    loadAllGroupStudents(pickedObject);
-                }else{                                                      // teachers
-                    loadAllTeachers();
-                }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView){}
-        });
+        groupsSpinner.setOnItemSelectedListener(groupsSpinnerOnItemSelectedListener);
     }
+
+    AdapterView.OnItemSelectedListener groupsSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            pickedObject = adapterView.getSelectedItem().toString();
+            if(!pickedObject.equals("Учителя")) {                                   // Выбрали Группу
+                haveStudentsInGroup = false;
+                loadGroupStudents(pickedObject);
+            }else{
+                loadAllTeachers();                                                  // Выбрали Учителей
+            }
+        }
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView){}
+    };
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -160,23 +184,12 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(login_activity.this);
-        passwordView.setText(sharedPreferences.getString(getString(R.string.password_pref), ""));
-    }
-
-    @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.signIn:{
-                if(isValid(passwordView)){
-                    if(studentEmailFromPickedGroup != null) {
-                        doSignIn(studentEmailFromPickedGroup, passwordView.getText().toString().trim());
-                        signIn.setEnabled(false);
-                    }else if(pickedTeacherEmail != null){
-                        doSignIn(pickedTeacherEmail, passwordView.getText().toString().trim());
-                        signIn.setEnabled(false);
+                if(isValid()){
+                    if(email != null || !email.trim().isEmpty()){
+                        doSignIn(email, passwordView.getText().toString().trim(), mAuthCallback);
                     }
                 }
                 break;
@@ -189,174 +202,210 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public boolean isValid(EditText passwordEditText){
-        if(passwordEditText.getText().toString().trim().isEmpty()){
-            passwordEditText.setError("Поле обязательно для ввода");
-            passwordEditText.requestFocus();
-            YoYo.with(Techniques.Swing).duration(1000).repeat(0).playOn(passwordEditText);
+    /**
+     * Проверка на ошибки ввода при авторизации пользователя
+     * Если все верно -> @return true
+     * Если ошибка -> @return false
+     */
+
+    public boolean isValid(){
+        if(passwordView.getText().toString().trim().isEmpty()){
+            passwordView.setError("Поле обязательно для ввода");
+            passwordView.requestFocus();
+            YoYo.with(Techniques.Swing).duration(1000).repeat(0).playOn(passwordView);
             return false;
         }
         return true;
     }
 
-    public void doSignIn(final String email, String password){
-        progressBar.setVisibility(View.VISIBLE);
-        mAuth.signInWithEmailAndPassword(email, password)
-        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-//                    String tokenID = FirebaseInstanceId.getInstance().getToken();
-//                    if(!email.contains("teacher")) {
-//                        students$DB.whereEqualTo("email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                                    Map<String, Object> tokenIDMap = new HashMap<>();
-//                                    tokenIDMap.put("deviceTokenID", tokenID);
-//                                    documentSnapshot.getReference().update(tokenIDMap);
-//                                }
-//                            }
-//                        });
-//                    }else{
-//                        teachers$DB.whereEqualTo("responsible_email", email).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-//                                    Map<String, Object> tokenIDMap = new HashMap<>();
-//                                    tokenIDMap.put("deviceTokenID", tokenID);
-//                                    documentSnapshot.getReference().update(tokenIDMap);
-//                                }
-//                            }
-//                        });
-//                    }
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(login_activity.this);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(getString(R.string.password_pref), password);
-                    editor.apply();
-                    progressBar.setVisibility(View.INVISIBLE);
-                    Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
-                    goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(goToDashboard);
-                    finish();
-                    Toast.makeText(login_activity.this, "Вы вошли в свой аккаунт", Toast.LENGTH_SHORT).show();
-                }else{
-                    progressBar.setVisibility(View.INVISIBLE);
-                    Toast.makeText(login_activity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    YoYo.with(Techniques.Shake).duration(750).repeat(0).playOn(findViewById(R.id.login_fields));
-                }
-            }
-        });
-    }
+    /**
+     * Авторизация пользователя
+     * @param email
+     * @param password
+     */
 
-    boolean haveStudentsInGroup = false;
-
-    public void loadAllGroupStudents(String pickedGroup){
+    public void doSignIn(final String email, String password, Callback callback){
         signIn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
-        groups$DB.whereEqualTo("name", pickedGroup).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                for(DocumentSnapshot groups : task.getResult().getDocuments()){
-                    Group group = groups.toObject(Group.class);
-                    String groupID = group.getId();
-                    isHaveStudentsInGroup(groupID);
-                }
-            }
-        });
+        User.authenticate(email, password, callback);
     }
 
-    private void isHaveStudentsInGroup(String pickedGroupID){
-        final int[] studentsSize = new int[1];
-        Log.d(TAG, "isHaveStudentsInGroup pickedGroupID: " + pickedGroupID);
-        students$DB.whereEqualTo("groupID", pickedGroupID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                studentsSize[0] = task.getResult().size();
-                Log.d(TAG, "isHaveStudentsInGroup studentsSize: " + studentsSize[0]);
-                if(studentsSize[0] != 0){
-                    students$DB.whereEqualTo("groupID", pickedGroupID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
-                                Student student = documentSnapshot.toObject(Student.class);
-                                allStudentsNamesFromPickedGroup.add(student.getFirstName() + " " + student.getSecondName());
-                            }
-                            createStudentsAdapter(allStudentsNamesFromPickedGroup, pickedGroupID);
-                        }
-                    });
-                }else{
-                    Toast.makeText(login_activity.this, "В этой группе нет учеников, попробуйте зарегистрироваться", Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
+    /**
+     * Callback, вызываемый после авторизации пользователя
+     */
+
+    Callback mAuthCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            boolean successful = (boolean) data;
+            if(successful){
+                // Сохранение логина и пароля в Настройках
+                Settings.setLogin(params[0]);
+                Settings.setPassword(params[1]);
+                // Извлечение статуса пользователя
+                User.getUserStatus(params[0], mGetStatusCallback);
+                User.isAuthenticated = true;
+                /*
+                Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
+                goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(goToDashboard);
+                finish();
+                */
+                Log.d(TAG, "signedIn: with login:" + Settings.getLogin() + "\n" +
+                                     "password: " + Settings.getPassword() + "\n");
+                signIn.setEnabled(true);
+            }else{
+                String failureReason = params[0];
+                Toast.makeText(login_activity.this, failureReason, Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.INVISIBLE);
+                signIn.setEnabled(true);
+                Log.d(TAG, "signIn failed");
             }
-        });
+        }
+    };
+
+    /**
+     * Callback, полсе получения статуса
+     */
+
+    Callback mGetStatusCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String statusID = data.toString();
+            String studentStatus = getString(R.string.studentStatusValue);
+            String teacherStatus = getString(R.string.teacherStatusValue);
+            // Сохранение статуса пользователя
+            if(statusID.equals(studentStatus)){
+                Settings.setStatus(studentStatus);
+            }
+            if(statusID.equals(teacherStatus)){
+                Settings.setStatus(teacherStatus);
+            }
+            Log.d(TAG, "statusID: " + Settings.getStatus());
+            progressBar.setVisibility(View.INVISIBLE);
+        }
+    };
+
+    /**
+     * Выгружение всех учеинков класса
+     * @param pickedGroup
+     */
+
+    public void loadGroupStudents(String pickedGroup){
+        signIn.setEnabled(false);
+        progressBar.setVisibility(View.VISIBLE);
+        passwordView.setText("");
+        Student.loadGroupStudents(pickedGroup, mLoadGroupStudentsCallback);
     }
 
-    public void createStudentsAdapter(ArrayList<String> students, String pickedGroupID){
-        signIn.setEnabled(true);
+    /**
+     * Callback, после выгрузки всех студентов из группы
+     */
+
+    Callback mLoadGroupStudentsCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<String> students = (ArrayList) data;
+            if(students.size() != 0){
+                String groupID = params[0];
+                signIn.setEnabled(true);
+                progressBar.setVisibility(View.INVISIBLE);
+                initStudentsSpinner(students, groupID);
+            }else{
+                Toast.makeText(login_activity.this, "В классе пока нет учеников, попробуйте зарегистрироваться", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.INVISIBLE);
+                // Делаем так чтобы спиннер был пустой
+                usersSpinner.setAdapter(new ArrayAdapter<String>(login_activity.this, android.R.layout.simple_spinner_item, new ArrayList<>()));
+            }
+        }
+    };
+
+    /**
+     * Инициализация спиннера для учеников и OnItemSelectedListener
+     * @param students              // Учеинки группы
+     * @param pickedGroupID         // id группы
+     */
+
+    public void initStudentsSpinner(ArrayList<String> students, String pickedGroupID){
         ArrayAdapter<String> studentsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, students);
         studentsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        studentsSpinner.setAdapter(studentsAdapter);
-        progressBar.setVisibility(View.INVISIBLE);
-        studentsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        usersSpinner.setAdapter(studentsAdapter);
+        usersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                loadPickedStudentEmail(pickedGroupID, adapterView.getSelectedItem().toString());
+                passwordView.setText("");
+                getPickedStudentEmail(pickedGroupID, adapterView.getSelectedItem().toString());
             }
-
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
+            public void onNothingSelected(AdapterView<?> adapterView){}
         });
     }
 
-    public void loadPickedStudentEmail(String pickedGroupID, String firstSecondName){
-        String[] firstSecondNameWords = firstSecondName.split(" ");
-        students$DB
-                .whereEqualTo("firstName", firstSecondNameWords[0])
-                .whereEqualTo("secondName", firstSecondNameWords[1])
-                .whereEqualTo("groupID", pickedGroupID)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot studentsSnapshots : queryDocumentSnapshots.getDocuments()) {
-                    Student student = studentsSnapshots.toObject(Student.class);
-                    studentEmailFromPickedGroup = student.getEmail();
-                    signIn.setEnabled(true);
-                }
-                Log.d(TAG, "picked student email: " + studentEmailFromPickedGroup);
-                Log.d(TAG, "firstName: " + firstSecondNameWords[0] + " secondName: " + firstSecondNameWords[1]);
-            }
-        });
-        Log.d(TAG, "signInButton is enable");
+    /**
+     * Извлечение email ученика
+     * @param pickedGroupID             // id группы
+     * @param firstSecondStudentName    // Данные ученика
+     */
+
+    public void getPickedStudentEmail(String pickedGroupID, String firstSecondStudentName){
+        signIn.setEnabled(false);
+        String firstSecondNameSplittedWithSpace[] = firstSecondStudentName.split(" ");
+        String firstName = firstSecondNameSplittedWithSpace[0];
+        String secondName = firstSecondNameSplittedWithSpace[1];
+        Student.getStudentEmail(pickedGroupID, firstName, secondName, mGetStudentEmailCallback);
     }
+
+    /**
+     * Callback, после выгрузки всех студентов из группы
+     */
+    
+    Callback mGetStudentEmailCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            email = (String) data;
+            signIn.setEnabled(true);
+        }
+    };
+
+    /**
+     * Выгрузка всех учителей
+     */
 
     public void loadAllTeachers(){
         signIn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
-        teachers$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot teachers : queryDocumentSnapshots.getDocuments()){
-                    Teacher teacherObj = teachers.toObject(Teacher.class);
-                    allTeachersNames.add(teacherObj.getFirstName() + " " + teacherObj.getLastName());
-                }
-                createTeachersAdapter();
-            }
-        });
-        signIn.setEnabled(true);
+        passwordView.setText("");
+        Teacher.loadAllTeachers(mLoadAllTeachersCallback);
     }
 
-    public void createTeachersAdapter(){
-        ArrayAdapter<String> teacherAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allTeachersNames);
+    /**
+     * Callback, после выгрузки всех учителей
+     */
+
+    Callback mLoadAllTeachersCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<String> teachers = (ArrayList) data;
+            initTeachersSpinner(teachers);
+        }
+    };
+
+    /**
+     * Инициализация спиннера для учителей и OnItemSelectedListener
+     * @param teachers          // Список учителей
+     */
+
+    public void initTeachersSpinner(ArrayList<String> teachers){
+        signIn.setEnabled(true);
+        ArrayAdapter<String> teacherAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, teachers);
         teacherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        studentsSpinner.setAdapter(teacherAdapter);
+        usersSpinner.setAdapter(teacherAdapter);
         progressBar.setVisibility(View.INVISIBLE);
-        studentsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        usersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                loadPickedTeacherEmail(adapterView.getSelectedItem().toString());
+                passwordView.setText("");
+                getPickedTeacherEmail(adapterView.getSelectedItem().toString());
             }
 
             @Override
@@ -366,32 +415,29 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    public void loadPickedTeacherEmail(String firstLastName){
+    /**
+     * Извлечение email учителя
+     * @param firstLastName         // Данные учителя
+     */
+
+    public void getPickedTeacherEmail(String firstLastName){
         signIn.setEnabled(false);
-        Log.d(TAG, "signInButton is not enable");
-        try {
-            String[] firstLastNameWords = firstLastName.split(" ");
-            teachers$DB
-                    .whereEqualTo("firstName", firstLastNameWords[0])
-                    .whereEqualTo("lastName", firstLastNameWords[1])
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            try {
-                                List<DocumentSnapshot> teachersSnapshot = queryDocumentSnapshots.getDocuments();
-                                Teacher teacher = teachersSnapshot.get(0).toObject(Teacher.class);
-                                pickedTeacherEmail = teacher.getResponsible_email();
-                                signIn.setEnabled(true);
-                                Log.d(TAG, "selectedTeacherEmail: " + pickedTeacherEmail);
-                            }catch (Exception e1){
-                                Log.d(TAG, "loadPickedTeacherEmail: " + e1.getMessage());
-                            }
-                        }
-                    });
-        }catch (Exception e){
-            Log.d(TAG, "loadPickedTeacherEmail: " + e.getMessage());
-        }
-        Log.d(TAG, "signInButton is enable");
+        String[] firstLastNameSplittedWithSpace = firstLastName.split(" ");
+        String firstName = firstLastNameSplittedWithSpace[0];
+        String lastName = firstLastNameSplittedWithSpace[1];
+        Teacher.getTeacherEmail(firstName, lastName, mGetTeacherEmailCallback);
     }
+
+    /**
+     * Callback после получения email учителя
+     */
+
+    Callback mGetTeacherEmailCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            email = (String) data;
+            signIn.setEnabled(true);
+        }
+    };
 
 }
