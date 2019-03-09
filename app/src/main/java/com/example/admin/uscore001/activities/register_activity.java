@@ -19,10 +19,13 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Group;
+import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.StudentRegisterRequestModel;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
 import com.example.admin.uscore001.util.RegisterActivityGroupAdapter;
 import com.example.admin.uscore001.util.RegisterActivityTeacherAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -38,49 +41,47 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 /**
- * Активити для регистарции ученкиов в системе
+ * Активити для регистарции учеников в системе
  */
 
 public class register_activity extends AppCompatActivity {
 
     private static final String TAG = "register_activity";
 
-    // widgets
+    // Виджеты
     EditText firstName,secondName,lastName,email;
     Button register;
     Spinner groupsPickerSpinner, teacherPickerSpinner;
 
-    // Firebase
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference teacher$db = firebaseFirestore.collection("TEACHERS$DB");
-    CollectionReference groups$db = firebaseFirestore.collection("GROUPS$DB");
-    CollectionReference student_register_requests = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
-
-    // vars
-    ArrayList<Teacher> teachers = new ArrayList<>();
-    ArrayList<Group> groups = new ArrayList<>();
+    // Переменные
     String selectedTeacherID;
     private String selectedGroupID;
-
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        initActionBar();
+        init();
+        populateSpinner();
+    }
+
+    /**
+     * Инизиализация ActionBar
+     */
+
+    private void initActionBar(){
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("Регистрация ученика");
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
         actionBar.setElevation(0);
-
-        init();
     }
 
     /**
-     * Находим виджеты
+     * Инизиализация
      */
 
     private void init(){
@@ -92,63 +93,34 @@ public class register_activity extends AppCompatActivity {
         register.setOnClickListener(sendRegistrationRequestOnClickListener);
         groupsPickerSpinner = findViewById(R.id.groupsPickerSpinner);
         teacherPickerSpinner = findViewById(R.id.teacherPickerSpinner);
-
-        setItemsIntoSpinners();
-
     }
 
     /**
-     * Установим items в spinners
+     * Установка items в spinner
      */
 
-    private void setItemsIntoSpinners(){
-        // Выгружаем группы из бд и загружаем в groupsPickerSpinner
-        groups$db.addSnapshotListener(groups$dbEventListener);
+    private void populateSpinner(){
+        // Выгружаем группы из бд и загружаем в groupsPickerSpinner, установка setOnItemSelectedListener
+        User.getAllSchoolGroups(mGetAllSchoolGroupsCallback);
     }
-    /**
-     * Listener для выгрузки учителей из бд
-     */
-
-    EventListener<QuerySnapshot> teacher$dbEventListener = new EventListener<QuerySnapshot>() {
-        @Override
-        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-            for(DocumentSnapshot teacher : queryDocumentSnapshots.getDocuments()){
-                Teacher teacherObj = teacher.toObject(Teacher.class);
-                teachers.add(teacherObj);
-            }
-            RegisterActivityTeacherAdapter adapter = new RegisterActivityTeacherAdapter(register_activity.this, teachers);
-            teacherPickerSpinner.setAdapter(adapter);
-            teacherPickerSpinner.setOnItemSelectedListener(teacherSpinnerOnItemSelectedListener);
-        }
-    };
 
     /**
-     * Listener для выгрузыки групп из бд
+     * Callback, который вызывиться после получения всех групп с Сервера
      */
 
-    EventListener<QuerySnapshot> groups$dbEventListener = new EventListener<QuerySnapshot>() {
+    Callback mGetAllSchoolGroupsCallback = new Callback() {
         @Override
-        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-            for(DocumentSnapshot group : queryDocumentSnapshots.getDocuments()){
-                Group groupObj = group.toObject(Group.class);
-                groups.add(groupObj);
-            }
+        public void execute(Object data, String... params) {
+            ArrayList<Group> groups = (ArrayList) data;
             RegisterActivityGroupAdapter adapter = new RegisterActivityGroupAdapter(register_activity.this, groups);
             groupsPickerSpinner.setAdapter(adapter);
             groupsPickerSpinner.setOnItemSelectedListener(groupsSpinnerOnItemSelectedListener);
         }
     };
 
-    AdapterView.OnItemSelectedListener teacherSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
-    };
+    /**
+     * GroupsSpinner OnItemSelectedListener
+     */
 
     AdapterView.OnItemSelectedListener groupsSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
         @Override
@@ -166,6 +138,10 @@ public class register_activity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Listener кнопки для отправления заявки на регистрацию
+     */
+
     View.OnClickListener sendRegistrationRequestOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -179,17 +155,21 @@ public class register_activity extends AppCompatActivity {
                 String teacherID = selectedTeacherID;
                 boolean confirmed = false;
                 boolean denied = false;
-                StudentRegisterRequestModel model = new StudentRegisterRequestModel(firstNameValue, secondNameValue,
-                        lastNameValue, emailValue, groupID, teacherID, confirmed, denied);
-                student_register_requests.add(model).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        task.getResult().update("id", task.getResult().getId());
-                        Toast.makeText(register_activity.this, "Вы успешно отправили запрос на регистрацию", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                });
+                Student.sendRegistrationRequest(mSendRegistrationRequestCallback, firstNameValue, secondNameValue, lastNameValue, emailValue, groupID, teacherID, confirmed, denied);
             }
+        }
+    };
+
+    /**
+     * Callback, который вызывиться после отправления заяввки на регистарцию
+     */
+
+    Callback mSendRegistrationRequestCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String message = (String) data;
+            Toast.makeText(register_activity.this, message, Toast.LENGTH_SHORT).show();
+            finish();
         }
     };
 
@@ -235,10 +215,10 @@ public class register_activity extends AppCompatActivity {
             }
             case R.id.info:{
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog.setTitle("Ознакомление");
                 alertDialog
                 .setMessage("Для начала мониторинга своих очков и баллов. Тебе следует зарегистрироваться. Выбирай свою группу и продолжай побеждать");
-                alertDialog.setTitle("Ознакомление");
-                alertDialog.setPositiveButton("Спасибо", positivieButtonOnClickListener);
+                alertDialog.setPositiveButton("Спасибо", positiveButtonOnClickListener);
                 alertDialog.show();
                 break;
             }
@@ -246,7 +226,11 @@ public class register_activity extends AppCompatActivity {
         return true;
     }
 
-    DialogInterface.OnClickListener positivieButtonOnClickListener = new DialogInterface.OnClickListener() {
+    /**
+     * Нажатие кнопки Спасибо
+     */
+
+    DialogInterface.OnClickListener positiveButtonOnClickListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
             dialog.dismiss();

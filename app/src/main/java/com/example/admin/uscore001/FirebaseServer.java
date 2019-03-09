@@ -7,14 +7,17 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.admin.uscore001.activities.login_activity;
+import com.example.admin.uscore001.activities.register_activity;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.StudentRegisterRequestModel;
 import com.example.admin.uscore001.models.Teacher;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -41,10 +44,12 @@ public class FirebaseServer {
     static CollectionReference STUDENTS$DB = firebaseFirestore.collection("STUDENTS$DB");
     static CollectionReference TEACHERS$DB = firebaseFirestore.collection("TEACHERS$DB");
     static CollectionReference GROUPS$DB = firebaseFirestore.collection("GROUPS$DB");
+    static CollectionReference STUDENT_REGISTER_REQUESTS = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
 
     // Переменные
     private static ArrayList<String> students = new ArrayList<>();
     private static ArrayList<String> teachers = new ArrayList<>();
+    private static ArrayList<Group> groups = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -115,7 +120,7 @@ public class FirebaseServer {
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             students.clear();
-            String pickedGroupName = asyncTaskArguments[0].mData.data[0];
+            String pickedGroupName = (String)asyncTaskArguments[0].mData.data[0];
             GROUPS$DB.whereEqualTo("name", pickedGroupName).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -155,9 +160,9 @@ public class FirebaseServer {
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             Callback callback = asyncTaskArguments[0].mCallback;
             AsyncTaskDataArgument dataArgument = asyncTaskArguments[0].mData;
-            String groupID = dataArgument.data[0];
-            String firstName = dataArgument.data[1];
-            String secondName = dataArgument.data[2];
+            String groupID = (String) dataArgument.data[0];
+            String firstName = (String) dataArgument.data[1];
+            String secondName = (String) dataArgument.data[2];
 
             STUDENTS$DB
                 .whereEqualTo("firstName", firstName)
@@ -210,8 +215,8 @@ public class FirebaseServer {
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             Callback callback = asyncTaskArguments[0].mCallback;
-            String firstName = asyncTaskArguments[0].mData.data[0];
-            String lastName = asyncTaskArguments[0].mData.data[1];
+            String firstName = (String) asyncTaskArguments[0].mData.data[0];
+            String lastName = (String) asyncTaskArguments[0].mData.data[1];
             TEACHERS$DB
                 .whereEqualTo("firstName", firstName)
                 .whereEqualTo("lastName", lastName)
@@ -229,6 +234,61 @@ public class FirebaseServer {
                         }
                     }
                 });
+            return null;
+        }
+    }
+
+    /**
+     * Выгрузка всех групп школы
+     */
+
+    public static class GetAllSchoolGroups extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            groups.clear();
+            GROUPS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                            Group group = documentSnapshot.toObject(Group.class);
+                            groups.add(group);
+                        }
+                        asyncTaskArguments[0].mCallback.execute(groups);
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Отправка заявки на регистрацию ученика
+     */
+
+    public static class SendRegistrationRequest extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            AsyncTaskDataArgument dataArgument = asyncTaskArguments[0].mData;
+            String firstName = (String) dataArgument.data[0];
+            String secondName = (String) dataArgument.data[1];
+            String lastName = (String) dataArgument.data[2];
+            String email = (String) dataArgument.data[3];
+            String groupID = (String) dataArgument.data[4];
+            String teacherID = (String) dataArgument.data[5];
+            boolean confirmed = (boolean) dataArgument.data[6];
+            boolean denied = (boolean) dataArgument.data[7];
+            StudentRegisterRequestModel model = new StudentRegisterRequestModel(firstName, secondName,
+            lastName, email, groupID, teacherID, confirmed, denied);
+            STUDENT_REGISTER_REQUESTS.add(model).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentReference> task) {
+                    task.getResult().update("id", task.getResult().getId());
+                    String message = "Вы успешно отправили запрос на регистрацию";
+                    callback.execute(message);
+                }
+            });
             return null;
         }
     }

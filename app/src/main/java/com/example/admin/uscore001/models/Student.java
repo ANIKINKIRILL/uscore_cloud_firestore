@@ -152,6 +152,7 @@ public class Student {
 
     /**
      * Выгрузка всех студентов
+     *
      * @param callback
      * @param group_name
      */
@@ -164,6 +165,7 @@ public class Student {
 
     /**
      * Извлечение почты ученика
+     *
      * @param firstName
      * @param secondName
      * @param callback
@@ -173,6 +175,26 @@ public class Student {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(groupID, firstName, secondName));
         FirebaseServer.GetStudentEmail getStudentEmail = new FirebaseServer.GetStudentEmail();
         getStudentEmail.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Отправка заявки на регистрацию ученика
+     *
+     * @param callback                              // Вызываемый callback полсе отпарвки заяки
+     * @param firstName                             // Имя ученика
+     * @param secondName                            // Фамилия ученика
+     * @param lastName                              // Отчество ученика
+     * @param email                                 // Email ученика
+     * @param groupID                               // Id группы ученика
+     * @param teacherID                             // Id учителя ученика
+     * @param confirmed                             // Принята ли заявка
+     * @param denied                                // Отклонена ли заявка
+     */
+    
+    public static void sendRegistrationRequest(Callback callback, String firstName, String secondName, String lastName, String email, String groupID, String teacherID, boolean confirmed, boolean denied){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(firstName, secondName, lastName, email, groupID, teacherID, confirmed, denied));
+        FirebaseServer.SendRegistrationRequest sendRegistrationRequest = new FirebaseServer.SendRegistrationRequest();
+        sendRegistrationRequest.execute(asyncTaskArguments);
     }
 
 }

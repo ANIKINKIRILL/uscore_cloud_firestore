@@ -82,4 +82,15 @@ public class User {
         getUserStatus.execute(asyncTaskArguments);
     }
 
+    /**
+     * Выгрузка всех групп школы
+     * @param callback              // Callback, который вызывиться после асинхронного полуения групп с Сервера
+     */
+
+    public static void getAllSchoolGroups(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.GetAllSchoolGroups getAllSchoolGroups = new FirebaseServer.GetAllSchoolGroups();
+        getAllSchoolGroups.execute(asyncTaskArguments);
+    }
+
 }
