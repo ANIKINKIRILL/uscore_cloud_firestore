@@ -92,7 +92,7 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String studentStatusID = sharedPreferences.getString(getString(R.string.studentStatusID), "");
-        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
+//        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
 
         circleImageView = findViewById(R.id.imageView);
         ratingHint = findViewById(R.id.ratingHint);
@@ -108,26 +108,26 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         showAllComments = findViewById(R.id.showAllComments);
         showAllComments.setOnClickListener(this);
 
-        if(!studentStatusID.isEmpty() && teacherStatusID.isEmpty()){
-            status.setText(R.string.statusStudent);
-        }else if(studentStatusID.isEmpty() && !teacherStatusID.isEmpty()){
-            status.setText(R.string.statusTeacher);
-        }
+//        if(!studentStatusID.isEmpty() && teacherStatusID.isEmpty()){
+//            status.setText(R.string.statusStudent);
+////        }else if(studentStatusID.isEmpty() && !teacherStatusID.isEmpty()){
+//            status.setText(R.string.statusTeacher);
+//        }
 
-        countAddedCanceledScore = findViewById(R.id.countAddedCanceledScore);
-        countAddedCanceledScore.setText("-");
-
-        ratingHint.setText(getResources().getString(R.string.notYoursRatingScoreHint));
-
-        if(intentImageView.isEmpty()) {
-            Glide.with(getApplicationContext()).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(circleImageView);
-        }else {
-            Glide.with(getApplicationContext()).load(intentImageView).into(circleImageView);
-        }
-        emailAddress.setText(intentEmail);
-        username.setText(intentUsername);
-        score.setText(intentScore);
-        group.setText(intentGroup);
+//        countAddedCanceledScore = findViewById(R.id.countAddedCanceledScore);
+//        countAddedCanceledScore.setText("-");
+//
+//        ratingHint.setText(getResources().getString(R.string.notYoursRatingScoreHint));
+//
+//        if(intentImageView.isEmpty()) {
+//            Glide.with(getApplicationContext()).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(circleImageView);
+//        }else {
+//            Glide.with(getApplicationContext()).load(intentImageView).into(circleImageView);
+//        }
+//        emailAddress.setText(intentEmail);
+//        username.setText(intentUsername);
+//        score.setText(intentScore);
+//        group.setText(intentGroup);
 
 //        rateStudentInGroup(intentGroupID);
 

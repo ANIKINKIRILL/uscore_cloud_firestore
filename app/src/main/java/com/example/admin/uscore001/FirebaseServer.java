@@ -1,5 +1,6 @@
 package com.example.admin.uscore001;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -9,9 +10,11 @@ import android.widget.Toast;
 import com.example.admin.uscore001.activities.login_activity;
 import com.example.admin.uscore001.activities.register_activity;
 import com.example.admin.uscore001.models.Group;
+import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.StudentRegisterRequestModel;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -22,11 +25,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -45,11 +50,15 @@ public class FirebaseServer {
     static CollectionReference TEACHERS$DB = firebaseFirestore.collection("TEACHERS$DB");
     static CollectionReference GROUPS$DB = firebaseFirestore.collection("GROUPS$DB");
     static CollectionReference STUDENT_REGISTER_REQUESTS = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
+    static CollectionReference REQEUSTS$DB = firebaseFirestore.collection("REQEUSTS$DB");
 
     // Переменные
     private static ArrayList<String> students = new ArrayList<>();
     private static ArrayList<String> teachers = new ArrayList<>();
     private static ArrayList<Group> groups = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> confirmedRequests = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> deniedRequests = new ArrayList<>();
+    private static LinkedList<Student> allStudents = new LinkedList<>();
 
     /**
      * Авторизация пользователя
@@ -128,16 +137,29 @@ public class FirebaseServer {
                         for(DocumentSnapshot groups : task.getResult().getDocuments()){
                             Group group = groups.toObject(Group.class);
                             String groupID = group.getId();
-                            STUDENTS$DB.whereEqualTo("groupID", groupID).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            STUDENTS$DB
+                                    .whereEqualTo("groupID", groupID)
+                                    .orderBy("score", Query.Direction.DESCENDING)
+                                    .get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     int studentsSize = task.getResult().size();
+                                    String rateStudentInGroup = "";
                                     if(studentsSize != 0){
                                         for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                                             Student student = documentSnapshot.toObject(Student.class);
+                                            try {
+                                                if (student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())
+                                                        && User.isAuthenticated) {
+                                                    rateStudentInGroup = Integer.toString(task.getResult().getDocuments().indexOf(student) + 1);
+                                                }
+                                            }catch (Exception e){
+                                                e.getMessage();
+                                            }
                                             students.add(student.getFirstName() + " " + student.getSecondName());
                                         }
-                                        asyncTaskArguments[0].mCallback.execute(students, groupID);
+                                        asyncTaskArguments[0].mCallback.execute(students, groupID, rateStudentInGroup);
                                     }else{
                                         asyncTaskArguments[0].mCallback.execute(students);
                                     }
@@ -289,6 +311,173 @@ public class FirebaseServer {
                     callback.execute(message);
                 }
             });
+            return null;
+        }
+    }
+
+    /**
+     * Выгрузка данных с учительского аккаунта
+     */
+
+    public static class GetTeacherClass extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherLogin = (String) asyncTaskArguments[0].mData.data[0];
+            TEACHERS$DB.whereEqualTo("responsible_email", teacherLogin).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                            Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                            callback.execute(teacher);
+                        }
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Выгрузка данных с учительского аккаунта
+     */
+
+    public static class GetStudentClass extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String studentLogin = (String)asyncTaskArguments[0].mData.data[0];
+            STUDENTS$DB.whereEqualTo("email", studentLogin).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                            Student student = documentSnapshot.toObject(Student.class);
+                            callback.execute(student);
+                        }
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получение всех принятых запросов на добавление очков
+     */
+
+    public static class GetStudentConfirmedRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            confirmedRequests.clear();
+            String studentID = (String)asyncTaskArguments[0].mData.data[0];
+            Callback callback = asyncTaskArguments[0].mCallback;
+            REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot teacherRequestID : task.getResult().getDocuments()){
+                        teacherRequestID.getReference().collection("STUDENTS").document(studentID).collection("REQUESTS")
+                            .whereEqualTo("answered", true)
+                            .whereEqualTo("canceled", false)
+                            .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                for(DocumentSnapshot studentRequests : task.getResult().getDocuments()){
+                                    RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
+                                    confirmedRequests.add(request);
+                                }
+                                callback.execute(confirmedRequests);
+                            }
+                        });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получение всех отклоненных запросов на добавление очков
+     */
+
+    public static class GetStudentDeniedRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            deniedRequests.clear();
+            String studentID = (String)asyncTaskArguments[0].mData.data[0];
+            Callback callback = asyncTaskArguments[0].mCallback;
+            REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot teacherRequestID : task.getResult().getDocuments()){
+                        teacherRequestID.getReference().collection("STUDENTS").document(studentID).collection("REQUESTS")
+                                .whereEqualTo("answered", false)
+                                .whereEqualTo("canceled", true)
+                                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                for(DocumentSnapshot studentRequests : task.getResult().getDocuments()){
+                                    RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
+                                    deniedRequests.add(request);
+                                }
+                                callback.execute(deniedRequests);
+                            }
+                        });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Выгрузка всех учеников со школы
+     */
+
+    public static class LoadAllStudents extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            allStudents.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            STUDENTS$DB
+                .orderBy("score", Query.Direction.DESCENDING)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    String rateStudentInSchool = "";
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                            Student student = documentSnapshot.toObject(Student.class);
+                            if(student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())) {
+                                rateStudentInSchool = Integer.toString(students.indexOf(student) + 1);
+                            }
+                            allStudents.push(student);
+                        }
+                        callback.execute(allStudents, rateStudentInSchool);
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Добавление очков к ученику
+     */
+
+    public static class AddScoreToStudent extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String score = (String) asyncTaskArguments[0].mData.data[0];
+            String studentID = (String) asyncTaskArguments[0].mData.data[1];
+            String studentScoreNow = (String) STUDENTS$DB.document(studentID).get().getResult().get("score");
+            String resultScore = Integer.toString(Integer.parseInt(studentScoreNow) + Integer.parseInt(score));
+            STUDENTS$DB.document(studentID).update("score", resultScore);
+            String message = "Вы успешно добавили очки";
+            callback.execute(message);
             return null;
         }
     }

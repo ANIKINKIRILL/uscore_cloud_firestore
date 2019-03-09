@@ -64,7 +64,7 @@ public class NegativeRequestsFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+//        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
         teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         Log.d(TAG, "currentStudentID: " + currentStudentID);

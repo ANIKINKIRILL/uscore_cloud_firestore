@@ -90,7 +90,6 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
 
     // Переменные
     private String pickedObject;
-    boolean haveStudentsInGroup = false;
     String email;
 
     // Постоянные переменные
@@ -156,7 +155,6 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             pickedObject = adapterView.getSelectedItem().toString();
             if(!pickedObject.equals("Учителя")) {                                   // Выбрали Группу
-                haveStudentsInGroup = false;
                 loadGroupStudents(pickedObject);
             }else{
                 loadAllTeachers();                                                  // Выбрали Учителей
@@ -245,15 +243,16 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 // Извлечение статуса пользователя
                 User.getUserStatus(params[0], mGetStatusCallback);
                 User.isAuthenticated = true;
-                /*
+
                 Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
                 goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(goToDashboard);
                 finish();
-                */
                 Log.d(TAG, "signedIn: with login:" + Settings.getLogin() + "\n" +
                                      "password: " + Settings.getPassword() + "\n");
                 signIn.setEnabled(true);
+                String pickedGroup = (String) groupsSpinner.getSelectedItem();
+                Settings.setGroupName(pickedGroup);
             }else{
                 String failureReason = params[0];
                 Toast.makeText(login_activity.this, failureReason, Toast.LENGTH_SHORT).show();

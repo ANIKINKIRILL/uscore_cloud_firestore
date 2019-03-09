@@ -22,6 +22,20 @@ public class Teacher {
    private String requestID;
    private String statusID;
 
+   public static final String TEACHER_DATA = "teacher_data";
+   public static final String GROUP_ID = "group_id";
+   public static final String EMAIL = "email";
+   public static final String IMAGE_PATH = "image_path";
+   public static final String POSITION_ID = "position_id";
+   public static final String SUBJECT_ID = "subject_id";
+   public static final String REQUEST_ID = "request_id";
+   public static final String STATUS_ID = "status_id";
+   public static final String TEACHER_REQUEST_ID = "teacher_request_id";
+   public static final String TEACHER_ID = "teacher_id";
+   public static final String FIRST_NAME = "first_name";
+   public static final String SECOND_NAME = "second_name";
+   public static final String LAST_NAME = "last_name";
+
     public Teacher(
             String responsible_email,
             String image_path,
@@ -170,5 +184,28 @@ public class Teacher {
         getTeacherEmail.execute(asyncTaskArguments);
     }
 
+    /**
+     * Выгрузка данных с учительского аккаунта
+     * @param callback
+     * @param login
+     */
+
+    public static void getTeacherClass(Callback callback, String login){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(login));
+        FirebaseServer.GetTeacherClass getTeacherClass = new FirebaseServer.GetTeacherClass();
+        getTeacherClass.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Добавление очков к ученику
+     * @param score     Очки (Запрашиваемы)
+     * @param studentID ID ученика
+     */
+
+    public static void addScoreToStudent(Callback callback, String score, String studentID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(score, studentID));
+        FirebaseServer.AddScoreToStudent addScoreToStudent = new FirebaseServer.AddScoreToStudent();
+        addScoreToStudent.execute(asyncTaskArguments);
+    }
 
 }

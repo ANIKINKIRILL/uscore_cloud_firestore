@@ -81,7 +81,7 @@ public class AllRequestsFragment extends Fragment {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         String statusStudent = sharedPreferences.getString(getString(R.string.studentStatusID), "");
-        String statusTeacher = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
+//        String statusTeacher = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         selectedTeacher = sharedPreferences.getString(getString(R.string.selectedTeacher), "");
         teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");

@@ -61,7 +61,7 @@ public class NewRequestsFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+//        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
         String statusStudent = sharedPreferences.getString(getString(R.string.statusStudent), "");
         String statusTeacher = sharedPreferences.getString(getString(R.string.statusTeacher), "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
@@ -70,7 +70,7 @@ public class NewRequestsFragment extends Fragment {
         if(!FirebaseAuth.getInstance().getCurrentUser().getEmail().contains("teacher")) {                                       // is a STUDENT
             loadAllUserNewRequests(currentStudentID);
         }else{                                                                                  // is a TEACHER
-            loadAllNewTeacherRequests(teacherFullName);
+//            loadAllNewTeacherRequests(teacherFullName);
         }
 
         return view;

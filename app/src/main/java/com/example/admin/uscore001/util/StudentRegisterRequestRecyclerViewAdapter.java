@@ -52,7 +52,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
     public StudentRegisterRequestRecyclerViewAdapter(ArrayList<StudentRegisterRequestModel> requestModels, Context context) {
         this.requestModels = requestModels;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        teacherEmail = sharedPreferences.getString(context.getString(R.string.intentTeacherEmail), "");
+//        teacherEmail = sharedPreferences.getString(context.getString(R.string.intentTeacherEmail), "");
     }
 
     static class StudentRegisterRequestRecyclerViewViewHolder extends RecyclerView.ViewHolder{

@@ -67,9 +67,9 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     private void init(View view){
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        fullnameSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-        positionSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
-        subjectSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
+//        fullnameSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+//        positionSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
+//        subjectSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
         teacherLastName = sharedPreferences.getString("teacherLastName", "");
         teacherSecondName = sharedPreferences.getString("teacherSecondName", "");
         teacherFirstName = sharedPreferences.getString("teacherFirstName", "");

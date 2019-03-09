@@ -85,7 +85,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         String studentStatusID = sharedPreferences.getString(getString(R.string.studentStatusID), "");
-        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
+//        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
 
 
         if(!currentUser.getEmail().contains("teacher")) {

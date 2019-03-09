@@ -122,11 +122,11 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         showAllComments.setOnClickListener(this);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        email = sharedPreferences.getString(getString(R.string.intentTeacherEmail), "");
-        fullname = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-        image_path = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
-        positionID = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
-        subjectID = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
+//        email = sharedPreferences.getString(getString(R.string.intentTeacherEmail), "");
+//        fullname = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+//        image_path = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
+//        positionID = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
+//        subjectID = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
         teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         teacherID = sharedPreferences.getString("teacherID", "");
 

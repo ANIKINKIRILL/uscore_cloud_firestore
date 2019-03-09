@@ -32,8 +32,8 @@ public class AppIntroActivity extends AppIntro {
     @Override
     protected void onStart() {
         super.onStart();
-        if(FirebaseAuth.getInstance().getCurrentUser() != null){   // already logged in
-            Intent intent = new Intent("android.intent.action.LOGIN");
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){   // Пользователь уже авторизован
+            Intent intent = new Intent("android.intent.action.DASHBOARD");
             startActivity(intent);
             finish();
         }

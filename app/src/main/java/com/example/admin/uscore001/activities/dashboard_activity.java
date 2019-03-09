@@ -33,7 +33,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.commit451.modalbottomsheetdialogfragment.ModalBottomSheetDialogFragment;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.dialogs.DialogRequestAddingScore;
 import com.example.admin.uscore001.dialogs.MakePenaltyDialog;
 import com.example.admin.uscore001.dialogs.ShowRequestDialog;
@@ -42,6 +44,7 @@ import com.example.admin.uscore001.fragments.RulesBottomSheetFragment;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
 import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -76,6 +79,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.Timer;
@@ -84,67 +88,47 @@ import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * Главное активити
+ */
+
 public class dashboard_activity extends AppCompatActivity implements
                                         View.OnClickListener,
                                         ActionBar.OnNavigationListener{
 
     private static final String TAG = "dashboard_activity";
 
-    // Firebase STUFF
+    // Firebase
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
     FirebaseUser currentUser = mAuth.getCurrentUser();
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mRef = mDatabase.getReference("Students");
-    DatabaseReference mRefTeacher = mDatabase.getReference("Teachers");
-    DatabaseReference mRefTeacherRequest = mDatabase.getReference("RequestsAddingScore");
 
     // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
     CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
-    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
-    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
 
-    // widgets
-    TextView username, requestNumber, limitScoreView, timer;
+    // Виджеты
+    TextView username, requestNumber, limitScoreView;
     CardView myProfileCardView, topScoresCardView, rulesCardView, recentCardView;
     DrawerLayout drawerLayout;
     NavigationView navigationView;
-    CircleImageView userImage;
     ImageView notification_alarm;
+    Toolbar toolbar;
 
-    // vars
-    int counter = 0;
+    // Переменные
     static int pickedLang = 0;
-    String currentUserGroupID;
-    String currentUserUsername;
-    ArrayList<Student> students = new ArrayList<>();
-    ArrayList<Student> students2= new ArrayList<>();
-    String score;
-    String image_path;
-    String senderImage;
-    String usernameValue;
     String limitScore;
-    Student currentStudentClass;
-    int currentStudentRateSchool;
-    SharedPreferences sharedPreferences;
     boolean isTeacher = false;
     int requestCounter = 0;
     String[] socialLinks = {"VK", "WHATS UP", "TWEETER"};
-    int confirmedRequestsNumber = 0;
-    int deniedRequestsNumber = 0;
     Menu menu;
-    private ModalBottomSheetDialogFragment modalBottomSheetDialogFragment;
-    private String groupName;
     private String currentStudentID;
-    private String statusID;
     private String intentMessageDecoded;
     private String studentID;
     private String scoreString;
     private String currentUserScore;
 
-    private Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
-    private Date currentTimeMoskow = calendar.getTime();
+    // Постоянные переменные
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -152,55 +136,39 @@ public class dashboard_activity extends AppCompatActivity implements
         loadLocal();
         setContentView(R.layout.activity_dashboard);
         init();
-        Log.d(TAG, "current time: " + calendar.getTime());
+        initToolbar();
+        initActionBarDrawerToggle();
+        loadKfuPictureIntoNavigationDrawerHeader();
+
+        setCurrentUserData();
+
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    public void setCurrentUserData(){
+        if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){
+            isTeacher = true;
+            requestNumber.setOnClickListener(this);
+            getTeacherClass(Settings.getLogin());
+            limitScoreView.setVisibility(View.INVISIBLE);
+        }
+        else if (Settings.getStatus().equals(Settings.STUDENT_STATUS)){
+            getStudentClass(Settings.getLogin());
+            requestNumber.setText("");
+            notification_alarm.setVisibility(View.INVISIBLE);
+            rateStudentInGroup(Settings.getGroupName());
+            rateStudentInSchool();
+        }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
+    /**
+     * Инизиализация виджетов
+     */
 
     private void init(){
         requestNumber = findViewById(R.id.requestNumber);
         notification_alarm = findViewById(R.id.notification_alarm);
         limitScoreView = findViewById(R.id.limitScore);
-
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getString(R.string.app_name));
-        SocailLinksAdapter adapter = new SocailLinksAdapter(this, android.R.layout.simple_spinner_item, socialLinks);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        getSupportActionBar().setListNavigationCallbacks(adapter, this);
-
         navigationView = findViewById(R.id.navigationView);
-        drawerLayout = findViewById(R.id.drawerLayout);
-
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,
-                drawerLayout,
-                toolbar,
-                R.string.open_dialog,
-                R.string.close_drawer);
-
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
-
-        if(!currentUser.getEmail().contains("teacher")) {                           // is a Student
-            findCurrentUserInfo(); // in here have rateStudentInGroup, putGroupNameToSharedPref function
-            rateStudentInSchool();
-//            confirmedAndDeniedRequestsNumber(currentUser.getEmail());
-            requestNumber.setText("");
-            notification_alarm.setVisibility(View.INVISIBLE);
-        }else {                                                                     // is s Teacher
-            isTeacher = true;
-            requestNumber.setOnClickListener(this);
-            getTeacherInfo(); // in here getTeacherRequestsNumber
-            limitScoreView.setVisibility(View.INVISIBLE);
-        }
 
         username = findViewById(R.id.username);
         username.setText(currentUser.getEmail());
@@ -216,37 +184,47 @@ public class dashboard_activity extends AppCompatActivity implements
 
         rulesCardView = findViewById(R.id.rulesCardView);
         rulesCardView.setOnClickListener(this);
+    }
 
+    /**
+     * Инизиализация Toolbar
+     */
+
+    public void initToolbar(){
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getString(R.string.app_name));
+        SocailLinksAdapter adapter = new SocailLinksAdapter(this, android.R.layout.simple_spinner_item, socialLinks);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        getSupportActionBar().setListNavigationCallbacks(adapter, this);
+    }
+
+    /**
+     * Инизиализация ActionBarDrawerToggle
+     */
+
+    public void initActionBarDrawerToggle(){
+        drawerLayout = findViewById(R.id.drawerLayout);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,
+                drawerLayout,
+                toolbar,
+                R.string.open_dialog,
+                R.string.close_drawer);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+    }
+
+    /**
+     * Загрузка логотипа IT-Лицей КФУ в NavigationDrawerHeader
+     */
+
+    public void loadKfuPictureIntoNavigationDrawerHeader(){
         try {
             ImageView view = navigationView.getHeaderView(0).findViewById(R.id.imageView);
-            Log.d(TAG, "NavigationDrawerImage: " + navigationView.getHeaderCount());
             GlideApp.with(this).load(R.drawable.itl).centerCrop().into(view);
-            Log.d(TAG, "NavigationDrawerImage: image is loaded");
         }catch (Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             Log.d(TAG, "NavigationDrawerImage: " + e.getMessage());
         }
-    }
-
-    public void changeNotificationAlarmImage(){
-        if(requestNumber.getText().toString().equals("0")){
-            notification_alarm.setImageResource(R.drawable.ic_notifications_paused);
-        }else if (!requestNumber.getText().toString().equals("0")){
-            notification_alarm.setImageResource(R.drawable.ic_notifications_ring);
-        }
-    }
-
-    private void putGroupNameByGroupIDToSharedPref(String groupID){
-        groups$DB.document(groupID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                groupName = documentSnapshot.get("name").toString();
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(getString(R.string.groupName), groupName);
-                editor.apply();
-            }
-        });
     }
 
     @Override
@@ -256,7 +234,6 @@ public class dashboard_activity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-
         if(drawerLayout.isDrawerOpen(GravityCompat.START)){
             drawerLayout.closeDrawer(GravityCompat.START);
         }else{
@@ -268,13 +245,12 @@ public class dashboard_activity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
         getMenuInflater().inflate(R.menu.dashboard_menu, menu);
-        if(!currentUser.getEmail().contains("teacher")) {           // is STUDENT
-//            menu.findItem(R.id.addScore).setVisible(false);
+        if(Settings.getStatus().equals(Settings.STUDENT_STATUS)) {           // Ученик
             menu.findItem(R.id.scanQRCODE).setVisible(false);
             menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.makePenalty).setVisible(false);
             menu.findItem(R.id.studentRegisterRequests).setVisible(false);
-        }else {                                                     // is TEACHER
+        }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
             menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
@@ -285,28 +261,14 @@ public class dashboard_activity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String teacherID = sharedPreferences.getString("teacherID", "");
-        String studentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         switch (item.getItemId()){
             case R.id.signOut:{
-                mAuth.signOut();
-//                if(currentUser.getEmail().contains("teacher")){
-//                    try {
-//                        teachers$DB.document(teacherID).update("deviceTokenID", FieldValue.delete());
-//                    }catch (Exception e){
-//                        Log.d(TAG, "onOptionsItemSelected: " + e.getMessage());
-//                    }
-//                }
-//                if(!currentUser.getEmail().contains("teacher")){
-//                    try{
-//                        student$db.document(studentID).update("deviceTokenID", FieldValue.delete());
-//                    }catch (Exception e){
-//                        Log.d(TAG, "onOptionsItemSelected: " + e.getMessage());
-//                    }
-//                }
+                // Выход с аккаунта
+                User.exit();
                 Intent intent = new Intent(dashboard_activity.this, login_activity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
                 break;
             }
             case R.id.askForScore:{
@@ -361,6 +323,10 @@ public class dashboard_activity extends AppCompatActivity implements
         return true;
     }
 
+    /**
+     * Показать окно с выбором языка
+     */
+
     public void showChangeLangDialog() {
         final String[] languages = {"Русский", "English", "中文", "Татар"};
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(dashboard_activity.this);
@@ -395,6 +361,11 @@ public class dashboard_activity extends AppCompatActivity implements
        dialog.show();
     }
 
+    /**
+     * Установка языка
+     * @param lang          // язык
+     */
+
     public void setLocal(String lang){
         Locale locale = new Locale(lang);
         Locale.setDefault(locale);
@@ -408,55 +379,87 @@ public class dashboard_activity extends AppCompatActivity implements
         editor.apply();
     }
 
+    /**
+     * Загрузка языка
+     */
+
     public void loadLocal(){
         SharedPreferences preferences = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
         String language = preferences.getString("My_Lang", "");
         setLocal(language);
     }
 
-    public void getTeacherInfo(){
-        teachers$DB.whereEqualTo("responsible_email", currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Teacher teacher = documentSnapshot.toObject(Teacher.class);
-                    String groupID = teacher.getGroupID();
-                    String email = teacher.getResponsible_email();
-                    String fullname = teacher.getFirstName() + " " + teacher.getLastName();
-                    String image_path = teacher.getImage_path();
-                    String positionID = teacher.getPositionID();
-                    String subjectID = teacher.getSubjectID();
-                    String requestID = teacher.getRequestID();
-                    String statusID = teacher.getStatusID();
-                    String teacherRequestID = teacher.getRequestID();
-                    String teacherID = teacher.getId();
-                    String teacherFirstName = teacher.getFirstName();
-                    String teacherSecondName = teacher.getSecondName();
-                    String teacherLastName = teacher.getLastName();
-                    Log.d(TAG, "teacher statusID: " + statusID);
-                    if (image_path.isEmpty()) {
-                        image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-                    }
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("teacherGroupID", groupID);
-                    editor.putString(getString(R.string.intentTeacherEmail), email);
-                    editor.putString(getString(R.string.intentTeacherFullname), fullname);
-                    editor.putString(getString(R.string.intentTeacherImage_path), image_path);
-                    editor.putString(getString(R.string.intentTeacherPosition), positionID);
-                    editor.putString(getString(R.string.intentTeacherSubject), subjectID);
-                    editor.putString("teacherID", teacherID);
-                    editor.putString("intentTeacherRequestID", requestID);
-                    editor.putString("teacherLastName", teacherLastName);
-                    editor.putString("teacherSecondName", teacherSecondName);
-                    editor.putString("teacherFirstName", teacherFirstName);
-                    editor.putString(getString(R.string.teacherStatusID), statusID);
-                    editor.apply();
-//                    getTeacherRequestsNumber(teacherRequestID);
-                }
-            }
-        });
+    /**
+     * Приобретение учительского класса со всеми данными о учителе
+     * @param teacherLogin          Логин учителя
+     */
+
+    public void getTeacherClass(String teacherLogin){
+        Teacher.getTeacherClass(mGetTeacherClassCallback, teacherLogin);
     }
+
+    /**
+     * Callback, вызываемый после получения учительсого класса
+     */
+
+    Callback mGetTeacherClassCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            Teacher teacher = (Teacher) data;
+            String groupID = teacher.getGroupID();
+            String email = teacher.getResponsible_email();
+            String image_path = teacher.getImage_path();
+            String positionID = teacher.getPositionID();
+            String subjectID = teacher.getSubjectID();
+            String requestID = teacher.getRequestID();
+            String statusID = teacher.getStatusID();
+            String teacherRequestID = teacher.getRequestID();
+            String teacherID = teacher.getId();
+            String teacherFirstName = teacher.getFirstName();
+            String teacherSecondName = teacher.getSecondName();
+            String teacherLastName = teacher.getLastName();
+            Log.d(TAG, "teacher statusID: " + statusID);
+            if (image_path.isEmpty()) {
+                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+            }
+            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Teacher.GROUP_ID, groupID);
+            editor.putString(Teacher.EMAIL, email);
+            editor.putString(Teacher.IMAGE_PATH, image_path);
+            editor.putString(Teacher.POSITION_ID, positionID);
+            editor.putString(Teacher.SUBJECT_ID, subjectID);
+            editor.putString(Teacher.REQUEST_ID, requestID);
+            editor.putString(Teacher.STATUS_ID, statusID);
+            editor.putString(Teacher.TEACHER_REQUEST_ID, teacherRequestID);
+            editor.putString(Teacher.TEACHER_ID, teacherID);
+            editor.putString(Teacher.FIRST_NAME, teacherFirstName);
+            editor.putString(Teacher.SECOND_NAME, teacherSecondName);
+            editor.putString(Teacher.LAST_NAME, teacherLastName);
+
+            /*
+                --------------------------------------------------------------
+                |    Проверка Данных                                          |
+                --------------------------------------------------------------
+             */
+
+            Log.d(TAG, "teacherData: firstName: " + sharedPreferences.getString(Teacher.FIRST_NAME, "") + "\n" +
+                                            "secondName: " + sharedPreferences.getString(Teacher.SECOND_NAME, "") + "\n" +
+                                            "lastName: " + sharedPreferences.getString(Teacher.LAST_NAME, "") + "\n" +
+                                            "id:" + sharedPreferences.getString(Teacher.TEACHER_ID, "") + "\n" +
+                                            "requestID: " + sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "") + "\n" +
+                                            "statusID : " + sharedPreferences.getString(Teacher.STATUS_ID, "") + "\n" +
+                                            "requestID: " + sharedPreferences.getString(Teacher.REQUEST_ID, "") + "\n" +
+                                            "subjectID: " + sharedPreferences.getString(Teacher.SUBJECT_ID, "") + "\n" +
+                                            "positionID: " + sharedPreferences.getString(Teacher.POSITION_ID, "") + "\n" +
+                                            "imagePath : " + sharedPreferences.getString(Teacher.IMAGE_PATH, "") + "\n" +
+                                            "email: " + sharedPreferences.getString(Teacher.EMAIL, "") + "\n" +
+                                            "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n");
+
+            editor.apply();
+
+        }
+    };
 
     public void getTeacherRequestsNumber(String teacherRequestID){
         requestCounter = 0;
@@ -500,7 +503,7 @@ public class dashboard_activity extends AppCompatActivity implements
                         Log.d(TAG, "student request amount of answered canceled being false: " + requestCounter);
                     }
                     requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
-                    changeNotificationAlarmImage();
+//                    changeNotificationAlarmImage();
                 }
             });
     }
@@ -543,12 +546,6 @@ public class dashboard_activity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        counter = 0;
-    }
-
-    @Override
     protected void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
 
         final IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
@@ -566,11 +563,11 @@ public class dashboard_activity extends AppCompatActivity implements
 
             try {
 //                                      wqrwrwmflawmASDs
-//             requestedScore           Очки: 200
+//                                      Очки: 200
 //                                      ФИО: Аникин Кирилл
 //                                      Группа: 10-6
 
-                // score
+                // Очки
                 String messageWithoutSpaces = intentMessageDecoded.replace(" ", "");
                 int indexOfI = messageWithoutSpaces.indexOf("и");
                 int indexOfF = messageWithoutSpaces.indexOf("Ф");
@@ -580,13 +577,13 @@ public class dashboard_activity extends AppCompatActivity implements
                 Log.d(TAG, "scoreString: " + scoreString.substring(1));
 
 
-                // student id
+                // ID Ученика
                 int indexOfO = messageWithoutSpaces.indexOf("О");
                 Log.d(TAG, "index of O: " + indexOfO);
                 studentID = messageWithoutSpaces.substring(0, indexOfO);
                 Log.d(TAG, "studentID: " + studentID);
 
-                // student current score
+                // Очки ученика на данный момент
                 int indexOfA = messageWithoutSpaces.lastIndexOf("а");
                 currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
                 Log.d(TAG, "currentUserScore: " + currentUserScore);
@@ -602,7 +599,7 @@ public class dashboard_activity extends AppCompatActivity implements
             alertDialog.setButton(Dialog.BUTTON_POSITIVE, getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    addScore();
+                    addScoreToStudent(scoreString.substring(1).trim(), studentID);
                     alertDialog.dismiss();
                 }
             });
@@ -618,259 +615,177 @@ public class dashboard_activity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void addScore(){
-        int result = Integer.parseInt(currentUserScore)
-                + Integer.parseInt(scoreString.substring(1).trim());
-        student$db.document(studentID.trim()).update("score", Integer.toString(result));
-        Toast.makeText(this, "Вы успешно добавили очки", Toast.LENGTH_SHORT).show();
+    /**
+     * Добавление очков к ученику
+     */
+
+    public void addScoreToStudent(String requestedScore, String studentID){
+        Teacher.addScoreToStudent(mAddScoreToStudent, requestedScore, studentID);
     }
 
-    public void findCurrentUserInfo(){
-        findCurrentUserInfoBackGroundTask task = new findCurrentUserInfoBackGroundTask(this);
-        task.execute();
-    }
-
-//    public void rateStudentInGroup(final String foundGroup){
-//        students.clear();
-//        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
-//            @Override
-//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-//                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                    Student student = documentSnapshot.toObject(Student.class);
-//                    if(student.getEmail().equals(currentUser.getEmail())){
-//                        score = student.getScore();
-//                        currentStudentClass = new Student(
-//                                "",
-//                                student.getFirstName() + " " + student.getSecondName(),
-//                                "",
-//                                "",
-//                                score,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                    }else{
-//                        score = student.getScore();
-//                        Student studentClass = new Student(
-//                                "",
-//                                student.getFirstName() + " " + student.getSecondName(),
-//                                "",
-//                                "",
-//                                score,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                        students.add(studentClass);
-//                    }
-//                }
-//                students.add(currentStudentClass);
-//                bubbleSortStudents(students);
-//                Collections.reverse(students);
-//                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
-//                editor.apply();
-//            }
-//        });
-//    }
-
-    public void rateStudentInSchool(){
-//        rateStudentInSchoolBackGroundTask task = new rateStudentInSchoolBackGroundTask(this);
-//        task.execute();
-    }
-
-    public void bubbleSortStudents(ArrayList<Student> students){
-            int size = students.size();
-            Student temp;
-            for(int i = 0; i < size; i++){
-                for(int j = 1; j < size; j++){
-                    if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
-                        temp = students.get(j-1);
-                        students.set(j-1, students.get(j));
-                        students.set(j, temp);
-                    }
-                }
-            }
-        }
-
-    public void confirmedAndDeniedRequestsNumber(final String currentStudentID){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-//        mRefTeacherRequest.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot teacher : dataSnapshot.getChildren()){
-//                    if(teacher.hasChild(currentUserEmail.replace(".", ""))){
-//                        for(DataSnapshot currentUserRequests : teacher.child(currentUserEmail.replace(".","")).getChildren()){
-//                            if(currentUserRequests.getValue(RequestAddingScore.class).isAnswer()){
-//                                confirmedRequestsNumber++;
-//                            }
-//
-//                            if(currentUserRequests.getValue(RequestAddingScore.class).isCancel()){
-//                                deniedRequestsNumber++;
-//                            }
-//                        }
-//                    }
-//                }
-//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(dashboard_activity.this);
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putInt(getString(R.string.currentStudentConfirmedRequests), confirmedRequestsNumber);
-//                editor.putInt(getString(R.string.currentStudentDeniedRequests), deniedRequestsNumber);
-//                editor.apply();
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-
-        requests$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot teachersRequestsID : queryDocumentSnapshots.getDocuments()){
-                    teachersRequestsID.getReference().collection("STUDENTS").document(currentStudentID).collection("REQUESTS")
-                        .whereEqualTo("answered", true).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                confirmedRequestsNumber += task.getResult().getDocuments().size();
-                                editor.putInt(getString(R.string.currentStudentConfirmedRequests), confirmedRequestsNumber);
-                                editor.apply();
-                                Log.d(TAG, "+: " + confirmedRequestsNumber);
-                            }
-                        });
-                    teachersRequestsID.getReference().collection("STUDENTS").document(currentStudentID).collection("REQUESTS")
-                        .whereEqualTo("canceled", true).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                deniedRequestsNumber += task.getResult().getDocuments().size();
-                                editor.putInt(getString(R.string.currentStudentDeniedRequests), deniedRequestsNumber);
-                                editor.apply();
-                                Log.d(TAG, "-: " + deniedRequestsNumber);
-                            }
-                        });
-                }
-            }
-        });
-
-    }
-
-    public static class findCurrentUserInfoBackGroundTask extends AsyncTask<Void, Void, Void>{
-
-        // vars
-        private WeakReference<dashboard_activity> dashboardActivityWeakReference;
-
-        findCurrentUserInfoBackGroundTask(dashboard_activity activity){
-            dashboardActivityWeakReference = new WeakReference<>(activity);
-        }
-
+    Callback mAddScoreToStudent = new Callback() {
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            dashboard_activity activity = dashboardActivityWeakReference.get();
-            if(activity == null || activity.isFinishing()){
-                return;
-            }
-            Log.d(TAG, "onPreExecute: current user info is in the process of loading");
-        }
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            final dashboard_activity activity = dashboardActivityWeakReference.get();
-            if(activity == null || activity.isFinishing()){
-                return null;
-            }
-            activity.student$db.whereEqualTo("email", activity.currentUser.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                        Student student = documentSnapshot.toObject(Student.class);
-                        activity.limitScoreView.setText(activity.getString(R.string.leftScore));
-                        activity.currentUserGroupID = student.getGroupID();
-                        activity.putGroupNameByGroupIDToSharedPref(activity.currentUserGroupID);
-                        activity.currentUserUsername = student.getFirstName() + " " + student.getSecondName();
-                        activity.senderImage = student.getImage_path();
-                        activity.limitScore = student.getLimitScore();
-                        activity.currentStudentID = student.getId();
-                        Log.d(TAG, "currentStudentID: " + activity.currentStudentID);
-                        activity.statusID = student.getStatusID();
-                        Log.d(TAG, "student statusID: " + activity.statusID);
-                        activity.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-                        SharedPreferences.Editor editor = activity.sharedPreferences.edit();
-                        editor.putString(activity.getString(R.string.currentStudentGroupID), activity.currentUserGroupID);
-                        editor.putString(activity.getString(R.string.currentStudentUsername), activity.currentUserUsername);
-                        editor.putString(activity.getString(R.string.intentSenderImage), activity.senderImage);
-                        editor.putString(activity.getString(R.string.intentLimitScore), activity.limitScore);
-                        editor.putString(activity.getString(R.string.currentStudentID), activity.currentStudentID);
-                        editor.putString(activity.myProfileCardView.getContext().getString(R.string.studentStatusID), activity.statusID);
-                        editor.apply();
-                    }
-                    if(Integer.parseInt(activity.limitScore) == 0){
-//                        activity.disableMenuItems(activity.menu);
-                        activity.limitScoreView.setText("В данный момент ты не можешь добавлять быллы");
-//                        activity.menu.findItem(R.id.generateQERCODE).setOnMenuItemClickListener(activity.menuItemClickListener);
-//                        activity.menu.findItem(R.id.makeRequest).setOnMenuItemClickListener(activity.menuItemClickListener);
-                    }else{
-                        String leftText = activity.limitScoreView.getText().toString();
-                        String result = leftText + ": " + activity.limitScore + " " + activity.getString(R.string.leftPoints);
-                        activity.limitScoreView.setText(result);
-                    }
-//                    activity.rateStudentInGroup(activity.currentUserGroupID);
-                    activity.confirmedAndDeniedRequestsNumber(activity.currentStudentID);
-                }
-            });
-
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            dashboard_activity activity = dashboardActivityWeakReference.get();
-            if(activity == null || activity.isFinishing()){
-                return;
-            }
-            Log.d(TAG, "onPostExecute: current user info loading is finished");
-        }
-    }
-
-    MenuItem.OnMenuItemClickListener menuItemClickListener = new MenuItem.OnMenuItemClickListener() {
-        @Override
-        public boolean onMenuItemClick(MenuItem item) {
-            student$db.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    // дата, когда студен потратил все свои очки
-                    Timestamp timestamp = student.getSpendLimitScoreDate();
-                    Log.d(TAG, "getSpendLimitScoreDate: " + timestamp.toString());
-                    // дата в данный момент по Москве
-                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
-                    Date currentDate = calendar.getTime();
-
-                }
-            });
-            return true;
+        public void execute(Object data, String... params) {
+            String message = (String) data;
+            Toast.makeText(dashboard_activity.this, message, Toast.LENGTH_SHORT).show();
         }
     };
 
-    private void disableMenuItems(Menu menu){
-        if(menu != null) {
-            menu.getItem(2).setEnabled(false);
-            menu.getItem(5).setEnabled(false);
-        }else{
-            Log.d(TAG, "disableMenuItems: menu is null");
-        }
+    /**
+     * Рейтинг ученика в своей группе
+     * @param groupName                 // Название Группы
+     */
+
+    public void rateStudentInGroup(String groupName){
+        Student.loadGroupStudents(groupName, mRateStudentInGroupCallback);
     }
+
+    Callback mRateStudentInGroupCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String rateStudentInGroup = params[1];
+            SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Student.RATE_IN_GROUP, rateStudentInGroup);
+            editor.apply();
+        }
+    };
+
+    /**
+     * Рейтинг ученика в своей школе
+     */
+
+    public void rateStudentInSchool(){
+        Student.loadAllStudents(mLoadAllStudents);
+    }
+
+    /**
+     * Получение всех принятых запросов на добавление очков
+     * @param studentID      // ID Ученика
+     */
+
+    public void getStudentConfirmedRequestsAmount(String studentID){
+        Student.getConfirmedRequests(mGetStudentConfirmedRequestsAmount, studentID);
+    }
+
+    /**
+     * Callback, вызываемый после получения всех принятых запроов на добавление очков
+     */
+
+    Callback mGetStudentConfirmedRequestsAmount = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> confirmedRequests = (ArrayList) data;
+            int studentConfirmedRequestsAmount = confirmedRequests.size();
+            SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt(Student.CONFIRMED_REQUESTS_AMOUNT, studentConfirmedRequestsAmount);
+            editor.apply();
+        }
+    };
+
+    /**
+     * Получение всех отклоненных запросов на добавление очков
+     * @param studentID      // ID Ученика
+     */
+
+    public void getStudentDeniedRequestsAmount(String studentID){
+        Student.getDeniedRequests(mGetStudentDeniedRequestsAmount, studentID);
+    }
+
+    /**
+     * Callback, вызываемый после получения всех отклоненных запроов на добавление очков
+     */
+
+    Callback mGetStudentDeniedRequestsAmount = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> deniedRequests = (ArrayList) data;
+            int studentDeniedRequestsAmount = deniedRequests.size();
+            SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt(Student.DENIED_REQUESTS_AMOUNT, studentDeniedRequestsAmount);
+            editor.apply();
+        }
+    };
+
+    /**
+     * Приобретение класса ученика со всеми данными
+     */
+
+    public void getStudentClass(String studentLogin){
+        Student.getStudentClass(mGetStudentClassCallback, studentLogin);
+    }
+
+    /**
+     * Callback, вызываемый после получения класса ученика
+     */
+
+    Callback mGetStudentClassCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            Student student = (Student) data;
+            String groupID = student.getGroupID();
+            String firstName = student.getFirstName();
+            String secondName = student.getSecondName();
+            String image_path = student.getImage_path();
+            String limitScore = student.getLimitScore();
+            String studentID = student.getId();
+            String statusID = student.getStatusID();
+            String scoreValue = student.getScore();
+            String teacherID = student.getTeacherID();
+            SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Student.EMAIL, Settings.getLogin());
+            editor.putString(Student.GROUP_ID, groupID);
+            editor.putString(Student.FIRST_NAME, firstName);
+            editor.putString(Student.SECOND_NAME, secondName);
+            editor.putString(Student.IMAGE_PATH, image_path);
+            editor.putString(Student.LIMIT_SCORE, limitScore);
+            editor.putString(Student.ID, studentID);
+            editor.putString(Student.STATUS_ID, statusID);
+            editor.putString(Student.SCORE, scoreValue);
+            editor.putString(Student.TEACHER_ID, teacherID);
+            editor.apply();
+
+            limitScoreView.setText("Осталось");
+
+            if(Integer.parseInt(limitScore) == 0){
+                limitScoreView.setText("В данный момент ты не можешь добавлять быллы");
+            }else{
+                String leftText = limitScoreView.getText().toString();
+                String result = leftText + ": " + limitScore + " осталось";
+                limitScoreView.setText(result);
+            }
+
+            getStudentConfirmedRequestsAmount(studentID);
+            getStudentDeniedRequestsAmount(studentID);
+
+             /*
+                --------------------------------------------------------------
+                |    Проверка Данных                                          |
+                --------------------------------------------------------------
+             */
+
+            Log.d(TAG, "studentData: email: " + sharedPreferences.getString(Student.EMAIL, "") + "\n" +
+                                            "groupID: " +sharedPreferences.getString(Student.GROUP_ID, "") + "\n" +
+                                            "firstName: " + sharedPreferences.getString(Student.FIRST_NAME, "") + "\n" +
+                                            "secondName: " + sharedPreferences.getString(Student.SECOND_NAME, "") + "\n" +
+                                            "lastName: " + sharedPreferences.getString(Student.LAST_NAME, "") + "\n" +
+                                            "image_path: " + sharedPreferences.getString(Student.IMAGE_PATH, "") + "\n" +
+                                            "limitScore: " + sharedPreferences.getString(Student.LIMIT_SCORE, "") + "\n" +
+                                            "id: " + sharedPreferences.getString(Student.ID, "") + "\n" +
+                                            "statusID: " + sharedPreferences.getString(Student.STATUS_ID, "") + "\n" +
+                                            "score: " + sharedPreferences.getString(Student.SCORE, "") + "\n" +
+                                            "teacherID: " + sharedPreferences.getString(Student.TEACHER_ID, "") + "\n");
+
+        }
+    };
+
+    /**
+     * Проверка на то что прошло заданное время после того как ученик потратил все свои очки на день
+     * @param menu      Главное меню dashboard_activity
+     */
 
     private void checkSpendLimitScoreDateAndCurrentDate(Menu menu){
         student$db.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -905,95 +820,19 @@ public class dashboard_activity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * Callback, после получения всех учеников школы
+     */
 
-//    public static class rateStudentInSchoolBackGroundTask extends AsyncTask<Void, Void, Void>{
-//
-//        // vars
-//        private WeakReference<dashboard_activity> dashboardActivityWeakReference;
-//
-//        rateStudentInSchoolBackGroundTask(dashboard_activity activity){
-//            dashboardActivityWeakReference = new WeakReference<>(activity);
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Void... voids) {
-//
-//            final dashboard_activity activity = dashboardActivityWeakReference.get();
-//            if(activity.isFinishing() || activity == null){
-//                return null;
-//            }
-//
-//            /*
-//                        START CLOUD FIRESTORE
-//             */
-//            activity.student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
-//                @Override
-//                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-//                    for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
-//                        Student student = studentSnapshot.toObject(Student.class);
-//                        if(student.getEmail().equals(activity.currentUser.getEmail())){
-//                            activity.score = student.getScore();
-//                            activity.image_path = student.getImage_path();
-//                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
-//                            if (activity.score.trim().isEmpty()) {
-//                                activity.score = "In process...";
-//                            }
-//                            if (activity.image_path.isEmpty()) {
-//                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                            }
-//                            activity.currentStudentClass = new Student(
-//                                    "",
-//                                    activity.usernameValue,
-//                                    "",
-//                                    activity.image_path,
-//                                    activity.score,
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    ""
-//                            );
-//                        }else{
-//                            activity.score = student.getScore();
-//                            if (activity.score.trim().isEmpty()) {
-//                                activity.score = "In process...";
-//                            }
-//                            activity.image_path = student.getImage_path();
-//                            if (activity.image_path.isEmpty()) {
-//                                activity.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                            }
-//                            activity.usernameValue = student.getFirstName() + " " + student.getSecondName();
-//                            Student new_student = new Student(
-//                                    "",
-//                                    activity.usernameValue,
-//                                    "",
-//                                    activity.image_path,
-//                                    activity.score,
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    "",
-//                                    ""
-//                            );
-//                            activity.students2.add(new_student);
-//                        }
-//                    }
-//                    activity.students2.add(activity.currentStudentClass);
-//                    activity.bubbleSortStudents(activity.students2);
-//                    Collections.reverse(activity.students2);
-//                    activity.currentStudentRateSchool = activity.students2.indexOf(activity.currentStudentClass)+1;
-//                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-//                    SharedPreferences.Editor editor = sharedPreferences.edit();
-//                    editor.putString(activity.getString(R.string.currentStudentRateInSchool), Integer.toString(activity.currentStudentRateSchool));
-//                    editor.apply();
-//                }
-//            });
-//            return null;
-//        }
-//    }
+    Callback mLoadAllStudents = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String rateStudentInSchool = params[0];
+            SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Student.RATE_IN_SCHOOL, rateStudentInSchool);
+            editor.apply();
+        }
+    };
 
 }

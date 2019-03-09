@@ -2,8 +2,12 @@
     <string name="app_name" translatable="false">USCORE</string>
 
     <string name="settings">settings</string>
+    <string name="teacher_data">teacher_data</string>
+    <string name="student_data">teacher_data</string>
     <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
     <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
+    <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
+    <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>
 
     <string name="open_dialog" translatable="false">open_dialog</string>
 
@@ -14,15 +18,12 @@
     <string name="groupName" translatable="false">groupName</string>
     <string name="currentStudentID" translatable="false">currentStudentID</string>
     <string name="studentStatusID" translatable="false">studentStatusID</string>
-    <string name="teacherStatusID" translatable="false">teacherStatusID</string>
     <string name="username_pref" translatable="false">username_pref</string>
     <string name="group_pref_from_profile_group_fragment" translatable="false">group_pref</string>
 
 
 
-    
-    <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
-    <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>
+
 
     <!--// all strings for change language-->
 
@@ -60,11 +61,6 @@
     <string name="intentSenderImage" translatable="false">intentSenderImage</string>
     <string name="intentLimitScore" translatable="false">intentLimitScore</string>
 
-    <string name="intentTeacherEmail" translatable="false">intentTeacherEmail</string>
-    <string name="intentTeacherFullname" translatable="false">intentTeacherFullname</string>
-    <string name="intentTeacherImage_path" translatable="false">intentTeacherImage_path</string>
-    <string name="intentTeacherPosition" translatable="false">intentTeacherPosition</string>
-    <string name="intentTeacherSubject" translatable="false">intentTeacherSubject</string>
     <string name="intentTeacherScore" translatable="false">intentTeacherScore</string>
 
     <string name="studentEmailAddress">почта ученика</string>

@@ -91,7 +91,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
             requestID = itemView.findViewById(R.id.requestID);
 
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(itemView.getContext());
-            teacherName = sharedPreferences.getString(itemView.getContext().getString(R.string.intentTeacherFullname), "");
+//            teacherName = sharedPreferences.getString(itemView.getContext().getString(R.string.intentTeacherFullname), "");
             teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
         }
     }

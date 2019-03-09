@@ -8,6 +8,7 @@ import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.FirebaseServer;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -21,6 +22,7 @@ public class User {
     // Firebase and Firestore
     static FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     static CollectionReference STUDENTS$DB = firebaseFirestore.collection("STUDENTS$DB");
+    static FirebaseAuth auth = FirebaseAuth.getInstance();
 
 
     private String login;       // логин/почта при авторизации
@@ -69,6 +71,11 @@ public class User {
 
     public static void authenticate(String login, String password, Callback callback){
         FirebaseServer.authenticateUser(login, password, callback);
+    }
+
+    public static void exit(){
+        auth.signOut();
+        User.isAuthenticated = false;
     }
 
     /**

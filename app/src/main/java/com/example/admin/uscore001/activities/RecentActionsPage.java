@@ -67,7 +67,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
         if(!currentUser.getEmail().contains("teacher")) { // is a STUDENT
             setUpCurrentUserInfo();
         }else{                                            // is a TEACHER
-            setUpCurrentTeacherInfo();
+//            setUpCurrentTeacherInfo();
         }
     }
 
@@ -158,27 +158,27 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
         collapsingToolbarLayout.setTitle(currentUsername);
     }
 
-    public void setUpCurrentTeacherInfo(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String teacherImage = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
-        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-
-        if(teacherImage.isEmpty()){
-            GlideApp
-                    .with(RecentActionsPage.this)
-                    .load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png")
-                    .centerCrop()
-                    .into(studentImageView);
-        }else {
-            GlideApp
-                    .with(RecentActionsPage.this)
-                    .load(teacherImage)
-                    .centerCrop()
-                    .into(studentImageView);
-        }
-
-        collapsingToolbarLayout.setTitle(teacherFullName);
-
-    }
+//    public void setUpCurrentTeacherInfo(){
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+////        String teacherImage = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
+////        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
+//
+//        if(teacherImage.isEmpty()){
+//            GlideApp
+//                    .with(RecentActionsPage.this)
+//                    .load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png")
+//                    .centerCrop()
+//                    .into(studentImageView);
+//        }else {
+//            GlideApp
+//                    .with(RecentActionsPage.this)
+//                    .load(teacherImage)
+//                    .centerCrop()
+//                    .into(studentImageView);
+//        }
+//
+//        collapsingToolbarLayout.setTitle(teacherFullName);
+//
+//    }
 
 }
