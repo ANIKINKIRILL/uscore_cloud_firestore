@@ -137,13 +137,14 @@ public class FragmentGroup extends Fragment {
     public class CompareStudentsByScore implements Comparator<Student> {
         @Override
         public int compare(Student s1, Student s2) {
-            String s1_score_str = s1.getScore();
-            String s2_score_str = s2.getScore();
+//            String s1_score_str = s1.getScore();
+//            String s2_score_str = s2.getScore();
 
-            int s1_score_int = Integer.parseInt(s1_score_str);
-            int s2_score_int = Integer.parseInt(s2_score_str);
+//            int s1_score_int = Integer.parseInt(s1_score_str);
+//            int s2_score_int = Integer.parseInt(s2_score_str);
 
-            return s2_score_int - s1_score_int ;
+//            return s2_score_int - s1_score_int ;
+            return 0;
         }
     }
 

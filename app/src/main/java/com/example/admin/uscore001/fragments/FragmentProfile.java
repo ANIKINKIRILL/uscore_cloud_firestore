@@ -75,15 +75,15 @@ public class FragmentProfile extends Fragment {
                         String currentUserUsername = student.getFirstName() + " " + student.getSecondName();
                         String currentUserGroupID = student.getGroupID();
                         findGroupNameByGroupID(currentUserGroupID);
-                        String currentUserScore = student.getScore();
+//                        String currentUserScore = student.getScore();
                         email.setText(currentUser.getEmail());
                         username.setText(currentUserUsername);
                         group.setText(currentUserGroupName);
-                        if(currentUserScore.equals("")) {
-                            score.setText("0");
-                        }else{
-                            score.setText(currentUserScore);
-                        }
+//                        if(currentUserScore.equals("")) {
+//                            score.setText("0");
+//                        }else{
+//                            score.setText(currentUserScore);
+//                        }
                     }
                 });
 

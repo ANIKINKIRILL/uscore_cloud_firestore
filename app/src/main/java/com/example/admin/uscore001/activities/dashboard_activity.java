@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -118,17 +119,12 @@ public class dashboard_activity extends AppCompatActivity implements
     // Переменные
     static int pickedLang = 0;
     String limitScore;
-    boolean isTeacher = false;
     int requestCounter = 0;
     String[] socialLinks = {"VK", "WHATS UP", "TWEETER"};
     Menu menu;
-    private String currentStudentID;
     private String intentMessageDecoded;
     private String studentID;
     private String scoreString;
-    private String currentUserScore;
-
-    // Постоянные переменные
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -146,17 +142,14 @@ public class dashboard_activity extends AppCompatActivity implements
 
     public void setCurrentUserData(){
         if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){
-            isTeacher = true;
+            limitScoreView.setVisibility(View.INVISIBLE);
             requestNumber.setOnClickListener(this);
             getTeacherClass(Settings.getLogin());
-            limitScoreView.setVisibility(View.INVISIBLE);
         }
         else if (Settings.getStatus().equals(Settings.STUDENT_STATUS)){
             getStudentClass(Settings.getLogin());
             requestNumber.setText("");
             notification_alarm.setVisibility(View.INVISIBLE);
-            rateStudentInGroup(Settings.getGroupName());
-            rateStudentInSchool();
         }
     }
 
@@ -411,7 +404,6 @@ public class dashboard_activity extends AppCompatActivity implements
             String image_path = teacher.getImage_path();
             String positionID = teacher.getPositionID();
             String subjectID = teacher.getSubjectID();
-            String requestID = teacher.getRequestID();
             String statusID = teacher.getStatusID();
             String teacherRequestID = teacher.getRequestID();
             String teacherID = teacher.getId();
@@ -429,7 +421,6 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Teacher.IMAGE_PATH, image_path);
             editor.putString(Teacher.POSITION_ID, positionID);
             editor.putString(Teacher.SUBJECT_ID, subjectID);
-            editor.putString(Teacher.REQUEST_ID, requestID);
             editor.putString(Teacher.STATUS_ID, statusID);
             editor.putString(Teacher.TEACHER_REQUEST_ID, teacherRequestID);
             editor.putString(Teacher.TEACHER_ID, teacherID);
@@ -439,22 +430,22 @@ public class dashboard_activity extends AppCompatActivity implements
 
             /*
                 --------------------------------------------------------------
-                |    Проверка Данных                                          |
+                |    Проверка Данных                                         |
                 --------------------------------------------------------------
              */
 
-            Log.d(TAG, "teacherData: firstName: " + sharedPreferences.getString(Teacher.FIRST_NAME, "") + "\n" +
-                                            "secondName: " + sharedPreferences.getString(Teacher.SECOND_NAME, "") + "\n" +
-                                            "lastName: " + sharedPreferences.getString(Teacher.LAST_NAME, "") + "\n" +
-                                            "id:" + sharedPreferences.getString(Teacher.TEACHER_ID, "") + "\n" +
-                                            "requestID: " + sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "") + "\n" +
-                                            "statusID : " + sharedPreferences.getString(Teacher.STATUS_ID, "") + "\n" +
-                                            "requestID: " + sharedPreferences.getString(Teacher.REQUEST_ID, "") + "\n" +
-                                            "subjectID: " + sharedPreferences.getString(Teacher.SUBJECT_ID, "") + "\n" +
-                                            "positionID: " + sharedPreferences.getString(Teacher.POSITION_ID, "") + "\n" +
-                                            "imagePath : " + sharedPreferences.getString(Teacher.IMAGE_PATH, "") + "\n" +
-                                            "email: " + sharedPreferences.getString(Teacher.EMAIL, "") + "\n" +
-                                            "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n");
+            Log.d(TAG, "teacherData:" +
+                "firstName: " + sharedPreferences.getString(Teacher.FIRST_NAME, "") + "\n" +
+                "secondName: " + sharedPreferences.getString(Teacher.SECOND_NAME, "") + "\n" +
+                "lastName: " + sharedPreferences.getString(Teacher.LAST_NAME, "") + "\n" +
+                "id:" + sharedPreferences.getString(Teacher.TEACHER_ID, "") + "\n" +
+                "requestID: " + sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "") + "\n" +
+                "statusID : " + sharedPreferences.getString(Teacher.STATUS_ID, "") + "\n" +
+                "subjectID: " + sharedPreferences.getString(Teacher.SUBJECT_ID, "") + "\n" +
+                "positionID: " + sharedPreferences.getString(Teacher.POSITION_ID, "") + "\n" +
+                "imagePath : " + sharedPreferences.getString(Teacher.IMAGE_PATH, "") + "\n" +
+                "email: " + sharedPreferences.getString(Teacher.EMAIL, "") + "\n" +
+                "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n");
 
             editor.apply();
 
@@ -512,10 +503,10 @@ public class dashboard_activity extends AppCompatActivity implements
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.myProfileCardView:{
-                if(!isTeacher) {
+                if(Settings.getStatus().equals(getString(R.string.studentStatusValue))) {
                     Intent intent = new Intent(dashboard_activity.this, StudentProfile_activity2.class);
                     startActivity(intent);
-                }else if(isTeacher){
+                }else if(Settings.getStatus().equals(getString(R.string.teacherStatusValue))){
                     Intent intent = new Intent(dashboard_activity.this, TeacherProfile.class);
                     startActivity(intent);
                 }
@@ -585,7 +576,7 @@ public class dashboard_activity extends AppCompatActivity implements
 
                 // Очки ученика на данный момент
                 int indexOfA = messageWithoutSpaces.lastIndexOf("а");
-                currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
+                String currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
                 Log.d(TAG, "currentUserScore: " + currentUserScore);
 
 
@@ -633,20 +624,21 @@ public class dashboard_activity extends AppCompatActivity implements
 
     /**
      * Рейтинг ученика в своей группе
-     * @param groupName                 // Название Группы
+     * @param id                 // id Группы
      */
 
-    public void rateStudentInGroup(String groupName){
-        Student.loadGroupStudents(groupName, mRateStudentInGroupCallback);
+    public void rateStudentInGroup(String id){
+        Student.loadGroupStudentsByGroupID(id, mRateStudentInGroupCallback);
     }
 
     Callback mRateStudentInGroupCallback = new Callback() {
         @Override
         public void execute(Object data, String... params) {
-            String rateStudentInGroup = params[1];
+            String rateStudentInGroup = params[0];
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(Student.RATE_IN_GROUP, rateStudentInGroup);
+            Log.d(TAG, "rateStudentInGroup: " + rateStudentInGroup);
             editor.apply();
         }
     };
@@ -661,7 +653,7 @@ public class dashboard_activity extends AppCompatActivity implements
 
     /**
      * Получение всех принятых запросов на добавление очков
-     * @param studentID      // ID Ученика
+     * @param studentID      ID Ученика
      */
 
     public void getStudentConfirmedRequestsAmount(String studentID){
@@ -680,6 +672,7 @@ public class dashboard_activity extends AppCompatActivity implements
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt(Student.CONFIRMED_REQUESTS_AMOUNT, studentConfirmedRequestsAmount);
+            Log.d(TAG, "studentConfirmedRequestsAmount: " + studentConfirmedRequestsAmount);
             editor.apply();
         }
     };
@@ -705,6 +698,7 @@ public class dashboard_activity extends AppCompatActivity implements
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt(Student.DENIED_REQUESTS_AMOUNT, studentDeniedRequestsAmount);
+            Log.d(TAG, "studentDeniedRequestsAmount: " + studentDeniedRequestsAmount);
             editor.apply();
         }
     };
@@ -729,10 +723,13 @@ public class dashboard_activity extends AppCompatActivity implements
             String firstName = student.getFirstName();
             String secondName = student.getSecondName();
             String image_path = student.getImage_path();
+            if(image_path.isEmpty()){
+                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+            }
             String limitScore = student.getLimitScore();
             String studentID = student.getId();
             String statusID = student.getStatusID();
-            String scoreValue = student.getScore();
+            int scoreValue = student.getScore();
             String teacherID = student.getTeacherID();
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -744,7 +741,7 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Student.LIMIT_SCORE, limitScore);
             editor.putString(Student.ID, studentID);
             editor.putString(Student.STATUS_ID, statusID);
-            editor.putString(Student.SCORE, scoreValue);
+            editor.putInt(Student.SCORE, scoreValue);
             editor.putString(Student.TEACHER_ID, teacherID);
             editor.apply();
 
@@ -761,23 +758,27 @@ public class dashboard_activity extends AppCompatActivity implements
             getStudentConfirmedRequestsAmount(studentID);
             getStudentDeniedRequestsAmount(studentID);
 
+            rateStudentInGroup(groupID);
+            rateStudentInSchool();
+
              /*
                 --------------------------------------------------------------
                 |    Проверка Данных                                          |
                 --------------------------------------------------------------
              */
 
-            Log.d(TAG, "studentData: email: " + sharedPreferences.getString(Student.EMAIL, "") + "\n" +
-                                            "groupID: " +sharedPreferences.getString(Student.GROUP_ID, "") + "\n" +
-                                            "firstName: " + sharedPreferences.getString(Student.FIRST_NAME, "") + "\n" +
-                                            "secondName: " + sharedPreferences.getString(Student.SECOND_NAME, "") + "\n" +
-                                            "lastName: " + sharedPreferences.getString(Student.LAST_NAME, "") + "\n" +
-                                            "image_path: " + sharedPreferences.getString(Student.IMAGE_PATH, "") + "\n" +
-                                            "limitScore: " + sharedPreferences.getString(Student.LIMIT_SCORE, "") + "\n" +
-                                            "id: " + sharedPreferences.getString(Student.ID, "") + "\n" +
-                                            "statusID: " + sharedPreferences.getString(Student.STATUS_ID, "") + "\n" +
-                                            "score: " + sharedPreferences.getString(Student.SCORE, "") + "\n" +
-                                            "teacherID: " + sharedPreferences.getString(Student.TEACHER_ID, "") + "\n");
+            Log.d(TAG, "studentData:" +
+                "email: " + sharedPreferences.getString(Student.EMAIL, "") + "\n" +
+                "groupID: " +sharedPreferences.getString(Student.GROUP_ID, "") + "\n" +
+                "firstName: " + sharedPreferences.getString(Student.FIRST_NAME, "") + "\n" +
+                "secondName: " + sharedPreferences.getString(Student.SECOND_NAME, "") + "\n" +
+                "lastName: " + sharedPreferences.getString(Student.LAST_NAME, "") + "\n" +
+                "image_path: " + sharedPreferences.getString(Student.IMAGE_PATH, "") + "\n" +
+                "limitScore: " + sharedPreferences.getString(Student.LIMIT_SCORE, "") + "\n" +
+                "id: " + sharedPreferences.getString(Student.ID, "") + "\n" +
+                "statusID: " + sharedPreferences.getString(Student.STATUS_ID, "") + "\n" +
+                "score: " + sharedPreferences.getInt(Student.SCORE, 0) + "\n" +
+                "teacherID: " + sharedPreferences.getString(Student.TEACHER_ID, "") + "\n");
 
         }
     };
@@ -788,7 +789,8 @@ public class dashboard_activity extends AppCompatActivity implements
      */
 
     private void checkSpendLimitScoreDateAndCurrentDate(Menu menu){
-        student$db.document(currentStudentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+        student$db.document(sharedPreferences.getString(Student.ID, "")).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                 Student student = documentSnapshot.toObject(Student.class);
@@ -811,7 +813,7 @@ public class dashboard_activity extends AppCompatActivity implements
                 Log.d(TAG, "difference in days: " + days);
                 if(minutes >= 1){
                     if(Integer.parseInt(limitScore) == 0) {
-                        student$db.document(currentStudentID).update("limitScore", "15");
+                        student$db.document(sharedPreferences.getString(Student.ID, "")).update("limitScore", "15");
                     }
                 }else{
                     Toast.makeText(dashboard_activity.this, "На сегодня лимит исчерпан. Приходите завтра", Toast.LENGTH_SHORT).show();
@@ -831,6 +833,7 @@ public class dashboard_activity extends AppCompatActivity implements
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(Student.RATE_IN_SCHOOL, rateStudentInSchool);
+            Log.d(TAG, "rateStudentInSchool: " + rateStudentInSchool);
             editor.apply();
         }
     };

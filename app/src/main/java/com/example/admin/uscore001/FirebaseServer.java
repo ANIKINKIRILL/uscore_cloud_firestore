@@ -3,6 +3,7 @@ package com.example.admin.uscore001;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -27,8 +28,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -51,9 +54,12 @@ public class FirebaseServer {
     static CollectionReference GROUPS$DB = firebaseFirestore.collection("GROUPS$DB");
     static CollectionReference STUDENT_REGISTER_REQUESTS = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
     static CollectionReference REQEUSTS$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    static CollectionReference SUBJECTS$DB = firebaseFirestore.collection("SUBJECTS$DB");
+    static CollectionReference POSITIONS$DB = firebaseFirestore.collection("POSITIONS$DB");
 
     // Переменные
-    private static ArrayList<String> students = new ArrayList<>();
+    private static ArrayList<String> studentsByGroupName = new ArrayList<>();
+    private static ArrayList<Student> studentsByGroupID = new ArrayList<>();
     private static ArrayList<String> teachers = new ArrayList<>();
     private static ArrayList<Group> groups = new ArrayList<>();
     private static ArrayList<RequestAddingScore> confirmedRequests = new ArrayList<>();
@@ -122,13 +128,13 @@ public class FirebaseServer {
     }
 
     /**
-     * Выгрузка одноклассников ученика
+     * Выгрузка учеников группы по названию
      */
 
-    public static class LoadGroupStudents extends AsyncTask<AsyncTaskArguments, Void, Void>{
+    public static class LoadGroupStudentsByGroupName extends AsyncTask<AsyncTaskArguments, Void, Void>{
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
-            students.clear();
+            studentsByGroupName.clear();
             String pickedGroupName = (String)asyncTaskArguments[0].mData.data[0];
             GROUPS$DB.whereEqualTo("name", pickedGroupName).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
@@ -139,33 +145,53 @@ public class FirebaseServer {
                             String groupID = group.getId();
                             STUDENTS$DB
                                     .whereEqualTo("groupID", groupID)
-                                    .orderBy("score", Query.Direction.DESCENDING)
                                     .get()
                                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     int studentsSize = task.getResult().size();
-                                    String rateStudentInGroup = "";
                                     if(studentsSize != 0){
                                         for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                                             Student student = documentSnapshot.toObject(Student.class);
-                                            try {
-                                                if (student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())
-                                                        && User.isAuthenticated) {
-                                                    rateStudentInGroup = Integer.toString(task.getResult().getDocuments().indexOf(student) + 1);
-                                                }
-                                            }catch (Exception e){
-                                                e.getMessage();
-                                            }
-                                            students.add(student.getFirstName() + " " + student.getSecondName());
+                                            studentsByGroupName.add(student.getFirstName() + " " + student.getSecondName());
                                         }
-                                        asyncTaskArguments[0].mCallback.execute(students, groupID, rateStudentInGroup);
+                                        asyncTaskArguments[0].mCallback.execute(studentsByGroupName, groupID);
                                     }else{
-                                        asyncTaskArguments[0].mCallback.execute(students);
+                                        asyncTaskArguments[0].mCallback.execute(studentsByGroupName);
                                     }
                                 }
                             });
                         }
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Выгрузка учеников группы по ID
+     */
+
+    public static class LoadGroupStudentsByGroupID extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            studentsByGroupID.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String groupID = (String)asyncTaskArguments[0].mData.data[0];
+            STUDENTS$DB.whereEqualTo("groupID", groupID).orderBy("score", Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    String rateInGroup = "";
+                    if(task.isSuccessful()){
+                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                            Student student = documentSnapshot.toObject(Student.class);
+                            studentsByGroupID.add(student);
+                            if(student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())){
+                                rateInGroup = Integer.toString(studentsByGroupID.indexOf(student) + 1);
+                            }
+                        }
+                        callback.execute(studentsByGroupID, rateInGroup);
                     }
                 }
             });
@@ -372,6 +398,7 @@ public class FirebaseServer {
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             confirmedRequests.clear();
             String studentID = (String)asyncTaskArguments[0].mData.data[0];
+            Log.d(TAG, "studentID: " + studentID);
             Callback callback = asyncTaskArguments[0].mCallback;
             REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
@@ -450,12 +477,12 @@ public class FirebaseServer {
                     if(task.isSuccessful()){
                         for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                             Student student = documentSnapshot.toObject(Student.class);
+                            allStudents.add(student);
                             if(student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())) {
-                                rateStudentInSchool = Integer.toString(students.indexOf(student) + 1);
+                                rateStudentInSchool = Integer.toString(allStudents.indexOf(student) + 1);
                             }
-                            allStudents.push(student);
+                            callback.execute(allStudents, rateStudentInSchool);
                         }
-                        callback.execute(allStudents, rateStudentInSchool);
                     }
                 }
             });
@@ -481,5 +508,75 @@ public class FirebaseServer {
             return null;
         }
     }
+
+    /**
+     * Предмет учителя по ID полям
+     */
+
+    public static class GetSubjectValueByID extends AsyncTask<AsyncTaskArguments, Void, Void> {
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String subjectID = (String) asyncTaskArguments[0].mData.data[0];
+            SUBJECTS$DB.document(subjectID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    String subject = documentSnapshot.getString("name");
+                    callback.execute(subject);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Позиция учителя по ID полю
+     */
+
+    public static class GetPositionValueByID extends AsyncTask<AsyncTaskArguments, Void, Void> {
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String positionID = (String) asyncTaskArguments[0].mData.data[0];
+            POSITIONS$DB.document(positionID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    String position = documentSnapshot.getString("name");
+                    callback.execute(position);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Обновить ФИО учителя
+     */
+
+    public static class UpdateTeacherCredentials extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            String teacherID = (String) asyncTaskArguments[0].mData.data[0];
+            String firstName = (String) asyncTaskArguments[0].mData.data[1];
+            String secondName = (String) asyncTaskArguments[0].mData.data[2];
+            String lastName = (String) asyncTaskArguments[0].mData.data[3];
+            HashMap<String, Object> updateCredentialsMap = new HashMap<>();
+            updateCredentialsMap.put("firstName", firstName.trim());
+            updateCredentialsMap.put("secondName", secondName.trim());
+            updateCredentialsMap.put("lastName", lastName.trim());
+            TEACHERS$DB.document(teacherID).update(updateCredentialsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        asyncTaskArguments[0].mCallback.execute("Вы успешно изменили свой профиль");
+                    }else{
+                        asyncTaskArguments[0].mCallback.execute("Что-то пошло не так. Изменения не сохранены");
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
 
 }

@@ -15,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,11 +26,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.admin.uscore001.AsyncTaskDataArgument;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.dialogs.ImageDialog;
 import com.example.admin.uscore001.dialogs.TeacherSettingsDialog;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.OnImageClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -62,7 +66,6 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     private static final String TAG = "TeacherProfile";
 
     // widgets
-    ImageView back;
     CircleImageView imageView;
     TextView usernameView, status, emailAddress, positionView, subjectView, countAddedScore;
     Button profileSettings;
@@ -70,15 +73,14 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
 
     // vars
     String email;
-    String fullname;
-    String image_path;
-    String positionID;
-    String subjectID;
     int addedTimes = 0;
     byte[] mUploadBytes;
-    private String subject;
-    private String position;
-    private String teacherRequestID;
+    private String requestID;
+    private String lastName;
+    private String firstName;
+    private String teacherImagePath;
+    private String positionID;
+    private String subjectID;
     private String teacherID;
 
     // Firebase
@@ -91,25 +93,41 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference teachers$db = firebaseFirestore.collection("TEACHERS$DB");
     CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
-    CollectionReference subjects$DB = firebaseFirestore.collection("SUBJECTS$DB");
-    CollectionReference positions$DB = firebaseFirestore.collection("POSITIONS$DB");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.teacher_profile_layout);
+        getTeacherData();
         init();
-        setTeacherInfo();
+        initActionBar();
+        getSubjectByID(subjectID);
+        getPositionByID(positionID);
+        setTeacherData(teacherImagePath, firstName, lastName, email, requestID);
+        setTeacherAddedTimes(requestID);
     }
 
+    /**
+     * Извлечение данных учителя из SharedPreferences
+     */
+
+    private void getTeacherData(){
+        SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+        teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
+        teacherImagePath = sharedPreferences.getString(Teacher.IMAGE_PATH, "");
+        firstName = sharedPreferences.getString(Teacher.FIRST_NAME, "");
+        lastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
+        email = sharedPreferences.getString(Teacher.EMAIL, "");
+        requestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+        subjectID = sharedPreferences.getString(Teacher.SUBJECT_ID, "");
+        positionID = sharedPreferences.getString(Teacher.POSITION_ID, "");
+    }
+
+    /**
+     * Инициализация
+     */
+
     private void init(){
-
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle("Мой профиль");
-
         imageView = findViewById(R.id.imageView);
         countAddedScore = findViewById(R.id.countAddedScore);
         usernameView = findViewById(R.id.username);
@@ -119,21 +137,22 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         subjectView = findViewById(R.id.subject);
         profileSettings = findViewById(R.id.profileSettings);
         showAllComments = findViewById(R.id.showAllComments);
+
         showAllComments.setOnClickListener(this);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        email = sharedPreferences.getString(getString(R.string.intentTeacherEmail), "");
-//        fullname = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-//        image_path = sharedPreferences.getString(getString(R.string.intentTeacherImage_path), "");
-//        positionID = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
-//        subjectID = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
-        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
-        teacherID = sharedPreferences.getString("teacherID", "");
-
-//        back = findViewById(R.id.back);
-//        back.setOnClickListener(this);
         imageView.setOnClickListener(this);
         profileSettings.setOnClickListener(this);
+    }
+
+    /**
+     * Инициализация ActionBar
+     */
+
+    private void initActionBar(){
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle("Мой профиль");
     }
 
     @Override
@@ -167,33 +186,80 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         return super.onOptionsItemSelected(item);
     }
 
-    private void getSubjectPositionByID(String subjectID, String positionID){
-        subjects$DB.document(subjectID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                subject = documentSnapshot.getString("name");
-                subjectView.setText(subject);
-            }
-        });
-        positions$DB.document(positionID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                position = documentSnapshot.getString("name");
-                positionView.setText(position);
-            }
-        });
+    /**
+     * Предмет учителя по ID
+     * @param subjectID     Предмет
+     */
+
+    private void getSubjectByID(String subjectID){
+        Teacher.getSubjectValueByID(mGetSubjectByIDCallback, subjectID);
     }
 
-    public void setTeacherInfo(){
-        getSubjectPositionByID(subjectID, positionID);
-        Glide.with(TeacherProfile.this).load(image_path).into(imageView);
-        usernameView.setText(fullname);
-        status.setText(getResources().getString(R.string.statusTeacher));
+    /**
+     * Callback, после асинхронного получения Предмета учителя с Сервера
+     */
+
+    Callback mGetSubjectByIDCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            String callbackResult = (String) data;
+            editor.putString(Teacher.SUBJECT_DATA, callbackResult);
+            subjectView.setText(callbackResult);
+        }
+    };
+
+    /**
+     * Позиция учителя по ID
+     * @param positionID     Позиция
+     */
+
+    private void getPositionByID(String positionID){
+        Teacher.getPositionValueByID(mGetPositionByIDCallback, positionID);
+    }
+
+    /**
+     * Callback, после асинхронного получения Позиции учителя с Сервера
+     */
+
+    Callback mGetPositionByIDCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            String callbackResult = (String) data;
+            editor.putString(Teacher.POSITION_DATA, callbackResult);
+            positionView.setText(callbackResult);
+        }
+    };
+
+
+
+    /**
+     * Загрузка данных учителя в виджеты
+     *
+     * @param teacherImagePath  Аватарка
+     * @param firstName         Имя
+     * @param lastName          Отчество
+     * @param email             Почта
+     * @param teacherRequestID  requestID
+     */
+
+    public void setTeacherData(String teacherImagePath, String firstName, String lastName, String email, String teacherRequestID){
+        GlideApp.with(this).load(teacherImagePath).centerCrop().into(imageView);
+        usernameView.setText(String.format("%s %s", firstName, lastName));
+        status.setText("Учитель");
         emailAddress.setText(email);
-        getTeacherAddedTimes(teacherRequestID);
     }
 
-    private void getTeacherAddedTimes(String teacherRequestID){
+    /**
+     * Сколько раз учитель принял заявку на добавление очков ученику
+     * @param teacherRequestID  requestID учителя
+     */
+
+    private void setTeacherAddedTimes(String teacherRequestID){
+        addedTimes = 0;
         requests$DB
             .document(teacherRequestID)
             .collection("STUDENTS")
@@ -220,11 +286,21 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
             });
     }
 
+    /**
+     * Метод интрефеса OnImageClickListener
+     * @param bitmap    фото с камеры
+     */
+
     @Override
     public void getBitmapPath(Bitmap bitmap) {
-        imageView.setImageBitmap(bitmap);
+        GlideApp.with(this).load(bitmap).centerCrop().into(imageView);
         uploadBitmap(bitmap);
     }
+
+    /**
+     * Метод интрефеса OnImageClickListener
+     * @param uri       картинка с галереии
+     */
 
     @Override
     public void getUriPath(Uri uri) {
@@ -232,16 +308,30 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         uploadUri(uri);
     }
 
+    /**
+     * Загрузка фото с камеры в бд
+     * @param bitmap    фото с камеры
+     */
+
     public void uploadBitmap(Bitmap bitmap){
         BackGroundResize resize = new BackGroundResize(bitmap);
         Uri uri = null;
         resize.execute(uri);
     }
 
+    /**
+     * Загрузка картинки с галерии в бд
+     * @param uri       картинка с галереии
+     */
+
     public void uploadUri(Uri uri){
         BackGroundResize resize = new BackGroundResize(null);
         resize.execute(uri);
     }
+
+    /**
+     * Асинхронное сжатие фото
+     */
 
     public class BackGroundResize extends AsyncTask<Uri, Integer, byte[]> {
 
@@ -257,6 +347,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(TAG, "onPreExecute: " + "Compressing image...");
+            Toast.makeText(TeacherProfile.this, "Сжимаем фото...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -281,14 +372,26 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    /**
+     * Биты информации после сжатия фото
+     *
+     * @param bitmap        фото с камеры
+     * @param quality       качество фото на которые было она сжато
+     * @return              массив битов
+     */
+
     public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
         return stream.toByteArray();
     }
 
+    /**
+     * Загрузка на БД
+     */
+
     public void executeUploadTask(){
-        Toast.makeText(this, "Uploading image", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Загружаем фото...", Toast.LENGTH_SHORT).show();
         UploadTask uploadTask = mRef.child(user.getUid()).putBytes(mUploadBytes);
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -296,7 +399,6 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
                 Task<Uri> uriTask = taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-//                        student$db.document(currentStudentID).update("image_path", uri.toString());
                         teachers$db.document(teacherID).update("image_path", uri.toString());
                     }
                 });

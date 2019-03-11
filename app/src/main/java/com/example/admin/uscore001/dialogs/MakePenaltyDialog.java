@@ -279,17 +279,17 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
                         for(DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()) {
                             Student student = documentSnapshot.toObject(Student.class);
                             if (counter != 0) {
-                                String currentScore = student.getScore();
+//                                String currentScore = student.getScore();
                                 String currentStudentID = student.getId();
-                                int currentScoreInt = Integer.parseInt(currentScore);
+//                                int currentScoreInt = Integer.parseInt(currentScore);
                                 int pointsInt = Integer.parseInt(points);
-                                int result = currentScoreInt - pointsInt;
-                                if (result < 0) {
-                                    result = 0;
-                                }
-                                String resultString = Integer.toString(result);
+//                                int result = currentScoreInt - pointsInt;
+//                                if (result < 0) {
+//                                    result = 0;
+//                                }
+//                                String resultString = Integer.toString(result);
 //                                student.setScore(resultString);
-                                students$DB.document(currentStudentID).update("score", resultString);
+//                                students$DB.document(currentStudentID).update("score", resultString);
                                 counter = 0;
                             }
                         }

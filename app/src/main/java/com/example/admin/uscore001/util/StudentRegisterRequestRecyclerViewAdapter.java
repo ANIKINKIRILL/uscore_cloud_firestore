@@ -114,23 +114,23 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
                                         // Создание обьекта класса Student
-                                        Student student = new Student(email, model.getGroupID(),
-                                                "", "0", "",
-                                                "30", model.getTeacherID(), firstName,
-                                                secondName, lastName,
-                                                "y1igExymzKFaV3BU8zH8");
-                                        // Добавление в базу
+//                                        Student student = new Student(email, model.getGroupID(),
+//                                                "", "0", "",
+//                                                "30", model.getTeacherID(), firstName,
+//                                                secondName, lastName,
+//                                                "y1igExymzKFaV3BU8zH8");
+//                                         Добавление в базу
                                         if(counter == 0) {
-                                            student$db.add(student).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                    String documentID = task.getResult().getId();
-                                                    HashMap<String, String> idMap = new HashMap<>();
-                                                    idMap.put("id", documentID);
-                                                    task.getResult().set(idMap, SetOptions.merge());
-                                                }
-                                            });
-                                            counter = 1;
+//                                            student$db.add(student).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+//                                                @Override
+//                                                public void onComplete(@NonNull Task<DocumentReference> task) {
+//                                                    String documentID = task.getResult().getId();
+//                                                    HashMap<String, String> idMap = new HashMap<>();
+//                                                    idMap.put("id", documentID);
+//                                                    task.getResult().set(idMap, SetOptions.merge());
+//                                                }
+//                                            });
+//                                            counter = 1;
                                         }
                                         // Изменение confirmed -> true
                                         student_register_requests$db.document(model.getId()).update("confirmed", true);

@@ -28,13 +28,14 @@ public class Teacher {
    public static final String IMAGE_PATH = "image_path";
    public static final String POSITION_ID = "position_id";
    public static final String SUBJECT_ID = "subject_id";
-   public static final String REQUEST_ID = "request_id";
    public static final String STATUS_ID = "status_id";
    public static final String TEACHER_REQUEST_ID = "teacher_request_id";
    public static final String TEACHER_ID = "teacher_id";
    public static final String FIRST_NAME = "first_name";
    public static final String SECOND_NAME = "second_name";
    public static final String LAST_NAME = "last_name";
+   public static final String SUBJECT_DATA = "subject_data";
+   public static final String POSITION_DATA = "position_data";
 
     public Teacher(
             String responsible_email,
@@ -206,6 +207,48 @@ public class Teacher {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(score, studentID));
         FirebaseServer.AddScoreToStudent addScoreToStudent = new FirebaseServer.AddScoreToStudent();
         addScoreToStudent.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Предмет учителя по ID полям
+     *
+     * @param callback      callback, который вернётся после асинхронного получения данных с Сервера
+     * @param subjectID     id предмета
+     */
+
+    public static void getSubjectValueByID(Callback callback, String subjectID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(subjectID));
+        FirebaseServer.GetSubjectValueByID getSubjectValueByID = new FirebaseServer.GetSubjectValueByID();
+        getSubjectValueByID.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Позиция учителя по ID полям
+     *
+     * @param callback      callback, который вернётся после асинхронного получения данных с Сервера
+     * @param positionID     id позиции
+     */
+
+    public static void getPositionValueByID(Callback callback, String positionID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(positionID));
+        FirebaseServer.GetPositionValueByID getPositionValueByID = new FirebaseServer.GetPositionValueByID();
+        getPositionValueByID.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Обновить ФИО учителя
+     *
+     * @param callback          Callback, который вернётся после обновления
+     * @param teacherID         id учителя
+     * @param firstName         Имя
+     * @param secondName        Фамилия
+     * @param lastName          Отчество
+     */
+
+    public static void updateCredentials(Callback callback, String teacherID, String firstName, String secondName, String lastName){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID, firstName, secondName, lastName));
+        FirebaseServer.UpdateTeacherCredentials updateTeacherCredentials = new FirebaseServer.UpdateTeacherCredentials();
+        updateTeacherCredentials.execute(asyncTaskArguments);
     }
 
 }

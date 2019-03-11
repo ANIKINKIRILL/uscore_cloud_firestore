@@ -279,11 +279,11 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         Student temp;
         for(int i = 0; i < size; i++){
             for(int j = 1; j < size; j++){
-                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
+//                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
                     temp = students.get(j-1);
                     students.set(j-1, students.get(j));
                     students.set(j, temp);
-                }
+//                }
             }
         }
     }

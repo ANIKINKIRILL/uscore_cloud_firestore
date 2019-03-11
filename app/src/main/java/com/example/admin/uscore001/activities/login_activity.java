@@ -243,11 +243,6 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 // Извлечение статуса пользователя
                 User.getUserStatus(params[0], mGetStatusCallback);
                 User.isAuthenticated = true;
-
-                Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
-                goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(goToDashboard);
-                finish();
                 Log.d(TAG, "signedIn: with login:" + Settings.getLogin() + "\n" +
                                      "password: " + Settings.getPassword() + "\n");
                 signIn.setEnabled(true);
@@ -280,21 +275,26 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             if(statusID.equals(teacherStatus)){
                 Settings.setStatus(teacherStatus);
             }
-            Log.d(TAG, "statusID: " + Settings.getStatus());
             progressBar.setVisibility(View.INVISIBLE);
+
+            Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
+            goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(goToDashboard);
+            finish();
+
         }
     };
 
     /**
      * Выгружение всех учеинков класса
-     * @param pickedGroup
+     * @param pickedGroup       Название группы
      */
 
     public void loadGroupStudents(String pickedGroup){
         signIn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
         passwordView.setText("");
-        Student.loadGroupStudents(pickedGroup, mLoadGroupStudentsCallback);
+        Student.loadGroupStudentsByGroupName(pickedGroup, mLoadGroupStudentsCallback);
     }
 
     /**

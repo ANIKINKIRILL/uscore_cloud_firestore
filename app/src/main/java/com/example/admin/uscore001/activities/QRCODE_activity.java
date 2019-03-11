@@ -122,7 +122,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                 Student student = documentSnapshot.toObject(Student.class);
-                currentScore = student.getScore();
+//                currentScore = student.getScore();
             }
         });
     }

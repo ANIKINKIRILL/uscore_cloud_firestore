@@ -87,11 +87,11 @@ public class AddScoreDialog extends DialogFragment implements View.OnClickListen
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(counter != 1) {
                     for (DataSnapshot selectedStudent : dataSnapshot.getChildren()) {
-                        String old_score = selectedStudent.getValue(Student.class).getScore();
-                        int old_score_int = Integer.parseInt(old_score);
-                        int result = old_score_int + score;
-                        String result_str = Integer.toString(result);
-                        selectedStudent.getRef().child("score").setValue(result_str);
+//                        String old_score = selectedStudent.getValue(Student.class).getScore();
+//                        int old_score_int = Integer.parseInt(old_score);
+//                        int result = old_score_int + score;
+//                        String result_str = Integer.toString(result);
+//                        selectedStudent.getRef().child("score").setValue(result_str);
                         counter = 1;
                     }
                 }

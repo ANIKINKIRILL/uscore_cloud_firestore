@@ -225,13 +225,13 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (counter != 1) {
                     Student selectedStudent = task.getResult().toObject(Student.class);
-                    String old_score = selectedStudent.getScore();
-                    int old_score_int = Integer.parseInt(old_score);
-                    int result = old_score_int + score;
-                    String result_str = Integer.toString(result);
-                    students$DB.document(studentID).update("score", result_str);
-                    reqeusts$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
-                            .document(requestID).update("answered", true);
+//                    String old_score = selectedStudent.getScore();
+//                    int old_score_int = Integer.parseInt(old_score);
+//                    int result = old_score_int + score;
+//                    String result_str = Integer.toString(result);
+//                    students$DB.document(studentID).update("score", result_str);
+//                    reqeusts$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+//                            .document(requestID).update("answered", true);
                     Toast.makeText(context,
                             "Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName(),
                             Toast.LENGTH_SHORT).show();

@@ -6,6 +6,7 @@ import com.example.admin.uscore001.AsyncTaskArguments;
 import com.example.admin.uscore001.AsyncTaskDataArgument;
 import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.FirebaseServer;
+import com.example.admin.uscore001.Settings;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;

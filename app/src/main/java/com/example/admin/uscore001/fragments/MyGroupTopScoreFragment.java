@@ -191,11 +191,11 @@ public class MyGroupTopScoreFragment extends Fragment {
         Student temp;
         for(int i = 0; i < size; i++){
             for(int j = 1; j < size; j++){
-                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
-                    temp = students.get(j-1);
-                    students.set(j-1, students.get(j));
-                    students.set(j, temp);
-                }
+//                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
+//                    temp = students.get(j-1);
+//                    students.set(j-1, students.get(j));
+//                    students.set(j, temp);
+//                }
             }
         }
     }

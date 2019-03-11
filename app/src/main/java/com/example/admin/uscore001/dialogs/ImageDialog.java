@@ -18,30 +18,50 @@ import android.widget.TextView;
 import com.example.admin.uscore001.util.OnImageClickListener;
 import com.example.admin.uscore001.R;
 
+/**
+ * Окно, которое позволяет пользователю выбрать способ сделать фото (Камера, галерея)
+ */
+
 public class ImageDialog extends DialogFragment implements View.OnClickListener{
 
-    // const
+    // Постоянные переменные
     private static final int CAMERA_REQUEST = 1;
     private static final int MEMORY_REQUEST = 2;
 
-    // widgets
+    // Виджеты
     TextView openCamera, chooseFromMemory;
 
-    // vars
+    // Переменные
     OnImageClickListener listener;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialogfragment_imagedialog, container, false);
-        getDialog().setTitle("Моя аватарка");
+        init(view);
+        configureDialog();
+        return view;
+    }
+
+    /**
+     * Инициализация
+     * @param view      на чем находяться элементы
+     */
+
+    private void init(View view){
         openCamera = view.findViewById(R.id.openCamera);
         chooseFromMemory = view.findViewById(R.id.chooseFromMemory);
 
         openCamera.setOnClickListener(this);
         chooseFromMemory.setOnClickListener(this);
+    }
 
-        return view;
+    /**
+     * Настройка Окна
+     */
+
+    private void configureDialog(){
+        getDialog().setTitle("Моя аватарка");
     }
 
     @Override

@@ -6,9 +6,14 @@ package com.example.admin.uscore001;
 
 public class AsyncTaskDataArgument {
 
-    Object[] data;
+    public Object[] data;
 
     public AsyncTaskDataArgument(Object... data){
         this.data = data;
     }
+
+    public AsyncTaskDataArgument(){
+
+    }
+
 }

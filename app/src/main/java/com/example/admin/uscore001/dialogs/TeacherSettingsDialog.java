@@ -1,5 +1,6 @@
 package com.example.admin.uscore001.dialogs;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -14,7 +15,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.models.Teacher;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
@@ -27,88 +30,91 @@ import com.rey.material.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Окно, где учитель может изменить свои данные (ФИО, ПРЕДМЕТ, ПОЗИЦИЯ)
+ */
+
 public class TeacherSettingsDialog extends DialogFragment implements View.OnClickListener{
 
     private static final String TAG = "TeacherSettingsDialog";
 
-    // widgets
+    // Виджеты
     private EditText position, subject, firstName, secondName, lastName;
-    private android.widget.TextView ok, cancel;
 
-    // vars
-    String fullnameSharedPrefValue;
-    String positionSharedPrefValue;
-    String subjectSharedPrefValue;
+    // Переменные
     private String teacherID;
     private String teacherLastName;
     private String teacherSecondName;
     private String teacherFirstName;
-
-    // Firebase
-    private FirebaseDatabase database = FirebaseDatabase.getInstance("https://fir-01-ff46b.firebaseio.com/");
-    private DatabaseReference teachersRef = database.getReference("Teachers");
-
-
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference subjects$DB = firebaseFirestore.collection("SUBJECTS$DB");
-    CollectionReference positions$DB = firebaseFirestore.collection("POSITIONS$DB");
-    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
-
+    private String subjectData;
+    private String positionData;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.teacher_settings_dialog, container, false);
         init(view);
-        getDialog().setTitle("Изменить свой профиль");
+        configureDialog();
+        getTeacherData();
+        setTeacherData();
         return view;
     }
 
+    /**
+     * Настройка диалогового окна
+     */
+
+    private void configureDialog(){
+        getDialog().setTitle("Изменить свой профиль");
+    }
+
+    /**
+     * Инициализация
+     * @param view      на чём находяться виджеты
+     */
+
     private void init(View view){
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-//        fullnameSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-//        positionSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherPosition), "");
-//        subjectSharedPrefValue = sharedPreferences.getString(getString(R.string.intentTeacherSubject), "");
-        teacherLastName = sharedPreferences.getString("teacherLastName", "");
-        teacherSecondName = sharedPreferences.getString("teacherSecondName", "");
-        teacherFirstName = sharedPreferences.getString("teacherFirstName", "");
-
-        teacherID = sharedPreferences.getString("teacherID", "");
-
         position = view.findViewById(R.id.position);
         subject = view.findViewById(R.id.subject);
         firstName = view.findViewById(R.id.firstName);
-        firstName.setText(teacherFirstName);
         secondName = view.findViewById(R.id.secondName);
-        secondName.setText(teacherSecondName);
         lastName = view.findViewById(R.id.lastName);
-        lastName.setText(teacherLastName);
-        ok = view.findViewById(R.id.ok);
-        cancel = view.findViewById(R.id.cancel);
-
-        getSubjectPositionByID(subjectSharedPrefValue, positionSharedPrefValue);
+        android.widget.TextView ok = view.findViewById(R.id.ok);
+        android.widget.TextView cancel = view.findViewById(R.id.cancel);
 
         ok.setOnClickListener(this);
         cancel.setOnClickListener(this);
-
     }
 
-    private void getSubjectPositionByID(String subjectID, String positionID){
-        subjects$DB.document(subjectID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                String subjectValue = documentSnapshot.getString("name");
-                subject.setText(subjectValue);
-            }
-        });
-        positions$DB.document(positionID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                String positionValue = documentSnapshot.getString("name");
-                position.setText(positionValue);
-            }
-        });
+    /**
+     * Данные учителя
+     */
+
+    private void getTeacherData(){
+        // Оборачиваем в try catch блок для того чтобы не было ошибки когда Context = null
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            teacherFirstName = sharedPreferences.getString(Teacher.FIRST_NAME, "");
+            teacherSecondName = sharedPreferences.getString(Teacher.SECOND_NAME, "");
+            teacherLastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
+            teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
+            subjectData = sharedPreferences.getString(Teacher.SUBJECT_DATA, "");
+            positionData = sharedPreferences.getString(Teacher.POSITION_DATA, "");
+        }catch (Exception e){
+            Log.d(TAG, "getTeacherData: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Устанавливаем данные учителя в виджеты
+     */
+
+    private void setTeacherData(){
+        firstName.setText(teacherFirstName);
+        secondName.setText(teacherSecondName);
+        lastName.setText(teacherLastName);
+        position.setText(positionData);
+        subject.setText(subjectData);
     }
 
     @Override
@@ -118,23 +124,28 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
                 String new_first_name = firstName.getText().toString();
                 String new_second_name = secondName.getText().toString();
                 String new_last_name = lastName.getText().toString();
-                String new_position = position.getText().toString();
-                String new_subject = subject.getText().toString();
-                Map<String, Object> updates = new HashMap<>();
-                updates.put("firstName", new_first_name.trim());
-                updates.put("secondName", new_second_name.trim());
-                updates.put("lastName", new_last_name.trim());
-                teachers$DB.document(teacherID)
-                        .update(updates);
-                getDialog().dismiss();
+                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name);
                 break;
             }
             case R.id.cancel:{
                 getDialog().dismiss();
                 Toast.makeText(getContext(), "Изменения отменены", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "close dialog");
                 break;
             }
         }
     }
+
+    /**
+     * Callback, который вернёться после обновления ФИО учителя
+     */
+
+    Callback mUpdateCredentialsCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String resultMessage = (String) data;
+            Toast.makeText(getContext(), resultMessage, Toast.LENGTH_SHORT).show();
+            getDialog().dismiss();
+        }
+    };
+
 }

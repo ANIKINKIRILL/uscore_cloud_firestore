@@ -24,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.admin.uscore001.Settings;
+import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.OnImageClickListener;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.dialogs.ImageDialog;
@@ -57,13 +59,16 @@ import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * Активити 'Мой Профиль'
+ */
+
 public class StudentProfile_activity2 extends AppCompatActivity implements View.OnClickListener, OnImageClickListener {
 
     private static final String TAG = "StProfile_activity2";
 
-    // widgets
+    // Виджеты
     CircleImageView userAvatar;
-    ImageView backArraw;
     Button addCommentButton;
     TextView userStatus;
     TextView email, username, group, score, countAddedCanceledScore;
@@ -71,20 +76,7 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
     ProgressBar progressBar;
     TextView showAllComments;
 
-    // vars
-    byte[] mUploadBytes;
-    ArrayList<Student> students = new ArrayList<>();
-    Student currentStudentClass;
-    String scoreValue, image_pathValue, usernameValue;
-    String currentStudentGroup;
-    String studentGroup, studentUsername;
-    String currentStudentRateInGroup;
-    String currentStudentRateInSchool;
-    int confirmedRequestsNumber;
-    int deniedRequestsNumber;
-    private String currentStudentID;
-
-    //Firebase
+    // Firebase
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference mRef = storage.getReference();
@@ -94,29 +86,37 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
 
+    // Переменные
+    private byte[] mUploadBytes;
+    private String currentStudentID;
+    private String imagePath;
+    private String firstName;
+    private String secondName;
+    private String rateStudentInSchool;
+    private String rateStudentInGroup;
+    private int studentConfirmedRequestsAmount;
+    private int studentDeniedRequestsAmount;
+    private String statusID;
+    private String studentEmail;
+    private int studentScore;
+    private String groupName;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile2);
+        loadSharedPreferences();
         init();
+        initActionBar();
     }
 
+    /**
+     * Инициализация
+     */
+
     private void init(){
-
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Мой профиль");
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
-
         rateInSchool = findViewById(R.id.rateInSchool);
         rateInGroup = findViewById(R.id.rateInGroup);
-
-        loadSharedPreferences();
-
-        rateInGroup.setText(currentStudentRateInGroup);
-        rateInSchool.setText(currentStudentRateInSchool);
-
         email = findViewById(R.id.emailAddress);
         username = findViewById(R.id.username);
         group = findViewById(R.id.group);
@@ -124,32 +124,36 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         progressBar = findViewById(R.id.progressBar);
         addCommentButton = findViewById(R.id.addCommentButton);
         countAddedCanceledScore = findViewById(R.id.countAddedCanceledScore);
-
-        countAddedCanceledScore.setText(confirmedRequestsNumber+"/"+deniedRequestsNumber);
-
         userAvatar = findViewById(R.id.imageView);
-
-        Activity activity = getParent();
-
-        if(!user.getEmail().contains("teacher")) {
-            getUserImage();
-            setCurrentUserInfo(currentStudentID);
-        }
+        userStatus = findViewById(R.id.status);
+        showAllComments = findViewById(R.id.showAllComments);
 
         userAvatar.setOnClickListener(this);
-
         addCommentButton.setOnClickListener(this);
-
-        userStatus = findViewById(R.id.status);
-
-        showAllComments = findViewById(R.id.showAllComments);
         showAllComments.setOnClickListener(this);
 
-        if(!user.getEmail().contains("teacher")){
-            userStatus.setText(R.string.statusStudent);
-        }else {
-            userStatus.setText(R.string.statusTeacher);
-        }
+        GlideApp.with(this).load(imagePath).centerCrop().into(userAvatar);
+        rateInGroup.setText(rateStudentInGroup);
+        rateInSchool.setText(rateStudentInSchool);
+        email.setText(studentEmail);
+        username.setText(firstName + " " + secondName);
+        group.setText(groupName);
+        score.setText(Integer.toString(studentScore));
+        userStatus.setText("Ученик");
+        countAddedCanceledScore.setText(studentConfirmedRequestsAmount+"/"+studentDeniedRequestsAmount);
+
+    }
+
+    /**
+     * Инициализация ActionBar
+     */
+
+    private void initActionBar(){
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Мой профиль");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
     }
 
     @Override
@@ -161,27 +165,6 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
             }
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void setCurrentUserInfo(String studentID){
-        student$db.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                Student student = documentSnapshot.toObject(Student.class);
-                String currentUserUsername = student.getFirstName() + " " + student.getSecondName();
-                String currentUserGroup = studentGroup;
-                String currentUserScore = student.getScore();
-                email.setText(user.getEmail());
-                username.setText(currentUserUsername);
-                group.setText(currentUserGroup);
-                if (currentUserScore.equals("")) {
-                    score.setText("0");
-                } else {
-                    score.setText(currentUserScore);
-                }
-            }
-        });
-
     }
 
     @Override
@@ -207,82 +190,53 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         }
     }
 
+    /**
+     * Загрузка данных ученика
+     */
+
     public void loadSharedPreferences(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentProfile_activity2.this);
-        studentGroup = sharedPreferences.getString(getString(R.string.groupName), "");
-        studentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
-        currentStudentRateInGroup = sharedPreferences.getString(getString(R.string.currentStudentRateInGroup), "not found");
-        currentStudentRateInSchool = sharedPreferences.getString(getString(R.string.currentStudentRateInSchool), "not found");
-        confirmedRequestsNumber = sharedPreferences.getInt(getString(R.string.currentStudentConfirmedRequests), 0);
-        deniedRequestsNumber = sharedPreferences.getInt(getString(R.string.currentStudentDeniedRequests), 0);
-        currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
-        Log.d(TAG, "loadSharedPreferences: currentStudentID: " + currentStudentID);
+        SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+        SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
+        currentStudentID = sharedPreferences.getString(Student.ID, "");
+        imagePath = sharedPreferences.getString(Student.IMAGE_PATH, "");
+        firstName = sharedPreferences.getString(Student.FIRST_NAME, "");
+        secondName = sharedPreferences.getString(Student.SECOND_NAME, "");
+        rateStudentInGroup = sharedPreferences.getString(Student.RATE_IN_GROUP, "");
+        rateStudentInSchool = sharedPreferences.getString(Student.RATE_IN_SCHOOL, "");
+        studentConfirmedRequestsAmount = sharedPreferences.getInt(Student.CONFIRMED_REQUESTS_AMOUNT, 0);
+        studentDeniedRequestsAmount = sharedPreferences.getInt(Student.DENIED_REQUESTS_AMOUNT, 0);
+        statusID = sharedPreferences.getString(Student.STATUS_ID, "");
+        studentEmail = sharedPreferences.getString(Student.EMAIL, "");
+        studentScore = sharedPreferences.getInt(Student.SCORE, 0);
+        groupName = sharedPreferencesSettings.getString(Settings.GROUP_NAME, "");
     }
 
-    public void getUserImage(){
-//        Query query = mDatabaseRef.child(studentGroup).orderByChild("email").equalTo(user.getEmail());
-//        query.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot student : dataSnapshot.getChildren()){
-//                    image_pathValue = student.getValue(Student.class).getImage_path();
-//                    try {
-//                        Glide.with(StudentProfile_activity2.this).load(image_pathValue).into(userAvatar);
-//                    }catch (Exception e){
-//                        Log.d(TAG, "onDataChange: " + e.getMessage());
-//                    }
-//                }
-//                if(image_pathValue.isEmpty()){
-//                    try {
-//                        Glide.with(StudentProfile_activity2.this).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(userAvatar);
-//                    }catch (Exception e){
-//                        Log.d(TAG, "onDataChange: " + e.getMessage());
-//                    }
-//                }
-//                progressBar.setVisibility(View.GONE);
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-        student$db.whereEqualTo("email", user.getEmail()).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                    Student student = documentSnapshot.toObject(Student.class);
-                    image_pathValue = student.getImage_path();
-                    try {
-                        Glide.with(StudentProfile_activity2.this).load(image_pathValue).into(userAvatar);
-                    }catch (Exception e1){
-                        Log.d(TAG, "onDataChange: " + e1.getMessage());
-                    }
-                }
-                if(image_pathValue.isEmpty()){
-                    try {
-                        Glide.with(StudentProfile_activity2.this).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(userAvatar);
-                    }catch (Exception e1){
-                        Log.d(TAG, "onDataChange: " + e1.getMessage());
-                    }
-                }
-                progressBar.setVisibility(View.GONE);
-            }
-        });
-
-    }
+    /**
+     * Метод интрефеса OnImageClickListener
+     * @param bitmap    фото с камеры
+     */
 
     @Override
     public void getBitmapPath(Bitmap bitmap) {
-        userAvatar.setImageBitmap(bitmap);
+        GlideApp.with(this).load(bitmap).centerCrop().into(userAvatar);
         uploadBitmap(bitmap);
     }
 
+    /**
+     * Метод интрефеса OnImageClickListener
+     * @param uri       картинка с галереии
+     */
+
     @Override
     public void getUriPath(Uri uri) {
-        Glide.with(StudentProfile_activity2.this).load(uri).into(userAvatar);
+        GlideApp.with(StudentProfile_activity2.this).load(uri).centerCrop().into(userAvatar);
         uploadUri(uri);
     }
+
+    /**
+     * Загрузка фото с камеры в бд
+     * @param bitmap    фото с камеры
+     */
 
     public void uploadBitmap(Bitmap bitmap){
         BackGroundResize resize = new BackGroundResize(bitmap);
@@ -290,10 +244,19 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         resize.execute(uri);
     }
 
+    /**
+     * Загрузка картинки с галерии в бд
+     * @param uri       картинка с галереии
+     */
+
     public void uploadUri(Uri uri){
         BackGroundResize resize = new BackGroundResize(null);
         resize.execute(uri);
     }
+
+    /**
+     * Асинхронное сжатие фото
+     */
 
     public class BackGroundResize extends AsyncTask<Uri, Integer, byte[]> {
 
@@ -308,7 +271,7 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Toast.makeText(StudentProfile_activity2.this, "Compressing image...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(StudentProfile_activity2.this, "Сжимаем фото...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -333,14 +296,26 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         }
     }
 
+    /**
+     * Биты информации после сжатия фото
+     *
+     * @param bitmap        фото с камеры
+     * @param quality       качество фото на которые было она сжато
+     * @return              массив битов
+     */
+
     public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
         return stream.toByteArray();
     }
 
+    /**
+     * Загрузка на БД
+     */
+
     public void executeUploadTask(){
-        Toast.makeText(this, "Uploading image", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Загружаем фото...", Toast.LENGTH_SHORT).show();
         UploadTask uploadTask = mRef.child(user.getUid()).putBytes(mUploadBytes);
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override

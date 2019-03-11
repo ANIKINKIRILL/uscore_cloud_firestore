@@ -17,7 +17,7 @@ public class Student {
     private String email;
     private String groupID;
     private String image_path;
-    private String score;
+    private int score;
     private String id;
     private String limitScore;
     private String teacherID;
@@ -48,7 +48,7 @@ public class Student {
             String email,
             String groupID,
             String image_path,
-            String score,
+            int score,
             String id,
             String limitScore,
             String teacherID,
@@ -136,10 +136,10 @@ public class Student {
     public void setLimitScore(String limitScore) {
         this.limitScore = limitScore;
     }
-    public String getScore() {
+    public int getScore() {
         return score;
     }
-    public void setScore(String score) {
+    public void setScore(int score) {
         this.score = score;
     }
     public String getImage_path() {
@@ -171,16 +171,29 @@ public class Student {
      */
 
     /**
-     * Выгрузка всех учеников группы
+     * Выгрузка всех учеников группы по названию группы
      *
      * @param callback
-     * @param group_name
+     * @param group_name        Название группы
      */
 
-    public static void loadGroupStudents(String group_name, Callback callback){
+    public static void loadGroupStudentsByGroupName(String group_name, Callback callback){
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(group_name));
-        FirebaseServer.LoadGroupStudents loadStudentClassmates = new FirebaseServer.LoadGroupStudents();
-        loadStudentClassmates.execute(asyncTaskArguments);
+        FirebaseServer.LoadGroupStudentsByGroupName loadGroupStudentsByGroupName = new FirebaseServer.LoadGroupStudentsByGroupName();
+        loadGroupStudentsByGroupName.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Выгрузка всех учеников группы по id группы
+     *
+     * @param callback
+     * @param id        id группы
+     */
+
+    public static void loadGroupStudentsByGroupID(String id, Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(id));
+        FirebaseServer.LoadGroupStudentsByGroupID loadGroupStudentsByGroupID = new FirebaseServer.LoadGroupStudentsByGroupID();
+        loadGroupStudentsByGroupID.execute(asyncTaskArguments);
     }
 
     /**

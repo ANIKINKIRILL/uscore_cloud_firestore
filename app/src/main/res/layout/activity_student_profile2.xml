@@ -16,35 +16,6 @@
     android:background="@color/graylight"
     android:orientation="vertical">
 
-    <!--<android.support.v7.widget.Toolbar-->
-        <!--android:id="@+id/toolBar"-->
-        <!--android:background="@color/startblue_transparent"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content">-->
-
-        <!--<RelativeLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
-            <!--<ImageView-->
-                <!--android:layout_centerVertical="true"-->
-                <!--android:id="@+id/back"-->
-                <!--android:src="@drawable/ic_arrow_back"-->
-                <!--android:layout_width="28dp"-->
-                <!--android:layout_height="50dp" />-->
-
-            <!--<TextView-->
-                <!--android:layout_centerVertical="true"-->
-                <!--android:textColor="@android:color/white"-->
-                <!--android:layout_marginStart="50dp"-->
-                <!--android:textSize="20sp"-->
-                <!--android:layout_toRightOf="@id/back"-->
-                <!--android:text="@string/my_profile"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content" />-->
-        <!--</RelativeLayout>-->
-
-    <!--</android.support.v7.widget.Toolbar>-->
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="405dp">
@@ -170,7 +141,7 @@
                 <TextView
                     android:id="@+id/status"
                     android:layout_margin="5dp"
-                    android:text=""
+                    android:text="загрузка"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </RelativeLayout>

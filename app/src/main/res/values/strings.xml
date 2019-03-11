@@ -3,13 +3,20 @@
 
     <string name="settings">settings</string>
     <string name="teacher_data">teacher_data</string>
-    <string name="student_data">teacher_data</string>
+    <string name="student_data">student_data</string>
     <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
     <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
     <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
     <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>
-
     <string name="open_dialog" translatable="false">open_dialog</string>
+    <string name="open_drawer">open_drawer</string>
+    <string name="close_drawer">close_drawer</string>
+
+    <string-array name="socialList">
+        <item>VK</item>
+        <item>INSTAGRAM</item>
+        <item>YOUTUBE</item>
+    </string-array>
 
     <!-- shared preferences-->
     <string name="email_pref" translatable="false">email_preference</string>
@@ -98,8 +105,7 @@
     <string name="register">Зарегистрироваться</string>
     <string name="password">пароль</string>
 
-    <string name="open_drawer">open_drawer</string>
-    <string name="close_drawer">close_drawer</string>
+
 
 
     <string-array name="teachers">
