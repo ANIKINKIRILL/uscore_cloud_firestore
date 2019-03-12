@@ -64,7 +64,7 @@ public class FirebaseServer {
     private static ArrayList<Group> groups = new ArrayList<>();
     private static ArrayList<RequestAddingScore> confirmedRequests = new ArrayList<>();
     private static ArrayList<RequestAddingScore> deniedRequests = new ArrayList<>();
-    private static LinkedList<Student> allStudents = new LinkedList<>();
+    private static ArrayList<Student> allStudents = new ArrayList<>();
 
     /**
      * Авторизация пользователя

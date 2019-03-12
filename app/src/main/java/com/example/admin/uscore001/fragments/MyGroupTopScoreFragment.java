@@ -1,15 +1,11 @@
 package com.example.admin.uscore001.fragments;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,36 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.Settings;
-import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.StudentRecyclerAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Set;
 
 /**
  * Фрагмент с рейтингом учеников группы
@@ -163,7 +138,7 @@ public class MyGroupTopScoreFragment extends Fragment {
                 int studentScore = sharedPreferences.getInt(Student.SCORE, 0);
                 ArrayList<Student> ratedStudentsList = (ArrayList) data;
                 String currentStudentRateInGroup = params[0];
-                StudentRecyclerAdapter adapter = new StudentRecyclerAdapter(ratedStudentsList);
+                adapter = new StudentRecyclerAdapter(ratedStudentsList);
                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                 recyclerView.setAdapter(adapter);
                 currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentRateInGroup, Integer.toString(studentScore)));
@@ -181,7 +156,7 @@ public class MyGroupTopScoreFragment extends Fragment {
         @Override
         public void execute(Object data, String... params) {
             ArrayList<Student> ratedStudentsList = (ArrayList) data;
-            StudentRecyclerAdapter adapter = new StudentRecyclerAdapter(ratedStudentsList);
+            adapter = new StudentRecyclerAdapter(ratedStudentsList);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
         }
