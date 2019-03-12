@@ -58,7 +58,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.TopScore_acivity"
+        <activity android:name=".activities.TopScore_Activity"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.TOPSCORE" />

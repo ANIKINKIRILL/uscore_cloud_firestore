@@ -16,11 +16,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.activities.StudentDetailPage;
 import com.example.admin.uscore001.activities.StudentProfile_activity2;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,30 +38,29 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import javax.annotation.Nullable;
+
+/**
+ * Адаптер для рейтинга учеников
+ */
 
 public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecyclerAdapter.StudentRecyclerViewHolder> implements Filterable {
 
     private static final String TAG = "StudentRecyclerAdapter";
 
-    // Firebase
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private FirebaseUser mUser = mAuth.getCurrentUser();
-
-    // Firestore
-    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    private CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
-
-    // vars
-    private String groupName;
+    // Переменные
     private ArrayList<Student> students = new ArrayList<>();
     private ArrayList<Student> studentsCopy;
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
 
     public class StudentRecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView userAvatar;
         TextView username, score, group;
         RelativeLayout cardViewLayout;
+        String studentID;
+        String image_path;
         private StudentRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             userAvatar = itemView.findViewById(R.id.userAvatar);
@@ -82,56 +84,59 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
         return holder;
     }
 
-    public void groupNameByGroupID(String groupID, StudentRecyclerViewHolder studentRecyclerViewHolder){
-        groups$DB.document(groupID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                groupName = task.getResult().get("name").toString();
-                studentRecyclerViewHolder.group.setText(groupName);
-            }
-        });
-    }
-
     @Override
     public void onBindViewHolder(@NonNull final StudentRecyclerViewHolder studentRecyclerViewHolder, int i) {
         final Student student = students.get(i);
-        groupNameByGroupID(student.getGroupID(), studentRecyclerViewHolder);
-        final String image_path = student.getImage_path();
-        Glide.with(studentRecyclerViewHolder.cardViewLayout.getContext()).load(image_path).into(studentRecyclerViewHolder.userAvatar);
+        // Установка ID ученика
+        studentRecyclerViewHolder.studentID = student.getId();
+        // Установка Названия Группы
+        User.getUserGroupName(new Callback() {
+            @Override
+            public void execute(Object data, String... params) {
+                studentRecyclerViewHolder.group.setText((String)data);
+            }
+        }, student.getGroupID());
+        // Установка фото ученика
+        studentRecyclerViewHolder.image_path = student.getImage_path();
+        if(studentRecyclerViewHolder.image_path.isEmpty()){
+            studentRecyclerViewHolder.image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+        }
+        Glide.with(studentRecyclerViewHolder.cardViewLayout.getContext()).load(studentRecyclerViewHolder.image_path).into(studentRecyclerViewHolder.userAvatar);
+        // Установка имя и фамилии
         studentRecyclerViewHolder.username.setText(student.getFirstName()+" "+student.getSecondName());
-        studentRecyclerViewHolder.score.setText(student.getScore());
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(studentRecyclerViewHolder.cardViewLayout.getContext());
-        final String currentStudentUsername = sharedPreferences.getString(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.currentStudentUsername), "");
-        String currentStudentGroupID = sharedPreferences.getString(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.currentStudentGroupID), "");
-
-
-        if((student.getFirstName()+" "+student.getSecondName()).equals(currentStudentUsername) && student.getGroupID().equals(currentStudentGroupID) && !mUser.getEmail().contains("teacher")){
+        // Установка очков
+        studentRecyclerViewHolder.score.setText(Integer.toString(student.getScore()));
+        // Выделение своего аккаунта
+        if(student.getId().equals(Settings.getUserId()) && student.getStatusID().equals(Settings.getStatus())){
             studentRecyclerViewHolder.cardViewLayout.setBackgroundColor(
                     studentRecyclerViewHolder.cardViewLayout.getResources().getColor(R.color.currentStudentCardViewColor)
             );
         }
-
+        // Нажатие на cardview
         studentRecyclerViewHolder.cardViewLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(studentRecyclerViewHolder.username.getText().toString().equals(currentStudentUsername)){
+                // Если пользователь нажал на свою cardview
+                if(student.getId().equals(Settings.getUserId())){
                     Intent intent = new Intent(studentRecyclerViewHolder.cardViewLayout.getContext(), StudentProfile_activity2.class);
                     studentRecyclerViewHolder.cardViewLayout.getContext().startActivity(intent);
+                // Если пользователь нажал на чужую cardview
                 }else {
                     Intent intent = new Intent(studentRecyclerViewHolder.cardViewLayout.getContext(), StudentDetailPage.class);
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentScore), studentRecyclerViewHolder.score.getText().toString());
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentGroup), studentRecyclerViewHolder.group.getText().toString());
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentUsername), studentRecyclerViewHolder.username.getText().toString());
-                    intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentImage), image_path);
+                    intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentImage), studentRecyclerViewHolder.image_path);
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentEmail), student.getEmail());
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentGroupID), student.getGroupID());
+                    intent.putExtra("intentStudentID", student.getId());
                     studentRecyclerViewHolder.cardViewLayout.getContext().startActivity(intent);
                 }
             }
         });
-
     }
+
+
 
     @Override
     public int getItemCount() {

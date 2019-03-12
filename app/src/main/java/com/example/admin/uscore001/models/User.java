@@ -101,4 +101,17 @@ public class User {
         getAllSchoolGroups.execute(asyncTaskArguments);
     }
 
+    /**
+     * Получить название группы пользователя по ID группы
+     * @param callback      callback, который вернется после асинхронного получения данных с Сервера
+     * @param groupID       id группы
+     */
+
+    public static void getUserGroupName(Callback callback, String groupID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(groupID));
+        FirebaseServer.GetUserGroupName getUserGroupName = new FirebaseServer.GetUserGroupName();
+        getUserGroupName.execute(asyncTaskArguments);
+
+    }
+
 }

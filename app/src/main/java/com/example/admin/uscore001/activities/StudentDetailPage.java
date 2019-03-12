@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,60 +41,75 @@ import java.util.Collections;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * Активити ученика (Одноклассник, ученик с параллели и тд)  -> !Мой Профиль
+ */
+
 public class StudentDetailPage extends AppCompatActivity implements View.OnClickListener{
 
     private static final String TAG = "StudentDetailPage";
 
-    // widgets
+    // Виджеты
     CircleImageView circleImageView;
     TextView emailAddress, score, group, username;
     TextView rateInGroup, rateInSchool, status;
-    ImageView backArraw;
     Button addCommentButton;
     TextView showAllComments, ratingHint;
 
-    TextView countAddedCanceledScore;
 
-    // vars
-    ArrayList<Student> students = new ArrayList<>();
-    ArrayList<Student> students2 = new ArrayList<>();
-    String scoreValue;
-    Student currentStudentClass;
-    int currentStudentRateSchool;
+    // Переменные
     String intentEmail;
-
-    // Firebase
-    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-    // Firestore
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
-
+    private String intentImageView;
+    private String intentGroup;
+    private String intentUsername;
+    private String intentScore;
+    private String intentGroupID;
+    private String intentStudentID;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_profile2);
+        init();
+        initActionBar();
+        getDetailData();
+        setStudentDetailData();
+        getStudentRating();
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Мой профиль");
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+    }
 
-        Bundle intent = getIntent().getExtras();
-        String intentImageView = intent.getString(getString(R.string.intentImage));
-        String intentUsername = intent.getString(getString(R.string.intentUsername));
-        String intentScore = intent.getString(getString(R.string.intentScore));
-        String intentGroup = intent.getString(getString(R.string.intentGroup));
-        intentEmail = intent.getString(getString(R.string.intentEmail));
-        String intentGroupID = intent.getString(getString(R.string.intentGroupID));
-        Log.d(TAG, "onCreate: " + intentGroupID);
+    /**
+     * Рейтинг ученика в группе и школе
+     */
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String studentStatusID = sharedPreferences.getString(getString(R.string.studentStatusID), "");
-//        String teacherStatusID = sharedPreferences.getString(getString(R.string.teacherStatusID), "");
+    private void getStudentRating(){
+        // рейтинг ученика в группы
+        Student.loadGroupStudentsByGroupID(intentGroupID, intentStudentID, mGetGroupRating);
+        // рейтинг ученика в школе
+        Student.loadAllStudents(mGetSchoolRating, intentStudentID);
+    }
 
+    Callback mGetGroupRating = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String rateStudentInGroup = params[0];
+            rateInGroup.setText(rateStudentInGroup);
+        }
+    };
+
+    Callback mGetSchoolRating = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String rateStudentInSchool = params[0];
+            rateInSchool.setText(rateStudentInSchool);
+        }
+    };
+
+    /**
+     * Инициалицазия виджетов
+     */
+
+    private void init(){
         circleImageView = findViewById(R.id.imageView);
         ratingHint = findViewById(R.id.ratingHint);
         emailAddress = findViewById(R.id.emailAddress);
@@ -103,37 +119,71 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         rateInGroup = findViewById(R.id.rateInGroup);
         rateInSchool = findViewById(R.id.rateInSchool);
         addCommentButton = findViewById(R.id.addCommentButton);
-        addCommentButton.setOnClickListener(this);
         status = findViewById(R.id.status);
         showAllComments = findViewById(R.id.showAllComments);
+
+        addCommentButton.setOnClickListener(this);
         showAllComments.setOnClickListener(this);
+    }
 
-//        if(!studentStatusID.isEmpty() && teacherStatusID.isEmpty()){
-//            status.setText(R.string.statusStudent);
-////        }else if(studentStatusID.isEmpty() && !teacherStatusID.isEmpty()){
-//            status.setText(R.string.statusTeacher);
-//        }
+    /**
+     * Инициалицазия ActionBar
+     */
 
-//        countAddedCanceledScore = findViewById(R.id.countAddedCanceledScore);
-//        countAddedCanceledScore.setText("-");
-//
-//        ratingHint.setText(getResources().getString(R.string.notYoursRatingScoreHint));
-//
-//        if(intentImageView.isEmpty()) {
-//            Glide.with(getApplicationContext()).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(circleImageView);
-//        }else {
-//            Glide.with(getApplicationContext()).load(intentImageView).into(circleImageView);
-//        }
-//        emailAddress.setText(intentEmail);
-//        username.setText(intentUsername);
-//        score.setText(intentScore);
-//        group.setText(intentGroup);
+    private void initActionBar(){
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("Профиль ученика");
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+    }
 
-//        rateStudentInGroup(intentGroupID);
+    /**
+     * Получение данных ученика
+     */
 
-//        rateStudentInSchool();
+    private void getDetailData(){
+        Bundle intent = getIntent().getExtras();
+        intentImageView = intent.getString(getString(R.string.intentImage));
+        intentUsername = intent.getString(getString(R.string.intentUsername));
+        intentScore = intent.getString(getString(R.string.intentScore));
+        intentGroup = intent.getString(getString(R.string.intentGroup));
+        intentEmail = intent.getString(getString(R.string.intentEmail));
+        intentGroupID = intent.getString(getString(R.string.intentGroupID));
+        intentStudentID = intent.getString("intentStudentID");
+        /*
+                TEST DATA
+         */
+
+        Log.d(TAG, "getDetailData: " +
+                        "image: " + intentImageView + "\n" +
+                        "username: " + intentUsername + "\n" +
+                        "score: " + intentScore + "\n" +
+                        "group: " + intentGroup + "\n" +
+                        "email: " + intentEmail + "\n" +
+                        "groupID" + intentGroupID + "\n" +
+                        "id: " + intentStudentID + "\n");
 
     }
+
+    /**
+     * Установка данных просматриваемого ученика
+     */
+
+    private void setStudentDetailData(){
+        ratingHint.setText(getResources().getString(R.string.notYoursRatingScoreHint));
+        if(intentImageView.isEmpty()) {
+            Glide.with(getApplicationContext()).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(circleImageView);
+        }else {
+            Glide.with(getApplicationContext()).load(intentImageView).into(circleImageView);
+        }
+        emailAddress.setText(intentEmail);
+        username.setText(intentUsername);
+        score.setText(intentScore);
+        group.setText(intentGroup);
+        status.setText("Ученик");
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -160,130 +210,6 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
                 intent.putExtra("to_whom_send_email", emailAddress.getText().toString());
                 startActivity(intent);
                 break;
-            }
-        }
-    }
-
-//    public void rateStudentInGroup(final String foundGroup){
-//        Log.d(TAG, "rateStudentInGroup: " + intentEmail);
-//        students.clear();
-//        student$db.whereEqualTo("groupID", foundGroup).addSnapshotListener(new EventListener<QuerySnapshot>() {
-//            @Override
-//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-//                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                    Student student = documentSnapshot.toObject(Student.class);
-//                    if(student.getEmail().equals(intentEmail)){
-//                        scoreValue = student.getScore();
-//                        currentStudentClass = new Student(
-//                                "",
-//                                student.getFirstName() + " " + student.getSecondName(),
-//                                "",
-//                                "",
-//                                scoreValue,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                    }else{
-//                        scoreValue = student.getScore();
-//                        Student studentClass = new Student(
-//                                "",
-//                                student.getFirstName() + " " + student.getSecondName(),
-//                                "",
-//                                "",
-//                                scoreValue,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                        students.add(studentClass);
-//                    }
-//                }
-//                students.add(currentStudentClass);
-//                bubbleSortStudents(students);
-//                Collections.reverse(students);
-//                int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-//                rateInGroup.setText(Integer.toString(currentStudentRateGroup));
-//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString(getString(R.string.currentStudentRateInGroup), Integer.toString(currentStudentRateGroup));
-//                editor.apply();
-//            }
-//        });
-//    }
-
-//    public void rateStudentInSchool(){
-//        student$db.addSnapshotListener(new EventListener<QuerySnapshot>() {
-//            @Override
-//            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-//                for(DocumentSnapshot studentSnapshot : queryDocumentSnapshots.getDocuments()){
-//                    Student student = studentSnapshot.toObject(Student.class);
-//                    if(student.getEmail().equals(intentEmail)){
-//                        scoreValue = student.getScore();
-//                        currentStudentClass = new Student(
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                scoreValue,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                    }else{
-//                        scoreValue = student.getScore();
-//                        Student new_student = new Student(
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                scoreValue,
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                ""
-//                        );
-//                        students2.add(new_student);
-//                    }
-//                }
-//                students2.add(currentStudentClass);
-//                bubbleSortStudents(students2);
-//                Collections.reverse(students2);
-//                currentStudentRateSchool = students2.indexOf(currentStudentClass)+1;
-//                rateInSchool.setText(Integer.toString(currentStudentRateSchool));
-//                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(StudentDetailPage.this);
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString(getString(R.string.currentStudentRateInSchool), Integer.toString(currentStudentRateSchool));
-//                editor.apply();
-//            }
-//        });
-//    }
-
-    public void bubbleSortStudents(ArrayList<Student> students){
-        int size = students.size();
-        Student temp;
-        for(int i = 0; i < size; i++){
-            for(int j = 1; j < size; j++){
-//                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
-                    temp = students.get(j-1);
-                    students.set(j-1, students.get(j));
-                    students.set(j, temp);
-//                }
             }
         }
     }

@@ -100,7 +100,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
 
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(QRCODE_activity.this);
-        currentStudentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "not found");
+//        currentStudentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "not found");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
         currentStudentGroupName = sharedPreferences.getString(getString(R.string.groupName), "");
 

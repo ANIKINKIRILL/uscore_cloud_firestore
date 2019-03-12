@@ -6,15 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Message;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -27,13 +21,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.commit451.modalbottomsheetdialogfragment.ModalBottomSheetDialogFragment;
 import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.Settings;
@@ -41,53 +32,31 @@ import com.example.admin.uscore001.dialogs.DialogRequestAddingScore;
 import com.example.admin.uscore001.dialogs.MakePenaltyDialog;
 import com.example.admin.uscore001.dialogs.ShowRequestDialog;
 import com.example.admin.uscore001.fragments.AskForScoreDialogFragment;
-import com.example.admin.uscore001.fragments.RulesBottomSheetFragment;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.models.User;
 import com.example.admin.uscore001.util.GlideApp;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
-import java.util.SimpleTimeZone;
 import java.util.TimeZone;
-import java.util.Timer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Главное активити
@@ -125,6 +94,10 @@ public class dashboard_activity extends AppCompatActivity implements
     private String intentMessageDecoded;
     private String studentID;
     private String scoreString;
+
+    // Постоянные переменные
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
+    public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -428,6 +401,13 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Teacher.SECOND_NAME, teacherSecondName);
             editor.putString(Teacher.LAST_NAME, teacherLastName);
 
+            SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
+            SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
+            editorSettings.putString(Settings.USER_ID, teacherID);
+            editorSettings.apply();
+
+            User.getUserGroupName(mGetUserGroupNameCallback, groupID);
+
             /*
                 --------------------------------------------------------------
                 |    Проверка Данных                                         |
@@ -513,7 +493,7 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.topScores:{
-                Intent intent = new Intent(dashboard_activity.this, TopScore_acivity.class);
+                Intent intent = new Intent(dashboard_activity.this, TopScore_Activity.class);
                 startActivity(intent);
                 break;
             }
@@ -624,11 +604,12 @@ public class dashboard_activity extends AppCompatActivity implements
 
     /**
      * Рейтинг ученика в своей группе
-     * @param id                 // id Группы
+     * @param groupID         id Группы
+     * @param studentID       id Ученика
      */
 
-    public void rateStudentInGroup(String id){
-        Student.loadGroupStudentsByGroupID(id, mRateStudentInGroupCallback);
+    public void rateStudentInGroup(String groupID, String studentID){
+        Student.loadGroupStudentsByGroupID(groupID, studentID, mRateStudentInGroupCallback);
     }
 
     Callback mRateStudentInGroupCallback = new Callback() {
@@ -645,10 +626,11 @@ public class dashboard_activity extends AppCompatActivity implements
 
     /**
      * Рейтинг ученика в своей школе
+     * @param studentID         id ученика
      */
 
-    public void rateStudentInSchool(){
-        Student.loadAllStudents(mLoadAllStudents);
+    public void rateStudentInSchool(String studentID){
+        Student.loadAllStudents(mLoadAllStudents, studentID);
     }
 
     /**
@@ -659,6 +641,23 @@ public class dashboard_activity extends AppCompatActivity implements
     public void getStudentConfirmedRequestsAmount(String studentID){
         Student.getConfirmedRequests(mGetStudentConfirmedRequestsAmount, studentID);
     }
+
+    /**
+     * Callback, который вернется после асинхронного получения назвния группы с Серевера
+     */
+
+    Callback mGetUserGroupNameCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String groupName = (String) data;
+            Log.d(TAG, "groupName: " + groupName);
+            Log.d(TAG, "settings statusID: " + Settings.getStatus());
+            SharedPreferences sharedPreferences = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Settings.GROUP_NAME, groupName);
+            editor.apply();
+        }
+    };
 
     /**
      * Callback, вызываемый после получения всех принятых запроов на добавление очков
@@ -719,6 +718,7 @@ public class dashboard_activity extends AppCompatActivity implements
         @Override
         public void execute(Object data, String... params) {
             Student student = (Student) data;
+            String id = student.getId();
             String groupID = student.getGroupID();
             String firstName = student.getFirstName();
             String secondName = student.getSecondName();
@@ -745,6 +745,11 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Student.TEACHER_ID, teacherID);
             editor.apply();
 
+            SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
+            SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
+            editorSettings.putString(Settings.USER_ID, id);
+            editorSettings.apply();
+
             limitScoreView.setText("Осталось");
 
             if(Integer.parseInt(limitScore) == 0){
@@ -758,8 +763,10 @@ public class dashboard_activity extends AppCompatActivity implements
             getStudentConfirmedRequestsAmount(studentID);
             getStudentDeniedRequestsAmount(studentID);
 
-            rateStudentInGroup(groupID);
-            rateStudentInSchool();
+            rateStudentInGroup(groupID, studentID);
+            rateStudentInSchool(studentID);
+            
+            User.getUserGroupName(mGetUserGroupNameCallback, groupID);
 
              /*
                 --------------------------------------------------------------

@@ -139,7 +139,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
 
     public void setUpCurrentUserInfo(){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String currentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
+//        String currentUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
         String currentStudentImage = sharedPreferences.getString(getString(R.string.intentSenderImage), "");
         if(currentStudentImage.isEmpty()){
             GlideApp
@@ -155,7 +155,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
                     .centerCrop()
                     .into(studentImageView);
         }
-        collapsingToolbarLayout.setTitle(currentUsername);
+//        collapsingToolbarLayout.setTitle(currentUsername);
     }
 
 //    public void setUpCurrentTeacherInfo(){

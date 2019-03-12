@@ -24,6 +24,7 @@ public class Teacher {
 
    public static final String TEACHER_DATA = "teacher_data";
    public static final String GROUP_ID = "group_id";
+   public static final String GROUP_NAME = "group_name";
    public static final String EMAIL = "email";
    public static final String IMAGE_PATH = "image_path";
    public static final String POSITION_ID = "position_id";

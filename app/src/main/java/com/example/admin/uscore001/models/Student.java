@@ -30,6 +30,7 @@ public class Student {
     public static final String STUDENT_DATA = "student_data";
     public static final String EMAIL = "email";
     public static final String GROUP_ID = "group_id";
+    public static final String GROUP_NAME = "group_name";
     public static final String IMAGE_PATH = "image_path";
     public static final String SCORE = "score";
     public static final String ID = "id";
@@ -187,11 +188,12 @@ public class Student {
      * Выгрузка всех учеников группы по id группы
      *
      * @param callback
-     * @param id        id группы
+     * @param groupID        id группы
+     * @param studentID      id ученика
      */
 
-    public static void loadGroupStudentsByGroupID(String id, Callback callback){
-        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(id));
+    public static void loadGroupStudentsByGroupID(String groupID,String studentID, Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(groupID, studentID));
         FirebaseServer.LoadGroupStudentsByGroupID loadGroupStudentsByGroupID = new FirebaseServer.LoadGroupStudentsByGroupID();
         loadGroupStudentsByGroupID.execute(asyncTaskArguments);
     }
@@ -199,10 +201,11 @@ public class Student {
     /**
      * Выгрузка всех учеников со школы
      * @param callback
+     * @param studentID         id ученика
      */
 
-    public static void loadAllStudents(Callback callback){
-        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+    public static void loadAllStudents(Callback callback, String studentID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID));
         FirebaseServer.LoadAllStudents loadAllStudents = new FirebaseServer.LoadAllStudents();
         loadAllStudents.execute(asyncTaskArguments);
     }

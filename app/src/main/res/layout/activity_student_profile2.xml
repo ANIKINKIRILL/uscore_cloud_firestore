@@ -45,7 +45,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Загрузка"
+                android:text=""
                 android:textColor="#fff"
                 android:textStyle="bold"
                 android:textSize="21sp"/>
@@ -79,7 +79,7 @@
                         android:id="@+id/countAddedCanceledScore"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="125"
+                        android:text=""
                         android:textStyle="bold"
                         android:textSize="20sp"
                         android:paddingTop="10dp"
@@ -103,7 +103,7 @@
                         android:id="@+id/rateInSchool"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1205"
+                        android:text=""
                         android:textStyle="bold"
                         android:textSize="20sp"
                         android:paddingTop="10dp"
@@ -127,7 +127,7 @@
                         android:id="@+id/rateInGroup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="360"
+                        android:text=""
                         android:textStyle="bold"
                         android:textSize="20sp"
                         android:paddingTop="10dp"
@@ -141,7 +141,7 @@
                 <TextView
                     android:id="@+id/status"
                     android:layout_margin="5dp"
-                    android:text="загрузка"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </RelativeLayout>
@@ -193,7 +193,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
-                android:text="Загрузка"/>
+                android:text=""/>
         </LinearLayout>
         <LinearLayout
             android:layout_below="@id/userEmailLayout"
@@ -214,7 +214,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
-                android:text="1200"/>
+                android:text=""/>
         </LinearLayout>
         <LinearLayout
             android:layout_below="@id/scoreLayout"
@@ -235,7 +235,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
-                android:text="10-6"/>
+                android:text=""/>
         </LinearLayout>
         <LinearLayout
             android:layout_below="@id/groupBottomLayout"

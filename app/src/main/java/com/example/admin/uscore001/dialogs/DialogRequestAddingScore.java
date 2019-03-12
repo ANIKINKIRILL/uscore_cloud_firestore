@@ -138,8 +138,8 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         senderImage = sharedPreferences.getString(getString(R.string.intentSenderImage), "");
         currentUserGroup = sharedPreferences.getString("groupName", "");
-        currentUserGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "");
-        currentUserUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
+//        currentUserGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "");
+//        currentUserUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
         currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
 
         String[] currentUserUsernameWords = currentUserUsername.split(" ");

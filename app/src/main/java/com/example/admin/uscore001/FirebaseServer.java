@@ -179,6 +179,7 @@ public class FirebaseServer {
             studentsByGroupID.clear();
             Callback callback = asyncTaskArguments[0].mCallback;
             String groupID = (String)asyncTaskArguments[0].mData.data[0];
+            String studentID = (String)asyncTaskArguments[0].mData.data[1];
             STUDENTS$DB.whereEqualTo("groupID", groupID).orderBy("score", Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -187,7 +188,7 @@ public class FirebaseServer {
                         for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                             Student student = documentSnapshot.toObject(Student.class);
                             studentsByGroupID.add(student);
-                            if(student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())){
+                            if(student.getId().equals(studentID)){
                                 rateInGroup = Integer.toString(studentsByGroupID.indexOf(student) + 1);
                             }
                         }
@@ -468,6 +469,7 @@ public class FirebaseServer {
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             allStudents.clear();
             Callback callback = asyncTaskArguments[0].mCallback;
+            String studentID = (String)asyncTaskArguments[0].mData.data[0];
             STUDENTS$DB
                 .orderBy("score", Query.Direction.DESCENDING)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -478,7 +480,7 @@ public class FirebaseServer {
                         for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                             Student student = documentSnapshot.toObject(Student.class);
                             allStudents.add(student);
-                            if(student.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())) {
+                            if(student.getId().equals(studentID)) {
                                 rateStudentInSchool = Integer.toString(allStudents.indexOf(student) + 1);
                             }
                             callback.execute(allStudents, rateStudentInSchool);
@@ -571,6 +573,28 @@ public class FirebaseServer {
                         asyncTaskArguments[0].mCallback.execute("Вы успешно изменили свой профиль");
                     }else{
                         asyncTaskArguments[0].mCallback.execute("Что-то пошло не так. Изменения не сохранены");
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить название группы по id группы
+     */
+
+    public static class GetUserGroupName extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String groupID = (String) asyncTaskArguments[0].mData.data[0];
+            GROUPS$DB.document(groupID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        Group group = task.getResult().toObject(Group.class);
+                        callback.execute(group.getName());
                     }
                 }
             });

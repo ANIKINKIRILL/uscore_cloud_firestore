@@ -2,12 +2,14 @@ package com.example.admin.uscore001.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,9 +19,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.StudentRecyclerAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -41,162 +46,157 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
+
+/**
+ * Фрагмент с рейтингом учеников группы
+ */
 
 public class MyGroupTopScoreFragment extends Fragment {
 
     private static final String TAG = "MyGroupTopScoreFragment";
 
-    // vars
-    ArrayList<Student> students = new ArrayList<>();
-    String score;
-    String image_path;
-    String username;
+    // Переменные
     public static StudentRecyclerAdapter adapter;
-    Student currentStudentClass;
-    String currentStudentGroupID;
-    private String currentUserGroupName;
     private String teacherGroupID;
 
-    // widgets
+    // Виджеты
     TextView title;
     RecyclerView recyclerView;
     TextView currentStudentRate;
 
-    // Firestore
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
-    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
-
-    // Firebase
-    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
+    // Постоянные переменные
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
+    public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragement_mygroup_topscore, container, false);
-        recyclerView = view.findViewById(R.id.recyclerView);
-        title = view.findViewById(R.id.title);
-        currentStudentRate = view.findViewById(R.id.currentStudentRate);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        currentStudentGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "not found");
-        teacherGroupID = sharedPreferences.getString("teacherGroupID", "");
-
-        if(getActivity() != null && isAdded()) {
-            if(!currentUser.getEmail().contains("teacher")) {
-                findGroupNameByGroupID(currentStudentGroupID);
-//                loadCurrentUserGroupMembers(currentStudentGroupID);
-            }else{
-                findGroupNameByGroupID(teacherGroupID);
-//                loadCurrentUserGroupMembersTeacher(teacherGroupID);
+        init(view);
+        setTitle();
+        if(getUserStatus().equals(TEACHER_STATUS)){        // Пользователь = Учитель
+            if(doesTeacherHasGroup()){                    // У учителя есть класс
                 currentStudentRate.setVisibility(View.GONE);
+                getGroupRatingByTeacher();
             }
+        }
+
+        if(getUserStatus().equals(STUDENT_STATUS)){        // Пользователь = Ученик
+            getGroupRatingByStudent();
         }
 
         return view;
     }
 
-    public static StudentRecyclerAdapter getAdapter() {
-        return adapter;
+    /**
+     * Инициализация виджетов
+     */
+
+    private void init(View view){
+        recyclerView = view.findViewById(R.id.recyclerView);
+        title = view.findViewById(R.id.title);
+        currentStudentRate = view.findViewById(R.id.currentStudentRate);
     }
 
-    private void findGroupNameByGroupID(String groupID){
-        groups$DB.document(groupID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                currentUserGroupName = task.getResult().get("name").toString();
-                title.setText("Рейтинг учеников по группе " + currentUserGroupName);
-            }
-        });
+    /**
+     * Есть ли у учителя класс
+     * @return  Если есть класс -> true      Если нет класса -> false
+     */
+
+    private boolean doesTeacherHasGroup(){
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            teacherGroupID = sharedPreferences.getString(Teacher.GROUP_ID, "");
+        }catch (Exception e){
+            Log.d(TAG, "doesTeacherHasGroup: " + e.getMessage());
+        }
+        if (teacherGroupID.trim().isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
-//    public void loadCurrentUserGroupMembersTeacher(String foundGroupID){
-//        students.clear();
-//        students$DB
-//                .whereEqualTo("groupID", foundGroupID)
-//                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-//                        students.clear();
-//                        Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
-//                        try {
-//                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                                Student student = documentSnapshot.toObject(Student.class);
-//                                score = student.getScore();
-//                                image_path = student.getImage_path();
-//                                if (image_path.isEmpty()) {
-//                                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                                }
-//                                username = student.getFirstName() + " " + student.getSecondName();
-//                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-//                                students.add(studentClass);
-//                            }
-//                            bubbleSortStudents(students);
-//                            Collections.reverse(students);
-//                            adapter = new StudentRecyclerAdapter(students);
-//                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//                            recyclerView.setAdapter(adapter);
-//                        }catch (Exception e1){
-//                            Log.d(TAG, "onEvent: " + e1.getMessage());
-//                        }
-//                    }
-//                });
-//    }
+    /**
+     * Получить статус пользователя
+     * @return      статус пользователя
+     */
 
-//    public void loadCurrentUserGroupMembers(String foundGroupID){
-//        students.clear();
-//        students$DB
-//            .whereEqualTo("groupID", foundGroupID)
-//            .addSnapshotListener(new EventListener<QuerySnapshot>() {
-//                @Override
-//                public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-//                    students.clear();
-//                    Log.d(TAG, "onEvent: " + queryDocumentSnapshots.getDocuments().size());
-//                    try {
-//                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                            Student student = documentSnapshot.toObject(Student.class);
-//                            score = student.getScore();
-//                            image_path = student.getImage_path();
-//                            if (image_path.isEmpty()) {
-//                                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-//                            }
-//                            username = student.getFirstName() + " " + student.getSecondName();
-//                            if(student.getEmail().equals(currentUser.getEmail())) {
-//                                currentStudentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-//                            }else{
-//                                Student studentClass = new Student(score, username, image_path, foundGroupID, student.getEmail(), student.getFirstName(), student.getSecondName(), "","");
-//                                students.add(studentClass);
-//                            }
-//                        }
-//                        students.add(currentStudentClass);
-//                        bubbleSortStudents(students);
-//                        Collections.reverse(students);
-//                        String you_are_onText = currentStudentRate.getText().toString();
-//                        int currentStudentRateGroup = students.indexOf(currentStudentClass)+1;
-//                        you_are_onText = you_are_onText + " " + Integer.toString(currentStudentRateGroup);
-//                        currentStudentRate.setText(you_are_onText+" "+" месте с"+ " " + currentStudentClass.getScore() + " очками");
-//                        adapter = new StudentRecyclerAdapter(students);
-//                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//                        recyclerView.setAdapter(adapter);
-//                    }catch (Exception e1){
-//                        Log.d(TAG, "onEvent: " + e1.getMessage());
-//                    }
-//                }
-//            });
-//    }
+    private String getUserStatus(){
+        return Settings.getStatus();
+    }
 
-    public void bubbleSortStudents(ArrayList<Student> students){
-        int size = students.size();
-        Student temp;
-        for(int i = 0; i < size; i++){
-            for(int j = 1; j < size; j++){
-//                if(Integer.parseInt(students.get(j-1).getScore()) > Integer.parseInt(students.get(j).getScore())) {
-//                    temp = students.get(j-1);
-//                    students.set(j-1, students.get(j));
-//                    students.set(j, temp);
-//                }
+    /**
+     * Получить рейтинг учеников группы от Ученика
+     */
+
+    private void getGroupRatingByStudent(){
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+            String groupID = sharedPreferences.getString(Student.GROUP_ID, "");
+            Student.loadGroupStudentsByGroupID(groupID, Settings.getUserId(), mGetGroupRatingCallbackForStudent);
+        }catch (Exception e){
+            Log.d(TAG, "getGroupRatingByStudent: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Получить рейтинг учеников группы от Учителя
+     */
+
+    private void getGroupRatingByTeacher(){
+        Student.loadGroupStudentsByGroupID(teacherGroupID, Settings.getUserId(), mGetGroupRatingCallbackForTeacher);
+    }
+
+    /**
+     * Callback, который вернётся после асинхронного получия данных с Сервера для Ученика
+     */
+
+    Callback mGetGroupRatingCallbackForStudent = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            /*
+                    Оборачиваем в try catch блок для того чтобы не было краша приложения когда context = null
+             */
+            try {
+                SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+                int studentScore = sharedPreferences.getInt(Student.SCORE, 0);
+                ArrayList<Student> ratedStudentsList = (ArrayList) data;
+                String currentStudentRateInGroup = params[0];
+                StudentRecyclerAdapter adapter = new StudentRecyclerAdapter(ratedStudentsList);
+                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                recyclerView.setAdapter(adapter);
+                currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentRateInGroup, Integer.toString(studentScore)));
+            }catch (Exception e){
+                Log.d(TAG, "execute: " + e.getMessage());
             }
+        }
+    };
+
+    /**
+     * Callback, который вернётся после асинхронного получия данных с Сервера для Учителя
+     */
+
+    Callback mGetGroupRatingCallbackForTeacher = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Student> ratedStudentsList = (ArrayList) data;
+            StudentRecyclerAdapter adapter = new StudentRecyclerAdapter(ratedStudentsList);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+        }
+    };
+
+    /**
+     * Установка названия фрагмента
+     */
+
+    private void setTitle(){
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Settings.SETTINGS, Context.MODE_PRIVATE);
+            title.setText(String.format("Рейтинг учеников по группе %s", sharedPreferences.getString(Settings.GROUP_NAME, "")));
+        }catch (Exception e){
+            Log.d(TAG, "setTitle: " + e.getMessage());
         }
     }
 

@@ -64,7 +64,7 @@ public class CommentsPage extends AppCompatActivity implements View.OnClickListe
 
         if(!mUser.getEmail().contains("teacher")){
             senderImage = sharedPreferences.getString(getString(R.string.intentSenderImage), "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png");
-            senderUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png");
+//            senderUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png");
         }
 
         leaveCommentEditText = findViewById(R.id.leaveCommentEditText);

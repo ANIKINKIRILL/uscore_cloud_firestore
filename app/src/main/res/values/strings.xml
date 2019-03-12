@@ -51,8 +51,6 @@
     <string name="statusStudent">Студент</string>
     <string name="statusTeacher">Учитель</string>
 
-    <string name="currentStudentGroupID" translatable="false">currentStudentGroupID</string>
-    <string name="currentStudentUsername" translatable="false">currentStudentUsername</string>
     <string name="currentStudentRateInGroup" translatable="false">currentStudentRateInGroup</string>
     <string name="currentStudentRateInSchool" translatable="false">currentStudentRateInSchool</string>
 
@@ -64,6 +62,8 @@
     <string name="intentUsername" translatable="false">intentUsername</string>
     <string name="intentImage" translatable="false">intentImage</string>
     <string name="intentEmail" translatable="false">intentEmail</string>
+    <string name="intentRateInGroup" translatable="false">intentRateInGroup</string>
+    <string name="intentRateInSchool" translatable="false">intentRateInSchool</string>
     <string name="intentGroupID" translatable="false">intentGroupID</string>
     <string name="intentSenderImage" translatable="false">intentSenderImage</string>
     <string name="intentLimitScore" translatable="false">intentLimitScore</string>
