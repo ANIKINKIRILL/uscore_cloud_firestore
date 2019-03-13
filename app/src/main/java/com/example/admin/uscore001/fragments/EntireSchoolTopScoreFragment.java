@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,14 +84,18 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     Callback mGetSchoolRatingByStudent = new Callback() {
         @Override
         public void execute(Object data, String... params) {
-            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
-            int studentScore = sharedPreferences.getInt(Student.SCORE, 0);
-            ArrayList<Student> ratedStudentsList = (ArrayList) data;
-            String currentStudentSchoolRate = params[0];
-            adapter = new StudentRecyclerAdapter(ratedStudentsList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            recyclerView.setAdapter(adapter);
-            currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentSchoolRate, Integer.toString(studentScore)));
+            try {
+                SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+                int studentScore = sharedPreferences.getInt(Student.SCORE, 0);
+                ArrayList<Student> ratedStudentsList = (ArrayList) data;
+                String currentStudentSchoolRate = params[0];
+                adapter = new StudentRecyclerAdapter(ratedStudentsList);
+                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                recyclerView.setAdapter(adapter);
+                currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentSchoolRate, Integer.toString(studentScore)));
+            }catch (Exception e){
+                Log.d(TAG, "execute: " + e.getMessage());
+            }
         }
     };
 

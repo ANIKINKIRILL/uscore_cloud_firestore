@@ -8,6 +8,7 @@ import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.FirebaseServer;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Ученик
@@ -278,6 +279,45 @@ public class Student {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID));
         FirebaseServer.GetStudentDeniedRequests getStudentDeniedRequests = new FirebaseServer.GetStudentDeniedRequests();
         getStudentDeniedRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить запросы ученика
+     *
+     * @param callback      Вызываемый callback полсе получения запросов
+     * @param studentID     id ученика
+     */
+
+    public static void getStudentRequests(Callback callback, String studentID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID));
+        FirebaseServer.GetStudentRequests getStudentRequests = new FirebaseServer.GetStudentRequests();
+        getStudentRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить непросмотренные запросы ученика
+     *
+     * @param callback      Вызываемый callback полсе получения запросов
+     * @param studentID     id ученика
+     */
+
+    public static void getStudentNewRequests(Callback callback, String studentID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID));
+        FirebaseServer.GetStudentNewRequests getStudentNewRequests = new FirebaseServer.GetStudentNewRequests();
+        getStudentNewRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить штрафы студента
+     *
+     * @param callback  Вызываемый callback полсе получения штрафов
+     * @param studentID id ученика
+     */
+
+    public static void getStudentPenalties(Callback callback, String studentID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID));
+        FirebaseServer.GetStudentPenalties getStudentPenalties = new FirebaseServer.GetStudentPenalties();
+        getStudentPenalties.execute(asyncTaskArguments);
     }
 
 }

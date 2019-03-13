@@ -1,8 +1,6 @@
 package com.example.admin.uscore001.fragments;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,141 +10,86 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.Penalty;
+import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.util.PenaltyRecyclerViewAdapter;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * Фрагмент со штрафами ученика
+ */
+
 public class PenaltyFragment extends Fragment {
 
-    // widgets
+    // Виджиты
     RecyclerView recyclerView;
     ProgressBar progressBar;
 
-    // Firebase
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-    CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    // Постоянные переменные
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
+    public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
-    // vars
-    private String currentUserEmail = currentUser.getEmail();
-    private String teacherRequestID;
-    private ArrayList<Penalty> teacherPenaltiesList = new ArrayList<>();
-    private ArrayList<Penalty> studentPenaltiesList = new ArrayList<>();
-    private String currentStudentID;
+    // Переменные
+    private int penaltiesAmount = 0;
+    private int teacherWentTrough = 0;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.penalty_fragment, container, false);
         init(view);
-        loadSharedPreferences();
-        loadPenalties();
+
+        if(Settings.getStatus().equals(STUDENT_STATUS)){
+            penaltiesAmount = 0;
+            teacherWentTrough = 0;
+            Student.getStudentPenalties(mGetStudentPenalties, Settings.getUserId());
+        }
+
+        if(Settings.getStatus().equals(TEACHER_STATUS)){
+
+        }
+
         return view;
     }
+
+    /**
+     * Инициализация виджетов
+     * @param view  на чем находятся виджеты
+     */
 
     private void init(View view){
         recyclerView = view.findViewById(R.id.recyclerView);
         progressBar = view.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
     }
 
-    private void loadSharedPreferences(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
-        currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
-    }
+    /**
+     * Callback, который вернется после получения штрафов
+     */
 
-    private void loadPenalties(){
-        teacherPenaltiesList.clear();
-        studentPenaltiesList.clear();
+    Callback mGetStudentPenalties = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Penalty> penalties = (ArrayList) data;
+            penaltiesAmount += penalties.size();
+            teacherWentTrough++;
+            PenaltyRecyclerViewAdapter adapter = new PenaltyRecyclerViewAdapter(penalties, false, true);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
+            if(teacherWentTrough == 3 && penaltiesAmount == 0){
+                /*
+                        Перенаправляем пользвателя на фрагмент что у него нет штрафов
+                 */
 
-        /*
-                    TEACHER
-         */
+                Toast.makeText(getContext(), "У тебя нет штрафов", Toast.LENGTH_SHORT).show();
 
-        if(isTeacher()){
-            progressBar.setVisibility(View.VISIBLE);
-            requests$DB
-                .document(teacherRequestID)
-                .collection("STUDENTS")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for(DocumentSnapshot studentsDocumentSnapshot : queryDocumentSnapshots.getDocuments()){
-                            studentsDocumentSnapshot
-                                .getReference()
-                                .collection("PENALTY")
-                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                        for(DocumentSnapshot penaltyDocumentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                            Penalty penalty = penaltyDocumentSnapshot.toObject(Penalty.class);
-                                            teacherPenaltiesList.add(penalty);
-                                        }
-                                        PenaltyRecyclerViewAdapter adapter = new PenaltyRecyclerViewAdapter(teacherPenaltiesList, true, false);
-                                        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                                        recyclerView.setAdapter(adapter);
-                                    }
-                                });
-                        }
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-                });
+            }
         }
-
-        /*
-                    STUDENT
-         */
-
-        if(isStudent()){
-            progressBar.setVisibility(View.VISIBLE);
-            requests$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for(DocumentSnapshot teacherRequestID : queryDocumentSnapshots.getDocuments()){
-                        teacherRequestID.getReference().collection("STUDENTS").document(currentStudentID).collection("PENALTY").addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                for(DocumentSnapshot studentPenaltyDocumentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                    Penalty penalty = studentPenaltyDocumentSnapshot.toObject(Penalty.class);
-                                    studentPenaltiesList.add(penalty);
-                                }
-                                PenaltyRecyclerViewAdapter adapter = new PenaltyRecyclerViewAdapter(studentPenaltiesList, false, true);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                                recyclerView.setAdapter(adapter);
-                            }
-                        });
-                    }
-                    progressBar.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
-    }
-
-    private boolean isTeacher(){
-        if(currentUserEmail.contains("teacher")){
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isStudent(){
-        if(!currentUserEmail.contains("teacher")){
-            return true;
-        }
-        return false;
-    }
-
+    };
 }

@@ -13,10 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.RecentRequestItem;
 import com.example.admin.uscore001.models.RequestAddingScore;
+import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.util.RecentRequestsAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,106 +38,87 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * Фрагмент с принятыми запросами
+ */
+
 public class PositiveRequestsFragment extends Fragment {
 
-    private static final String TAG = "PositiveRequestsFragmen";
+    private static final String TAG = "PositiveRequestsFragm";
 
-    // widgets
+    // Виджеты
     RecyclerView recyclerView;
     ProgressBar progressBar;
 
-    // vars
-    ArrayList<RequestAddingScore> positiveRequestsItems = new ArrayList<>();
-    ArrayList<RequestAddingScore> positiveRequestsItemsTeacher = new ArrayList<>();
-    private String currentStudentID;
+    // Постоянные переменные
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
+    public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
-    // Firestore
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
-    private String teacherRequestID;
+    // Переменные
+    private int positiveRequestsAmount = 0;
+    private int teacherWentTrough = 0;
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.positive_requests_fragment, container, false);
+        init(view);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
-        progressBar = view.findViewById(R.id.progressBar);
+        if(Settings.getStatus().equals(STUDENT_STATUS)){
+            getStudentPositiveRequests();
+        }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-//        String teacherFullName = sharedPreferences.getString(getString(R.string.intentTeacherFullname), "");
-        String statusStudent = sharedPreferences.getString(getString(R.string.statusStudent), "");
-        String statusTeacher = sharedPreferences.getString(getString(R.string.statusTeacher), "");
-        currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
-        teacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
-        Log.d(TAG, "currentStudentID: " + currentStudentID);
-        if(!FirebaseAuth.getInstance().getCurrentUser().getEmail().contains("teacher")) {                                       // is a STUDENT
-            loadAllUserPositiveRequests(currentStudentID);
-        }else{                                                                                  // is a TEACHER
-//            loadAllPositiveTeacherRequests(teacherFullName);
+        if(Settings.getStatus().equals(TEACHER_STATUS)){
+
         }
 
         return view;
     }
 
-    public void loadAllUserPositiveRequests(final String currentStudentID){
-        positiveRequestsItems.clear();
-        requests$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot teachersRequestID : queryDocumentSnapshots.getDocuments()){
-                    teachersRequestID
-                        .getReference()
-                        .collection("STUDENTS")
-                        .document(currentStudentID)
-                        .collection("REQUESTS")
-                        .whereEqualTo("answered", true)
-                        .whereEqualTo("canceled", false)
-                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                                for(DocumentSnapshot studentRequests : queryDocumentSnapshots.getDocuments()){
-                                    RequestAddingScore request = studentRequests.toObject(RequestAddingScore.class);
-                                    positiveRequestsItems.add(request);
-                                }
-                                RecentRequestsAdapter adapter = new RecentRequestsAdapter(positiveRequestsItems);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                                recyclerView.setAdapter(adapter);
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        });
-                }
-            }
-        });
+    /**
+     * Инициализация виджетов
+     * @param view  на чем находятся виджеты
+     */
 
+    private void init(View view){
+        recyclerView = view.findViewById(R.id.recyclerView);
+        progressBar = view.findViewById(R.id.progressBar);
     }
 
+    /**
+     * Получить приняты запросы ученика
+     */
 
-    public void loadAllPositiveTeacherRequests(String teacherFullName){
-        positiveRequestsItemsTeacher.clear();
-        requests$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                    documentSnapshot.getReference().collection("REQUESTS")
-                            .whereEqualTo("answered", true)
-                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
-                                RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
-                                positiveRequestsItemsTeacher.add(request);
-                            }
-                            RecentRequestsAdapter adapter = new RecentRequestsAdapter(positiveRequestsItemsTeacher);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                            recyclerView.setAdapter(adapter);
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
-                }
-            }
-        });
-
+    private void getStudentPositiveRequests(){
+        positiveRequestsAmount = 0;
+        teacherWentTrough = 0;
+        Student.getConfirmedRequests(mGetStudentPositiveRequests, Settings.getUserId());
     }
+
+    /**
+     * Callback, который вернется после получения принятых запросов
+     */
+
+    Callback mGetStudentPositiveRequests = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> requests = (ArrayList) data;
+            positiveRequestsAmount += requests.size();
+            teacherWentTrough++;
+            RecentRequestsAdapter adapter = new RecentRequestsAdapter(requests);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
+            if(teacherWentTrough == 3 && positiveRequestsAmount == 0){
+                /*
+                        Перенаправляем пользвателя на фрагмент что у него нет принятых заросов
+                 */
+
+                Toast.makeText(getContext(), "У тебя нет принятых запросов", Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    };
 
 }

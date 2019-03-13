@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.example.admin.uscore001.activities.login_activity;
 import com.example.admin.uscore001.activities.register_activity;
 import com.example.admin.uscore001.models.Group;
+import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.StudentRegisterRequestModel;
@@ -65,6 +66,9 @@ public class FirebaseServer {
     private static ArrayList<RequestAddingScore> confirmedRequests = new ArrayList<>();
     private static ArrayList<RequestAddingScore> deniedRequests = new ArrayList<>();
     private static ArrayList<Student> allStudents = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> requests = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> newRequests = new ArrayList<>();
+    private static ArrayList<Penalty> penalties = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -399,7 +403,6 @@ public class FirebaseServer {
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             confirmedRequests.clear();
             String studentID = (String)asyncTaskArguments[0].mData.data[0];
-            Log.d(TAG, "studentID: " + studentID);
             Callback callback = asyncTaskArguments[0].mCallback;
             REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
@@ -602,5 +605,118 @@ public class FirebaseServer {
         }
     }
 
+    /**
+     * Получить запросы ученика
+     */
+
+    public static class GetStudentRequests extends AsyncTask<AsyncTaskArguments,Void,Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            requests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String studentID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot teacherRequestsID : task.getResult().getDocuments()){
+                        teacherRequestsID
+                            .getReference()
+                            .collection("STUDENTS")
+                            .document(studentID)
+                            .collection("REQUESTS")
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    for(DocumentSnapshot request : task.getResult().getDocuments()){
+                                        RequestAddingScore requestAddingScore = request.toObject(RequestAddingScore.class);
+                                        requests.add(requestAddingScore);
+                                    }
+                                    callback.execute(requests);
+                                }
+                            });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить непросмотренные запросы ученика
+     */
+
+    public static class GetStudentNewRequests extends AsyncTask<AsyncTaskArguments,Void,Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            newRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String studentID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot teacherRequestsID : task.getResult().getDocuments()){
+                        teacherRequestsID
+                            .getReference()
+                            .collection("STUDENTS")
+                            .document(studentID)
+                            .collection("REQUESTS")
+                            .whereEqualTo("answered", false)
+                            .whereEqualTo("canceled", false)
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    for(DocumentSnapshot request : task.getResult().getDocuments()){
+                                        RequestAddingScore requestAddingScore = request.toObject(RequestAddingScore.class);
+                                        newRequests.add(requestAddingScore);
+                                    }
+                                    callback.execute(newRequests);
+                                }
+                            });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить штрафы студента
+     */
+
+    public static class GetStudentPenalties extends AsyncTask<AsyncTaskArguments,Void,Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            penalties.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String studentID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot teacherRequestID : task.getResult().getDocuments() ){
+                        teacherRequestID
+                            .getReference()
+                            .collection("STUDENTS")
+                            .document(studentID)
+                            .collection("PENALTY")
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    for(DocumentSnapshot studentPenaltyDocumentSnapshot : task.getResult().getDocuments()){
+                                        Penalty penalty = studentPenaltyDocumentSnapshot.toObject(Penalty.class);
+                                        penalties.add(penalty);
+                                    }
+                                    callback.execute(penalties);
+                                }
+                            });
+
+                    }
+                }
+            });
+            return null;
+        }
+    }
 
 }

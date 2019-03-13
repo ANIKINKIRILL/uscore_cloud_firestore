@@ -40,17 +40,19 @@ import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * Адаптер для запросов
+ */
+
 public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAdapter.RequestsViewHolder> {
 
-    // vars
+    // Переменные
     private ArrayList<RequestAddingScore> requests = new ArrayList<>();
     int counter = 0;
     private String group;
     private String option;
 
     // Firebase
-    DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference("Students");
-    DatabaseReference mDatabaseRequestRef = FirebaseDatabase.getInstance().getReference("RequestsAddingScore");
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     private CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
     private CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
@@ -90,9 +92,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
         Context context = requestsViewHolder.cardViewlayout.getContext();
 
         final RequestAddingScore request = requests.get(i);
-
         findGroupOptionByID(request.getGroupID(), request.getOptionID(), requestsViewHolder);
-
         requestsViewHolder.date.setText(request.getDate());
         requestsViewHolder.score.setText(Integer.toString(request.getScore()));
         if(request.isAnswered() && !request.isCanceled()){
