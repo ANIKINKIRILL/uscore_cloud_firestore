@@ -1,5 +1,7 @@
 package com.example.admin.uscore001.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +19,7 @@ import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.RecentRequestsAdapter;
 
 import java.util.ArrayList;
@@ -53,7 +56,7 @@ public class NewRequestsFragment extends Fragment {
         }
 
         if(Settings.getStatus().equals(TEACHER_STATUS)){
-
+            getTeacherNewRequests();
         }
 
         return view;
@@ -100,6 +103,30 @@ public class NewRequestsFragment extends Fragment {
                 Toast.makeText(getContext(), "У тебя нет новых запросов", Toast.LENGTH_SHORT).show();
 
             }
+        }
+    };
+
+    /**
+     * Получить непросмотренные запросы учителя
+     */
+
+    private void getTeacherNewRequests(){
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+        String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+        Teacher.getTeacherNewRequests(mGetTeacherNewRequests, teacherRequestID);
+    }
+    /**
+     * Callback, который вернется после получения непросмотренных запросов
+     */
+
+    Callback mGetTeacherNewRequests = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> requests = (ArrayList) data;
+            RecentRequestsAdapter adapter = new RecentRequestsAdapter(requests);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
         }
     };
 

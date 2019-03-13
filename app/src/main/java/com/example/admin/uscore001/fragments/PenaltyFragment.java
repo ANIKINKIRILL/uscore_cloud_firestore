@@ -1,5 +1,7 @@
 package com.example.admin.uscore001.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +19,7 @@ import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.PenaltyRecyclerViewAdapter;
 
 import java.util.ArrayList;
@@ -52,7 +55,9 @@ public class PenaltyFragment extends Fragment {
         }
 
         if(Settings.getStatus().equals(TEACHER_STATUS)){
-
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+            Teacher.getTeacherPenalties(mGetTeacherPenalties,teacherRequestID);
         }
 
         return view;
@@ -92,4 +97,20 @@ public class PenaltyFragment extends Fragment {
             }
         }
     };
+
+    /**
+     * Callback, который вернется после получения штрафов учителя
+     */
+
+    Callback mGetTeacherPenalties = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Penalty> penalties = (ArrayList) data;
+            PenaltyRecyclerViewAdapter adapter = new PenaltyRecyclerViewAdapter(penalties, true, false);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
+        }
+    };
+
 }

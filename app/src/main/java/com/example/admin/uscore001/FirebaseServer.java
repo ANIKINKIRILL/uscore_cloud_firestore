@@ -69,6 +69,11 @@ public class FirebaseServer {
     private static ArrayList<RequestAddingScore> requests = new ArrayList<>();
     private static ArrayList<RequestAddingScore> newRequests = new ArrayList<>();
     private static ArrayList<Penalty> penalties = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> teacherRequests = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> teacherNewRequests = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> teacherPositiveRequests = new ArrayList<>();
+    private static ArrayList<RequestAddingScore> teacherNegativeRequests = new ArrayList<>();
+    private static ArrayList<Penalty> teacherPenalties = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -715,6 +720,175 @@ public class FirebaseServer {
                     }
                 }
             });
+            return null;
+        }
+    }
+
+    /**
+     * Получить все запросы учителя
+     */
+
+    public static class GetTeacherRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            teacherRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot.getReference().collection("REQUESTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                            @Override
+                            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                    RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                    teacherRequests.add(request);
+                                }
+                                callback.execute(teacherRequests);
+                            }
+                        });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     *  Получить непросмотренные запросы учителя
+     */
+
+    public static class GetTeacherNewRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            teacherNewRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot.getReference().collection("REQUESTS")
+                            .whereEqualTo("answered", false)
+                            .whereEqualTo("canceled", false)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                        teacherNewRequests.add(request);
+                                    }
+                                    callback.execute(teacherNewRequests);
+                                }
+                            });
+                    }
+                }
+            });
+
+            return null;
+        }
+    }
+
+    /**
+     *  Получить принятые запросы учителя
+     */
+
+    public static class GetTeacherPositiveRequests extends AsyncTask<AsyncTaskArguments,Void,Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            teacherPositiveRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
+            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot.getReference().collection("REQUESTS")
+                            .whereEqualTo("answered", true)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                        teacherPositiveRequests.add(request);
+                                    }
+                                    callback.execute(teacherPositiveRequests);
+                                }
+                            });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     *  Получить отклоненные запросы учителя
+     */
+
+    public static class GetTeacherNegativeRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
+            teacherNegativeRequests.clear();
+            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        documentSnapshot.getReference().collection("REQUESTS")
+                            .whereEqualTo("canceled", true)
+                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                    for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+                                        teacherNegativeRequests.add(request);
+                                    }
+                                    callback.execute(teacherNegativeRequests);
+                                }
+                            });
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     *  Получить штрафы учителя
+     */
+
+    public static class GetTeacherPenalties extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
+            teacherPenalties.clear();
+            REQEUSTS$DB
+                .document(teacherRequestID)
+                .collection("STUDENTS")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        for(DocumentSnapshot studentsDocumentSnapshot : queryDocumentSnapshots.getDocuments()){
+                            studentsDocumentSnapshot
+                                .getReference()
+                                .collection("PENALTY")
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                        for(DocumentSnapshot penaltyDocumentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                            Penalty penalty = penaltyDocumentSnapshot.toObject(Penalty.class);
+                                            teacherPenalties.add(penalty);
+                                        }
+                                        callback.execute(teacherPenalties);
+                                    }
+                                });
+                        }
+                    }
+                });
             return null;
         }
     }

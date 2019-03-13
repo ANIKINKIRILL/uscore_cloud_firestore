@@ -1,5 +1,6 @@
 package com.example.admin.uscore001.fragments;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -21,6 +22,7 @@ import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.RecentRequestItem;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.RecentRequestsAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -70,7 +72,7 @@ public class NegativeRequestsFragment extends Fragment {
         }
 
         if(Settings.getStatus().equals(TEACHER_STATUS)){
-
+            getTeacherNegativeRequests();
         }
 
         return view;
@@ -118,6 +120,31 @@ public class NegativeRequestsFragment extends Fragment {
                 Toast.makeText(getContext(), "У тебя нет отклоненных запросов", Toast.LENGTH_SHORT).show();
 
             }
+        }
+    };
+
+    /**
+     * Получить отклоненные запросы учителя
+     */
+
+    private void getTeacherNegativeRequests(){
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+        String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+        Teacher.getTeacherNegativeRequests(mGetTeacherNegativeRequests, teacherRequestID);
+    }
+
+    /**
+     * Callback, который вернется после получения отклоненных запросов
+     */
+
+    Callback mGetTeacherNegativeRequests = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> requests = (ArrayList) data;
+            RecentRequestsAdapter adapter = new RecentRequestsAdapter(requests);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
         }
     };
 

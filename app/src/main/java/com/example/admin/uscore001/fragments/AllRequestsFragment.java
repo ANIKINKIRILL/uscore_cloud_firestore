@@ -1,5 +1,7 @@
 package com.example.admin.uscore001.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -54,7 +56,7 @@ public class AllRequestsFragment extends Fragment {
         }
 
         if(Settings.getStatus().equals(TEACHER_STATUS)){
-
+            getTeacherRequests();
         }
 
         return view;
@@ -92,5 +94,35 @@ public class AllRequestsFragment extends Fragment {
             progressBar.setVisibility(View.GONE);
         }
     };
+
+    /**
+     * Получить запросы учителя
+     */
+
+    private void getTeacherRequests(){
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+            Teacher.getTeacherRequests(mGetTeacherRequests, teacherRequestID);
+        }catch (Exception e){
+            Log.d(TAG, "getTeacherRequests: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Callback, который вернется после получения запросов учителя
+     */
+
+    Callback mGetTeacherRequests = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<RequestAddingScore> requests = (ArrayList) data;
+            RecentRequestsAdapter adapter = new RecentRequestsAdapter(requests);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(adapter);
+            progressBar.setVisibility(View.GONE);
+        }
+    };
+
 }
 

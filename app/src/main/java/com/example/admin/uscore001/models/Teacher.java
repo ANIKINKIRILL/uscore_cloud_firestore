@@ -252,4 +252,54 @@ public class Teacher {
         updateTeacherCredentials.execute(asyncTaskArguments);
     }
 
+    /**
+     * Получить все запросы учителя
+     */
+
+    public static void getTeacherRequests(Callback callback, String teacherRequestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherRequestID));
+        FirebaseServer.GetTeacherRequests getTeacherRequests = new FirebaseServer.GetTeacherRequests();
+        getTeacherRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить все непросмотренные запросы учителя
+     */
+
+    public static void getTeacherNewRequests(Callback callback, String teacherRequestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherRequestID));
+        FirebaseServer.GetTeacherNewRequests getTeacherNewRequests = new FirebaseServer.GetTeacherNewRequests();
+        getTeacherNewRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить все принятые запросы учителя
+     */
+
+    public static void getTeacherPositiveRequests(Callback callback, String teacherRequestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherRequestID));
+        FirebaseServer.GetTeacherPositiveRequests getTeacherPositiveRequests = new FirebaseServer.GetTeacherPositiveRequests();
+        getTeacherPositiveRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить все отклоненные запросы учителя
+     */
+
+    public static void getTeacherNegativeRequests(Callback callback, String teacherRequestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherRequestID));
+        FirebaseServer.GetTeacherNegativeRequests getTeacherNegativeRequests = new FirebaseServer.GetTeacherNegativeRequests();
+        getTeacherNegativeRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить все штрафы учителя
+     */
+
+    public static void getTeacherPenalties(Callback callback, String teacherRequestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherRequestID));
+        FirebaseServer.GetTeacherPenalties getTeacherPenalties = new FirebaseServer.GetTeacherPenalties();
+        getTeacherPenalties.execute(asyncTaskArguments);
+    }
+
 }
