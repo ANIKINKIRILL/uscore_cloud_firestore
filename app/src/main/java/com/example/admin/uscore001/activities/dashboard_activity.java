@@ -1,5 +1,6 @@
 package com.example.admin.uscore001.activities;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -11,12 +12,10 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +23,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -64,7 +63,7 @@ import java.util.TimeZone;
 
 public class dashboard_activity extends AppCompatActivity implements
                                         View.OnClickListener,
-                                        ActionBar.OnNavigationListener{
+                                        ActionBar.OnNavigationListener, android.support.v7.app.ActionBar.OnNavigationListener {
 
     private static final String TAG = "dashboard_activity";
 
@@ -83,7 +82,7 @@ public class dashboard_activity extends AppCompatActivity implements
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ImageView notification_alarm;
-    Toolbar toolbar;
+    android.support.v7.widget.Toolbar toolbar;
 
     // Переменные
     static int pickedLang = 0;
@@ -255,7 +254,8 @@ public class dashboard_activity extends AppCompatActivity implements
                 if(Integer.parseInt(limitScore) != 0) {
                     Intent intent = new Intent(dashboard_activity.this, QRCODE_activity.class);
                     startActivity(intent);
-                }else{
+                }
+                else{
                     checkSpendLimitScoreDateAndCurrentDate(menu);
                 }
                 break;
@@ -726,7 +726,7 @@ public class dashboard_activity extends AppCompatActivity implements
             if(image_path.isEmpty()){
                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
             }
-            String limitScore = student.getLimitScore();
+            limitScore = student.getLimitScore();
             String studentID = student.getId();
             String statusID = student.getStatusID();
             int scoreValue = student.getScore();
@@ -770,7 +770,7 @@ public class dashboard_activity extends AppCompatActivity implements
 
              /*
                 --------------------------------------------------------------
-                |    Проверка Данных                                          |
+                |    Проверка Данных                                            |
                 --------------------------------------------------------------
              */
 
@@ -845,4 +845,6 @@ public class dashboard_activity extends AppCompatActivity implements
         }
     };
 
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {}
 }

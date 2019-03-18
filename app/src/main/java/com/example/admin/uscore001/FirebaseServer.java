@@ -1,6 +1,8 @@
 package com.example.admin.uscore001;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.telecom.Call;
@@ -10,13 +12,16 @@ import android.widget.Toast;
 
 import com.example.admin.uscore001.activities.login_activity;
 import com.example.admin.uscore001.activities.register_activity;
+import com.example.admin.uscore001.dialogs.DialogRequestAddingScore;
 import com.example.admin.uscore001.models.Group;
+import com.example.admin.uscore001.models.Option;
 import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.StudentRegisterRequestModel;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.models.User;
+import com.example.admin.uscore001.util.RequestAddingScoreAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -32,10 +37,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +66,7 @@ public class FirebaseServer {
     static CollectionReference REQEUSTS$DB = firebaseFirestore.collection("REQEUSTS$DB");
     static CollectionReference SUBJECTS$DB = firebaseFirestore.collection("SUBJECTS$DB");
     static CollectionReference POSITIONS$DB = firebaseFirestore.collection("POSITIONS$DB");
+    static CollectionReference OPTIONS$DB = firebaseFirestore.collection("OPTIONS$DB");
 
     // Переменные
     private static ArrayList<String> studentsByGroupName = new ArrayList<>();
@@ -74,6 +84,7 @@ public class FirebaseServer {
     private static ArrayList<RequestAddingScore> teacherPositiveRequests = new ArrayList<>();
     private static ArrayList<RequestAddingScore> teacherNegativeRequests = new ArrayList<>();
     private static ArrayList<Penalty> teacherPenalties = new ArrayList<>();
+    private static ArrayList<Teacher> teachersClasses = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -384,14 +395,12 @@ public class FirebaseServer {
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             Callback callback = asyncTaskArguments[0].mCallback;
             String studentLogin = (String)asyncTaskArguments[0].mData.data[0];
-            STUDENTS$DB.whereEqualTo("email", studentLogin).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            STUDENTS$DB.whereEqualTo("email", studentLogin).addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if(task.isSuccessful()){
-                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
-                            Student student = documentSnapshot.toObject(Student.class);
-                            callback.execute(student);
-                        }
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Student student = documentSnapshot.toObject(Student.class);
+                        callback.execute(student);
                     }
                 }
             });
@@ -889,6 +898,173 @@ public class FirebaseServer {
                         }
                     }
                 });
+            return null;
+        }
+    }
+
+    /**
+     * Добавлние очков студенту
+     */
+
+    static int counter = 0;
+    public static class AddScoreToStudentMoreParameters extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            SharedPreferences sharedPreferences = App.context.getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String studentID = (String)asyncTaskArguments[0].mData.data[0];
+            int requestScore = (int)asyncTaskArguments[0].mData.data[1];
+            String requestID = (String)asyncTaskArguments[0].mData.data[2];
+            STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()) {
+                            Student selectedStudent = task.getResult().toObject(Student.class);
+                            int old_score = selectedStudent.getScore();
+                            Log.d(TAG, "onComplete: " + old_score);
+                            int result = old_score + requestScore;
+                            Log.d(TAG, "onComplete: " + result);
+                            STUDENTS$DB.document(studentID).update("score", result);
+                            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+                                    .document(requestID).update("answered", true);
+                            callback.execute("Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName());
+                    }else{
+                        callback.execute(task.getException().getMessage());
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+    * Отправить запрос на добвление очков
+    */
+    static int counter1 = 0;
+    public static class SendRequest extends AsyncTask<RequestAddingScore, Void, Void>{
+        @Override
+        protected Void doInBackground(RequestAddingScore... requestAddingScores) {
+            counter1 = 0;
+            String teacherRequestID = requestAddingScores[0].getRequestID();
+            String senderID = requestAddingScores[0].getSenderID();
+            if(counter1 == 0) {
+                REQEUSTS$DB
+                    .document(teacherRequestID)
+                    .collection("STUDENTS")
+                    .document(senderID)
+                    .collection("REQUESTS")
+                    .add(requestAddingScores[0])
+                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()) {
+                                String requestDocumentID = task.getResult().getId();
+                                task.getResult().update("id", requestDocumentID);
+                                Map<String, String> idField = new HashMap<>();
+                                idField.put("id", senderID);
+                                REQEUSTS$DB
+                                    .document(teacherRequestID)
+                                    .collection("STUDENTS")
+                                    .document(senderID)
+                                    .set(idField, SetOptions.merge());
+                            }
+                        }
+                    });
+                counter1 = 1;
+            }
+            return null;
+        }
+    }
+
+
+    /**
+     * Выгрузка всех учителей
+     */
+
+    public static class LoadAllTeacherClasses extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            teachersClasses.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            TEACHERS$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                        Teacher teacher = documentSnapshot.toObject(Teacher.class);
+                        teachersClasses.add(teacher);
+                    }
+                    callback.execute(teachersClasses);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить данные опции
+     */
+
+    public static class GetOptionData extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String option_name = (String) asyncTaskArguments[0].mData.data[0];
+            OPTIONS$DB.document(App.context.getString(R.string.promotionsID))
+            .collection("options")
+            .whereEqualTo("name", option_name)
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Option option = documentSnapshot.toObject(Option.class);
+                        String points = option.getPoints();
+                        String optionID = option.getId();
+                        callback.execute(optionID, points);
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+
+    /**
+     * Понизить очки ученика
+     */
+
+    static int counter2 = 0;
+    public static class DecreaseStudentLimitScore extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            counter2 = 0;
+            int requestedScoreValue = (int) asyncTaskArguments[0].mData.data[0];
+            String studentId = (String) asyncTaskArguments[0].mData.data[1];
+            STUDENTS$DB
+                .document(studentId)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                        Student student = documentSnapshot.toObject(Student.class);
+                        if(counter2 == 0) {
+                            String limitScore = student.getLimitScore();
+                            int limitScoreInteger = Integer.parseInt(limitScore);
+                            int result = limitScoreInteger - requestedScoreValue;
+                            String resultString = Integer.toString(result);
+                            if(result <= 0){
+                                resultString = "0";
+                                Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
+                                Date currentDate = calendar.getTime();
+                                Map<String, Date> map = new HashMap<>();
+                                map.put("spendLimitScoreDate", currentDate);
+                                STUDENTS$DB.document(studentId).set(map, SetOptions.merge());
+                            }
+                            STUDENTS$DB.document(studentId).update("limitScore", resultString);
+                            Log.d(TAG, "decreaseLimitScore: " + resultString);
+                        }
+                    }
+                });
+            counter2 = 1;
             return null;
         }
     }

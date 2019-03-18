@@ -320,4 +320,58 @@ public class Student {
         getStudentPenalties.execute(asyncTaskArguments);
     }
 
+    /*
+     * Отправить запрос учителю на добавление очков
+     *
+     * @param callback      callback который вернется после добавления очков
+     * @param id            id запроса
+     * @param body          текст запроса
+     * @param date          дата запроса
+     * @param getter        фио учителя к кому был этот запрос отпрален
+     * @param image_path    приклепленная фотография
+     * @param senderEmail   email ученика
+     * @param firstName     имя
+     * @param secondName    фамилия
+     * @param lastName      отчество
+     * @param score         очки
+     * @param groupID       id группы
+     * @param requestID     requestID учителя
+     * @param optionID      id опции за что ученик хочет чтобы ему начислели быллы
+     * @param answered      принят ли запрос
+     * @param canceled      отклонен ли запрос
+     * @param senderID      id ученика
+
+    public static void sendRequest(
+        Callback callback,
+        String id,
+        String body,
+        String date,
+        String getter,
+        String image_path,
+        String senderEmail,
+        String firstName,
+        String secondName,
+        String lastName,
+        int score,
+        String groupID,
+        String requestID,
+        String optionID,
+        boolean answered,
+        boolean canceled,
+        String senderID)
+    {
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(
+                id, body, date, getter, image_path, senderEmail, firstName,
+                secondName, lastName, score, groupID, requestID, optionID,
+                answered, canceled, senderID));
+        FirebaseServer.SendRequest sendRequest = new FirebaseServer.SendRequest();
+        sendRequest.execute(asyncTaskArguments);
+    }
+    */
+
+    public static void sendRequest(RequestAddingScore request){
+        FirebaseServer.SendRequest sendRequest = new FirebaseServer.SendRequest();
+        sendRequest.execute(request);
+    }
+
 }

@@ -111,7 +111,17 @@ public class User {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(groupID));
         FirebaseServer.GetUserGroupName getUserGroupName = new FirebaseServer.GetUserGroupName();
         getUserGroupName.execute(asyncTaskArguments);
+    }
 
+    /**
+     * Получить данные опции
+     * @param option_name       название опции
+     */
+
+    public static void getOptionData(Callback callback, String option_name){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(option_name));
+        FirebaseServer.GetOptionData getOptionData = new FirebaseServer.GetOptionData();
+        getOptionData.execute(asyncTaskArguments);
     }
 
 }

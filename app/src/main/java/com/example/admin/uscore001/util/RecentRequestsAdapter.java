@@ -15,10 +15,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.admin.uscore001.App;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.RecentRequestItem;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +41,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,7 +53,6 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
 
     // Переменные
     private ArrayList<RequestAddingScore> requests = new ArrayList<>();
-    int counter = 0;
     private String group;
     private String option;
 
@@ -56,10 +60,11 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     private CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
     private CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
-    private CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
     private CollectionReference reqeusts$DB = firebaseFirestore.collection("REQEUSTS$DB");
-    FirebaseAuth auth = FirebaseAuth.getInstance();
-    FirebaseUser currentUser = auth.getCurrentUser();
+
+    // Постоянные переменные
+    public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
+    public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
     public class RequestsViewHolder extends RecyclerView.ViewHolder{
         TextView date, score, result, teacherName;
@@ -92,7 +97,9 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
         Context context = requestsViewHolder.cardViewlayout.getContext();
 
         final RequestAddingScore request = requests.get(i);
+
         findGroupOptionByID(request.getGroupID(), request.getOptionID(), requestsViewHolder);
+
         requestsViewHolder.date.setText(request.getDate());
         requestsViewHolder.score.setText(Integer.toString(request.getScore()));
         if(request.isAnswered() && !request.isCanceled()){
@@ -103,13 +110,13 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
             requestsViewHolder.result.setText("В процессе...");
         }
 
-        if(!currentUser.getEmail().contains("teacher")){
+        if(Settings.getStatus().equals(STUDENT_STATUS)){                // Ученик
             if(request.getGetter().length() > 15){
                 requestsViewHolder.teacherName.setText(request.getGetter().substring(0,15)+"...");
             }else {
                 requestsViewHolder.teacherName.setText(request.getGetter());
             }
-        }else{
+        }else if(Settings.getStatus().equals(TEACHER_STATUS)){         // Учитель
             if((request.getFirstName()+request.getSecondName()).length() > 15){
                 requestsViewHolder.teacherName.setText((request.getFirstName()+ " " + request.getSecondName()).substring(0,15)+"...");
             }else {
@@ -132,7 +139,8 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
            requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
                    getResources().getColor(R.color.inProcessColor));
        }
-       if(currentUser.getEmail().contains("teacher")) {
+
+       if(Settings.getStatus().equals(TEACHER_STATUS)) {        // Учитель
            requestsViewHolder.cardViewlayout.setOnClickListener(new View.OnClickListener() {
                @Override
                public void onClick(View v) {
@@ -159,8 +167,6 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                            public void onClick(DialogInterface dialog, int which) {
                                addScore(request.getScore(),
                                        request.getSenderID(),
-                                       requestsViewHolder.cardViewlayout.getContext(),
-                                       request.getRequestID(),
                                        request.getId()
                                );
                                dialog.dismiss();
@@ -183,7 +189,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                    alertDialog.show();
                }
            });
-       }else{
+       }else if(Settings.getStatus().equals(STUDENT_STATUS)){       // Ученик
            requestsViewHolder.cardViewlayout.setOnClickListener(new View.OnClickListener() {
                @Override
                public void onClick(View v) {
@@ -219,50 +225,58 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
         }
     };
 
-    public void addScore(final int score, final String studentID,final Context context, String teacherRequestID, String requestID) {
-        students$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (counter != 1) {
-                    Student selectedStudent = task.getResult().toObject(Student.class);
-//                    String old_score = selectedStudent.getScore();
-//                    int old_score_int = Integer.parseInt(old_score);
-//                    int result = old_score_int + score;
-//                    String result_str = Integer.toString(result);
-//                    students$DB.document(studentID).update("score", result_str);
-//                    reqeusts$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
-//                            .document(requestID).update("answered", true);
-                    Toast.makeText(context,
-                            "Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName(),
-                            Toast.LENGTH_SHORT).show();
-                    counter = 1;
-                }
-            }
-        });
+    /**
+     * Добавить очки
+     * @param score
+     * @param studentID
+     * @param requestID
+     */
+
+    private void addScore(final int score, final String studentID, String requestID) {
+        Teacher.addPointsToStudent(mAddPointsToStudentCallback, studentID, score, requestID);
     }
 
-    public void cancelScore(String teacherRequestID, String studentID, String id, Context context){
+    private Callback mAddPointsToStudentCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String message = (String) data;
+            Toast.makeText(App.context, message, Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    /**
+     * Отменить добавление очков/Отменить запрос
+     */
+
+    private void cancelScore(String teacherRequestID, String studentID, String id, Context context){
         reqeusts$DB
-                .document(teacherRequestID)
-                .collection("STUDENTS")
-                .document(studentID)
-                .collection("REQUESTS")
-                .document(id)
-                .update("canceled", true)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
-                            Toast.makeText(context, "Вы отклонили запрос", Toast.LENGTH_SHORT).show();
-                        }
+            .document(teacherRequestID)
+            .collection("STUDENTS")
+            .document(studentID)
+            .collection("REQUESTS")
+            .document(id)
+            .update("canceled", true)
+            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        Toast.makeText(context, "Вы отклонили запрос", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
     }
 
     @Override
     public int getItemCount() {
         return requests.size();
     }
+
+    /**
+     * Найти группу и опцию поощрения
+     * @param groupID   id группы
+     * @param optionID  id опции
+     * @param requestsViewHolder    viewholder
+     */
 
     private void findGroupOptionByID(String groupID, String optionID, RequestsViewHolder requestsViewHolder){
         groups$DB.document(groupID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -274,18 +288,18 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
             }
         });
         options$DB
-                .document("a31J0nT0lYTRmvyp7T8F")
-                .collection("options")
-                .document(optionID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if(task.isSuccessful()){
-                            option = task.getResult().get("name").toString();
-                        }
+            .document("a31J0nT0lYTRmvyp7T8F")
+            .collection("options")
+            .document(optionID)
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        option = task.getResult().get("name").toString();
                     }
-                });
+                }
+            });
     }
 
 

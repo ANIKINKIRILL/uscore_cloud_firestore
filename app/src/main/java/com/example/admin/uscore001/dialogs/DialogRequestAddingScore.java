@@ -1,5 +1,6 @@
 package com.example.admin.uscore001.dialogs;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,11 +25,13 @@ import android.widget.Toast;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Option;
 import com.example.admin.uscore001.models.RequestAddingScore;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
 import com.example.admin.uscore001.util.RequestAddingScoreAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -62,65 +65,53 @@ import java.util.Map;
 import java.util.TimeZone;
 
 
-public class DialogRequestAddingScore extends DialogFragment implements AdapterView.OnItemSelectedListener,
-                                                                View.OnClickListener, View.OnFocusChangeListener{
+/**
+ * Окно для отправления заявки на добваление очков учителю (Пользователь -> ученик)
+ */
+
+public class DialogRequestAddingScore extends DialogFragment implements
+        AdapterView.OnItemSelectedListener,
+        View.OnClickListener{
 
     private static final String TAG = "DialogRequestAddingScor";
 
-    // widgets
+    // Виджеты
     Spinner teacherSpinner, options;
     EditText requestBody;
     TextView ok, cancel, score;
     RelativeLayout dialogLayout;
 
-    // vars
-    String optionValue;
+    // Переменные
     String teacherName;
     String selectedOption;
-    boolean isValid = true;
-    String senderImage;
-    String currentUserGroup;
-    String currentUserUsername;
     String addedDate;
-    int optionScore;
-    boolean isDone = false;
-    private int counter = 1;
-    private int counter1 = 0;
-    private ArrayList<Teacher> teachers = new ArrayList<>();
     private String optionID;
-    private String firstName;
-    private String secondName;
-    private String currentStudentID;
+    private String teacherRequestID;
 
     // Firebase
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mDatabaseRef = mDatabase.getReference("RequestsAddingScore");
-    DatabaseReference mDatabaseOptionsRef = mDatabase.getReference("Options");
-    DatabaseReference mDatabaseStudentsRef = mDatabase.getReference("Students");
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-    // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference requests$db = firebaseFirestore.collection("REQEUSTS$DB");
-    CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
     CollectionReference students$db = firebaseFirestore.collection("STUDENTS$DB");
-    CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
-    private String currentUserGroupID;
-    private String teacherRequestID;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.request_adding_score_dialog, container, false);
         init(view);
+        setDateFormat();
+        setDialogConfiguration();
+        populateTeachersSpinner();
+        populateOptionsSpinner(view);
         return view;
     }
 
+    /**
+     * Инициализация виджетов
+     * @param view      окно диалогового окна
+     */
+
     private void init(View view){
         dialogLayout = view.findViewById(R.id.dialogLayout);
-
-        getDialog().setTitle(getResources().getString(R.string.make_request));
-
         teacherSpinner = view.findViewById(R.id.teacherSpinner);
         options = view.findViewById(R.id.options);
         ok = view.findViewById(R.id.ok);
@@ -128,125 +119,61 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
         requestBody = view.findViewById(R.id.requestBody);
         score = view.findViewById(R.id.score);
 
-        loadAllTeachers();
-
-        ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(view.getContext(), R.array.options, android.R.layout.simple_spinner_item);
-        pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        options.setAdapter(pickOptionAdapter);
-        options.setOnItemSelectedListener(this);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        senderImage = sharedPreferences.getString(getString(R.string.intentSenderImage), "");
-        currentUserGroup = sharedPreferences.getString("groupName", "");
-//        currentUserGroupID = sharedPreferences.getString(getString(R.string.currentStudentGroupID), "");
-//        currentUserUsername = sharedPreferences.getString(getString(R.string.currentStudentUsername), "");
-        currentStudentID = sharedPreferences.getString(getString(R.string.currentStudentID), "");
-
-        String[] currentUserUsernameWords = currentUserUsername.split(" ");
-        firstName = currentUserUsernameWords[0];
-        secondName = currentUserUsernameWords[1];
-
         ok.setOnClickListener(this);
         cancel.setOnClickListener(this);
+    }
 
-        requestBody.setOnFocusChangeListener(this);
-
+    private void setDateFormat(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         addedDate = simpleDateFormat.format(new Date());
     }
 
-    private void loadAllTeachers(){
-        try {
-            teachers$DB.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                        Teacher teacher = documentSnapshot.toObject(Teacher.class);
-                        teachers.add(teacher);
-                    }
-                    RequestAddingScoreAdapter pickTeacherAdapter = new RequestAddingScoreAdapter(getContext(), android.R.layout.simple_spinner_item, teachers);
-                    pickTeacherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    teacherSpinner.setAdapter(pickTeacherAdapter);
-                    teacherSpinner.setOnItemSelectedListener(DialogRequestAddingScore.this);
-                }
-            });
-        }catch (Exception e){
-            Log.d(TAG, "loadAllTeachers: " + e.getMessage());
-        }
+    /**
+     * Настройка диалогового окна
+     */
+
+    private void setDialogConfiguration(){
+        getDialog().setTitle(getResources().getString(R.string.make_request));
     }
 
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {}
+    /**
+     * Выгрузка всех учителей
+     */
 
-    public void sendRequest(String id,
-                            String body,
-                            String date,
-                            String getter,
-                            String image_path,
-                            String senderEmail,
-                            String firstName,
-                            String secondName,
-                            String lastName,
-                            int score,
-                            String groupID,
-                            String requestID,
-                            String optionID,
-                            boolean answered,
-                            boolean canceled,
-                            String senderID)
-    {
-        RequestAddingScore request = new RequestAddingScore(
-                id,
-                body,
-                date,
-                getter,
-                image_path,
-                senderEmail,
-                firstName,
-                secondName,
-                lastName,
-                score,
-                groupID,
-                requestID,
-                optionID,
-                answered,
-                canceled,
-                senderID);
-        if(counter1 == 0) {
-            requests$db
-                    .document(teacherRequestID)
-                    .collection("STUDENTS")
-                    .document(currentStudentID)
-                    .collection("REQUESTS")
-                    .add(request)
-                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "sendRequest: " + "teacherRequestID:" + teacherRequestID + "; currentStudentID:" + currentStudentID);
-                                String requestDocumentID = task.getResult().getId();
-                                task.getResult().update("id", requestDocumentID);
-                                Map<String, String> idField = new HashMap<>();
-                                idField.put("id", currentStudentID);
-                                requests$db
-                                        .document(teacherRequestID)
-                                        .collection("STUDENTS")
-                                        .document(currentStudentID)
-                                        .set(idField, SetOptions.merge());
-                            } else {
-                                Toast.makeText(getContext(), "Запрос не был отправлен", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-            counter1 = 1;
-        }
+    private void populateTeachersSpinner(){
+        Teacher.loadAllTeachersClasses(new Callback() {
+            @Override
+            public void execute(Object data, String... params) {
+                ArrayList<Teacher> teachers = (ArrayList<Teacher>) data;
+                RequestAddingScoreAdapter pickTeacherAdapter = new RequestAddingScoreAdapter(getContext(), android.R.layout.simple_spinner_item, teachers);
+                pickTeacherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                teacherSpinner.setAdapter(pickTeacherAdapter);
+                teacherSpinner.setOnItemSelectedListener(DialogRequestAddingScore.this);
+            }
+        });
+    }
+
+    /**
+     * Наполнение опций в спиннер
+     */
+
+    private void populateOptionsSpinner(View view){
+        ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(view.getContext(), R.array.options, android.R.layout.simple_spinner_item);
+        pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        options.setAdapter(pickOptionAdapter);
+        options.setOnItemSelectedListener(this);
     }
 
     @Override
     public void onClick(View v) {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+        String currentUserGroupID = sharedPreferences.getString(Student.GROUP_ID, "");
+        String currentStudentID = sharedPreferences.getString(Student.ID, "");
+        String firstName = sharedPreferences.getString(Student.FIRST_NAME, "");
+        String secondName = sharedPreferences.getString(Student.SECOND_NAME, "");
+        String senderImage = sharedPreferences.getString(Student.IMAGE_PATH, "");
         switch (v.getId()) {
             case R.id.ok: {
-                Log.d(TAG, "onClick: ok button was clicked");
                 String id = "";
                 String body = requestBody.getText().toString();
                 String date = addedDate;
@@ -267,32 +194,19 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
                             Student student = documentSnapshot.toObject(Student.class);
                             int currentLimitScore = Integer.parseInt(student.getLimitScore());
                             Log.d(TAG, "currentStudentLimitScore: " + currentLimitScore);
-                            if (currentLimitScore + 5 < scoreValue) {
+                            if(currentLimitScore + 5 < scoreValue) {
                                 try {
                                     Toast.makeText(getContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
                                     YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
                                 }catch (Exception e1){
                                     Log.d(TAG, "onEvent: " + e1.getMessage());
                                 }
-                            } else if (currentLimitScore + 5 >= scoreValue) {
-                                decreaseLimitScore(scoreValue);
+                            }else if (currentLimitScore + 5 >= scoreValue) {
+                                decreaseLimitScore(scoreValue, currentStudentID);
                                 sendRequest(
-                                        id,
-                                        body,
-                                        date,
-                                        getter,
-                                        image_path,
-                                        senderEmail,
-                                        firstName,
-                                        secondName,
-                                        "",
-                                        scoreValue,
-                                        groupID,
-                                        requestID,
-                                        option,
-                                        answered,
-                                        canceled,
-                                        currentStudentID
+                                        id, body, date, getter, image_path, senderEmail,
+                                        firstName, secondName, "", scoreValue, groupID,
+                                        requestID, option, answered, canceled, currentStudentID
                                 );
                                 try {
                                     Toast.makeText(getContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
@@ -333,72 +247,63 @@ public class DialogRequestAddingScore extends DialogFragment implements AdapterV
     @Override
     public void onNothingSelected(AdapterView<?> parent) {}
 
-    //    public void getSelectedOptionScore(String selectedOption){
-//        mDatabaseOptionsRef.child(selectedOption).addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                try {
-//                    optionValue = dataSnapshot.getValue(Option.class).getOption();
-//                    optionScore = dataSnapshot.getValue(Option.class).getScore();
-//                    Log.d(TAG, "onDataChange: " + optionValue + "/" + optionScore);
-//                    score.setText(Integer.toString(optionScore));
-//                }catch (Exception e){
-//                    Log.d(TAG, "onDataChange: " + e.getMessage());
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
+    /**
+     * Получить данные опции
+     * @param optionName        название опции
+     */
 
     private void getSelectedOptionScoreAndID(String optionName){
-        options$DB
-                .document(getString(R.string.promotionsID))
-                .collection("options")
-                .whereEqualTo("name", optionName)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+        User.getOptionData(new Callback() {
             @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                    Option option = documentSnapshot.toObject(Option.class);
-                    String points = option.getPoints();
-                    score.setText(points);
-                    optionID = option.getId();
-                    Log.d(TAG, "selected optionID: " + optionID);
-                }
+            public void execute(Object data, String... params) {
+                optionID = (String) data;
+                String optionScore = params[0];
+                score.setText(optionScore);
             }
-        });
+        }, optionName);
     }
 
-    public void decreaseLimitScore(int requestedScoreValue){
-        students$db
-            .document(currentStudentID)
-            .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    Student student = documentSnapshot.toObject(Student.class);
-                    if(!isDone) {
-                        String limitScore = student.getLimitScore();
-                        int limitScoreInteger = Integer.parseInt(limitScore);
-                        int result = limitScoreInteger - requestedScoreValue;
-                        String resultString = Integer.toString(result);
-                        if(result <= 0){
-                            resultString = "0";
-                            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
-                            Date currentDate = calendar.getTime();
-                            Map<String, Date> map = new HashMap<>();
-                            map.put("spendLimitScoreDate", currentDate);
-                            students$db.document(currentStudentID).set(map, SetOptions.merge());
-                        }
-                        students$db.document(currentStudentID).update("limitScore", resultString);
-                        Log.d(TAG, "decreaseLimitScore: " + resultString);
-                        isDone = true;
-                    }
-                }
-            });
+    /**
+     * Отправить запрос учителю на добавление очков
+     *
+     * @param id            id запроса
+     * @param body          текст запроса
+     * @param date          дата запроса
+     * @param getter        фио учителя к кому был этот запрос отпрален
+     * @param image_path    приклепленная фотография
+     * @param senderEmail   email ученика
+     * @param firstName     имя
+     * @param secondName    фамилия
+     * @param lastName      отчество
+     * @param score         очки
+     * @param groupID       id группы
+     * @param requestID     requestID учителя
+     * @param optionID      id опции за что ученик хочет чтобы ему начислели быллы
+     * @param answered      принят ли запрос
+     * @param canceled      отклонен ли запрос
+     * @param senderID      id ученика
+     */
+
+    public void sendRequest(
+            String id, String body, String date, String getter, String image_path, String senderEmail,
+            String firstName, String secondName, String lastName, int score, String groupID,
+            String requestID, String optionID, boolean answered, boolean canceled, String senderID)
+    {
+        RequestAddingScore request = new RequestAddingScore(
+                id, body, date, getter, image_path, senderEmail,
+                firstName, secondName, lastName, score, groupID,
+                requestID, optionID, answered, canceled, senderID);
+        Student.sendRequest(request);
+    }
+
+    /**
+     * Вычитание баллов на день за отправку запроса учителю
+     * @param requestedScoreValue       запрашиваемые очки
+     * @param studentId                 id ученика
+     */
+
+    public void decreaseLimitScore(int requestedScoreValue, String studentId){
+        Teacher.decreaseStudentLimitScore(null, requestedScoreValue, studentId);
     }
 
 }

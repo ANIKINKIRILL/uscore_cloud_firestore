@@ -302,4 +302,39 @@ public class Teacher {
         getTeacherPenalties.execute(asyncTaskArguments);
     }
 
+    /**
+     * Добавить очки студенту
+     * @param callback          Callback который вернётся полсе начисления очков
+     * @param studentID         id ученика
+     */
+
+    public static void addPointsToStudent(Callback callback, String studentID, int requestScore, String requestID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID, requestScore, requestID));
+        FirebaseServer.AddScoreToStudentMoreParameters addScoreToStudentMoreParameters = new FirebaseServer.AddScoreToStudentMoreParameters();
+        addScoreToStudentMoreParameters.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Выгрузка всех учителей
+     */
+
+    public static void loadAllTeachersClasses(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.LoadAllTeacherClasses loadAllTeacherClasses = new FirebaseServer.LoadAllTeacherClasses();
+        loadAllTeacherClasses.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Понизить очки ученика
+     * @param callback
+     * @param requestedScoreValue       очки
+     * @param studentId                 id ученика
+     */
+
+    public static void decreaseStudentLimitScore(Callback callback, int requestedScoreValue, String studentId){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(null, new AsyncTaskDataArgument(requestedScoreValue, studentId));
+        FirebaseServer.DecreaseStudentLimitScore decreaseStudentLimitScore = new FirebaseServer.DecreaseStudentLimitScore();
+        decreaseStudentLimitScore.execute(asyncTaskArguments);
+    }
+
 }
