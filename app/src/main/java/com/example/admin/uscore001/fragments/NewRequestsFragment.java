@@ -99,7 +99,6 @@ public class NewRequestsFragment extends Fragment {
                 /*
                         Перенаправляем пользвателя на фрагмент что у него нет новых заросов
                  */
-
                 Toast.makeText(getContext(), "У тебя нет новых запросов", Toast.LENGTH_SHORT).show();
 
             }

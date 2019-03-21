@@ -51,6 +51,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAdapter.RequestsViewHolder> {
 
+    private static final String TAG = "RecentRequestsAdapter";
     // Переменные
     private ArrayList<RequestAddingScore> requests = new ArrayList<>();
     private String group;
@@ -165,21 +166,30 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                        alertDialog.setPositiveButton("Да", new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
+                               /*
                                addScore(request.getScore(),
                                        request.getSenderID(),
                                        request.getId()
                                );
                                dialog.dismiss();
+                               */
+                               Toast.makeText(context, "В скором времени эта функция будет доступна, пока можете принять запрос на главном экране", Toast.LENGTH_SHORT).show();
+                               dialog.dismiss();
                            }
                        }).setNegativeButton("Нет", new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
+                               /*
                                cancelScore(
                                        request.getRequestID(),
                                        request.getSenderID(),
                                        request.getId(),
-                                       requestsViewHolder.cardViewlayout.getContext()
+                                       requestsViewHolder.cardViewlayout.getContext(),
+                                       requestsViewHolder
                                );
+                               dialog.dismiss();
+                               */
+                               Toast.makeText(context, "В скором времени эта функция будет доступна, пока можете отклонить запрос на главном экране", Toast.LENGTH_SHORT).show();
                                dialog.dismiss();
                            }
                        });
@@ -248,7 +258,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
      * Отменить добавление очков/Отменить запрос
      */
 
-    private void cancelScore(String teacherRequestID, String studentID, String id, Context context){
+    private void cancelScore(String teacherRequestID, String studentID, String id, Context context, RequestsViewHolder requestsViewHolder){
         reqeusts$DB
             .document(teacherRequestID)
             .collection("STUDENTS")

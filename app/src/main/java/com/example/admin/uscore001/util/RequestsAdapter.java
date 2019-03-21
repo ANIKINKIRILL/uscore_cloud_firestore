@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -45,6 +46,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
     private ArrayList<RequestAddingScore> requests = new ArrayList<>();
     private String group;
     private String option;
+    private DialogFragment dialog;
 
     // Firestore
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
@@ -78,8 +80,9 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
         }
     }
 
-    public RequestsAdapter(ArrayList<RequestAddingScore> requests) {
+    public RequestsAdapter(ArrayList<RequestAddingScore> requests, DialogFragment dialog) {
         this.requests = requests;
+        this.dialog = dialog;
     }
 
     @NonNull
@@ -112,12 +115,17 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
             @Override
             public void onClick(View v) {
                 Teacher.addPointsToStudent(
-                        mAddPointsToStudent, request.getSenderID(),
+                        new Callback() {
+                            @Override
+                            public void execute(Object data, String... params) {
+                                Log.d(TAG, "execute: was modified");
+                                Toast.makeText(App.context, (String) data, Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            }
+                        }, request.getSenderID(),
                         request.getScore(),
                         request.getId()
                 );
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
             }
         });
 
@@ -127,10 +135,8 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
                 cancelScore(
                     requestsViewHolder.teacherRequestID,
                     requestsViewHolder.senderID.getText().toString(),
-                    requestsViewHolder.requestID.getText().toString(), v
+                    requestsViewHolder.requestID.getText().toString(), v, requestsViewHolder
                 );
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
-                requestsViewHolder.cardViewLayout.setVisibility(View.GONE);
             }
         });
 
@@ -181,7 +187,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
      * @param view              view
      */
 
-    private void cancelScore(String teacherRequestID, String studentID, String id, View view){
+    private void cancelScore(String teacherRequestID, String studentID, String id, View view, RequestsViewHolder requestsViewHolder){
         reqeusts$DB
             .document(teacherRequestID)
             .collection("STUDENTS")
@@ -195,6 +201,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.Reques
                     if(task.isSuccessful()){
                         Log.d(TAG, "request canceled field just has been changed: true");
                         Toast.makeText(view.getContext(), "Вы отклонили запрос", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
                     }else{
                         Log.d(TAG, "request canceled field han not been changed: false die to" + task.getException().getMessage());
                     }

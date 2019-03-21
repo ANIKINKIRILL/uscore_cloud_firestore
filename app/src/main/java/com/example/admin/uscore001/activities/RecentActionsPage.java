@@ -1,6 +1,7 @@
 package com.example.admin.uscore001.activities;
 
 import android.content.SharedPreferences;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -154,6 +156,7 @@ public class RecentActionsPage extends AppCompatActivity implements View.OnClick
         adapter.addFragment(new NegativeRequestsFragment(), getResources().getString(R.string.negative_tab));
         adapter.addFragment(new PenaltyFragment(), "Штрафы");
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(5);
         tabs.setupWithViewPager(viewPager);
     }
 

@@ -87,6 +87,7 @@ public class DialogRequestAddingScore extends DialogFragment implements
     String addedDate;
     private String optionID;
     private String teacherRequestID;
+    private static int counter = 0;
 
     // Firebase
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -174,6 +175,7 @@ public class DialogRequestAddingScore extends DialogFragment implements
         String senderImage = sharedPreferences.getString(Student.IMAGE_PATH, "");
         switch (v.getId()) {
             case R.id.ok: {
+                counter = 0;
                 String id = "";
                 String body = requestBody.getText().toString();
                 String date = addedDate;
@@ -191,29 +193,37 @@ public class DialogRequestAddingScore extends DialogFragment implements
                     .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            Student student = documentSnapshot.toObject(Student.class);
-                            int currentLimitScore = Integer.parseInt(student.getLimitScore());
-                            Log.d(TAG, "currentStudentLimitScore: " + currentLimitScore);
-                            if(currentLimitScore + 5 < scoreValue) {
-                                try {
-                                    Toast.makeText(getContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
-                                    YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
-                                }catch (Exception e1){
-                                    Log.d(TAG, "onEvent: " + e1.getMessage());
+                            if(counter == 0) {
+                                Student student = documentSnapshot.toObject(Student.class);
+                                int currentLimitScore = Integer.parseInt(student.getLimitScore());
+                                Log.d(TAG, "currentStudentLimitScore: " + currentLimitScore);
+                                // Запрашиваемые баллы больше чем баллы которые остались на день
+                                if (currentLimitScore + 5 < scoreValue) {
+                                    try {
+                                        Toast.makeText(getContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
+                                        YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
+                                    } catch (Exception e1) {
+                                        Log.d(TAG, "onEvent: " + e1.getMessage());
+                                    }
                                 }
-                            }else if (currentLimitScore + 5 >= scoreValue) {
-                                decreaseLimitScore(scoreValue, currentStudentID);
-                                sendRequest(
-                                        id, body, date, getter, image_path, senderEmail,
-                                        firstName, secondName, "", scoreValue, groupID,
-                                        requestID, option, answered, canceled, currentStudentID
-                                );
-                                try {
-                                    Toast.makeText(getContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
-                                    getDialog().dismiss();
-                                }catch (Exception e1){
-                                    Log.d(TAG, "toast message: " + e1.getMessage());
+                                // Баллы, котрые даются на день хватает для отправки запроса
+                                else if (currentLimitScore + 5 >= scoreValue) {
+                                    // Уменьшаем баллы, которые даются на дент
+                                    decreaseLimitScore(scoreValue, currentStudentID);
+                                    // Отправляем запрос
+                                    sendRequest(
+                                            id, body, date, getter, image_path, senderEmail,
+                                            firstName, secondName, "", scoreValue, groupID,
+                                            requestID, option, answered, canceled, currentStudentID
+                                    );
+                                    try {
+                                        Toast.makeText(getContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
+                                        getDialog().dismiss();
+                                    } catch (Exception e1) {
+                                        Log.d(TAG, "toast message: " + e1.getMessage());
+                                    }
                                 }
+                                counter = 1;
                             }
                         }
                     });

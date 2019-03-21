@@ -519,8 +519,8 @@ public class FirebaseServer {
             Callback callback = asyncTaskArguments[0].mCallback;
             String score = (String) asyncTaskArguments[0].mData.data[0];
             String studentID = (String) asyncTaskArguments[0].mData.data[1];
-            String studentScoreNow = (String) STUDENTS$DB.document(studentID).get().getResult().get("score");
-            String resultScore = Integer.toString(Integer.parseInt(studentScoreNow) + Integer.parseInt(score));
+            int studentScoreNow = (int) STUDENTS$DB.document(studentID).get().getResult().get("score");
+            int resultScore = studentScoreNow + Integer.parseInt(score);
             STUDENTS$DB.document(studentID).update("score", resultScore);
             String message = "Вы успешно добавили очки";
             callback.execute(message);
@@ -774,10 +774,31 @@ public class FirebaseServer {
             teacherNewRequests.clear();
             Callback callback = asyncTaskArguments[0].mCallback;
             String teacherRequestID = (String) asyncTaskArguments[0].mData.data[0];
-            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+//            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                @Override
+//                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+//                        documentSnapshot.getReference().collection("REQUESTS")
+//                            .whereEqualTo("answered", false)
+//                            .whereEqualTo("canceled", false)
+//                            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+//                                @Override
+//                                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+//                                    for(DocumentSnapshot requestDocSnapshot : queryDocumentSnapshots.getDocuments()){
+//                                        RequestAddingScore request = requestDocSnapshot.toObject(RequestAddingScore.class);
+//                                        teacherNewRequests.add(request);
+//                                    }
+//                                    callback.execute(teacherNewRequests);
+//                                }
+//                            });
+//                    }
+//                }
+//            });
+
+            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
                         documentSnapshot.getReference().collection("REQUESTS")
                             .whereEqualTo("answered", false)
                             .whereEqualTo("canceled", false)
@@ -910,30 +931,53 @@ public class FirebaseServer {
     public static class AddScoreToStudentMoreParameters extends AsyncTask<AsyncTaskArguments, Void, Void>{
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            counter = 0;
             SharedPreferences sharedPreferences = App.context.getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
             String teacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
             Callback callback = asyncTaskArguments[0].mCallback;
             String studentID = (String)asyncTaskArguments[0].mData.data[0];
             int requestScore = (int)asyncTaskArguments[0].mData.data[1];
             String requestID = (String)asyncTaskArguments[0].mData.data[2];
-            STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//            STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                @Override
+//                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                    if(counter == 0) {
+//                        if (task.isSuccessful()) {
+//                            Student selectedStudent = task.getResult().toObject(Student.class);
+//                            int old_score = selectedStudent.getScore();
+//                            Log.d(TAG, "onComplete: " + old_score);
+//                            int result = old_score + requestScore;
+//                            Log.d(TAG, "onComplete: " + result);
+//                            STUDENTS$DB.document(studentID).update("score", result);
+//                            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+//                                    .document(requestID).update("answered", true);
+//                            callback.execute("Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName());
+//                        } else {
+//                            callback.execute(task.getException().getMessage());
+//                        }
+//                        counter = 1;
+//                    }
+//                }
+//            });
+
+            STUDENTS$DB.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if(task.isSuccessful()) {
-                            Student selectedStudent = task.getResult().toObject(Student.class);
-                            int old_score = selectedStudent.getScore();
-                            Log.d(TAG, "onComplete: " + old_score);
-                            int result = old_score + requestScore;
-                            Log.d(TAG, "onComplete: " + result);
-                            STUDENTS$DB.document(studentID).update("score", result);
-                            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
-                                    .document(requestID).update("answered", true);
-                            callback.execute("Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName());
-                    }else{
-                        callback.execute(task.getException().getMessage());
+                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                    if(counter == 0) {
+                        Student selectedStudent = documentSnapshot.toObject(Student.class);
+                        int old_score = selectedStudent.getScore();
+                        Log.d(TAG, "onComplete: " + old_score);
+                        int result = old_score + requestScore;
+                        Log.d(TAG, "onComplete: " + result);
+                        STUDENTS$DB.document(studentID).update("score", result);
+                        REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+                                .document(requestID).update("answered", true);
+                        callback.execute("Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName());
+                        counter = 1;
                     }
                 }
             });
+
             return null;
         }
     }
@@ -969,9 +1013,9 @@ public class FirebaseServer {
                                     .document(senderID)
                                     .set(idField, SetOptions.merge());
                             }
+                            counter1 = 1;
                         }
                     });
-                counter1 = 1;
             }
             return null;
         }
@@ -1062,9 +1106,9 @@ public class FirebaseServer {
                             STUDENTS$DB.document(studentId).update("limitScore", resultString);
                             Log.d(TAG, "decreaseLimitScore: " + resultString);
                         }
+                        counter2 = 1;
                     }
                 });
-            counter2 = 1;
             return null;
         }
     }

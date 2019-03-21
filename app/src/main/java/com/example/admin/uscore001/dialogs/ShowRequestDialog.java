@@ -94,7 +94,7 @@ public class ShowRequestDialog extends DialogFragment implements View.OnClickLis
         @Override
         public void execute(Object data, String... params) {
             ArrayList<RequestAddingScore> requests = (ArrayList<RequestAddingScore>) data;
-            RequestsAdapter adapter = new RequestsAdapter(requests);
+            RequestsAdapter adapter = new RequestsAdapter(requests, ShowRequestDialog.this);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
         }
