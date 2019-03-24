@@ -512,18 +512,27 @@ public class FirebaseServer {
     /**
      * Добавление очков к ученику
      */
-
+    static int counter3 = 0;
     public static class AddScoreToStudent extends AsyncTask<AsyncTaskArguments, Void, Void>{
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            counter3 = 0;
             Callback callback = asyncTaskArguments[0].mCallback;
             String score = (String) asyncTaskArguments[0].mData.data[0];
             String studentID = (String) asyncTaskArguments[0].mData.data[1];
-            int studentScoreNow = (int) STUDENTS$DB.document(studentID).get().getResult().get("score");
-            int resultScore = studentScoreNow + Integer.parseInt(score);
-            STUDENTS$DB.document(studentID).update("score", resultScore);
-            String message = "Вы успешно добавили очки";
-            callback.execute(message);
+            int studentScore = (int) asyncTaskArguments[0].mData.data[2];
+            STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(counter3 == 0) {
+                        int resultScore = studentScore + Integer.parseInt(score);
+                        STUDENTS$DB.document(studentID).update("score", resultScore);
+                        String message = "Вы успешно добавили очки";
+                        callback.execute(message);
+                    }
+                    counter3 = 1;
+                }
+            });
             return null;
         }
     }
@@ -970,8 +979,12 @@ public class FirebaseServer {
                         int result = old_score + requestScore;
                         Log.d(TAG, "onComplete: " + result);
                         STUDENTS$DB.document(studentID).update("score", result);
-                        REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
-                                .document(requestID).update("answered", true);
+                        try {
+                            REQEUSTS$DB.document(teacherRequestID).collection("STUDENTS").document(studentID).collection("REQUESTS")
+                                    .document(requestID).update("answered", true);
+                        }catch (Exception e1){
+                            Log.d(TAG, "onEvent: " + e1.getMessage());
+                        }
                         callback.execute("Успешно добавленно к " + selectedStudent.getFirstName() + " " + selectedStudent.getSecondName());
                         counter = 1;
                     }

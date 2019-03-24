@@ -204,8 +204,8 @@ public class Teacher {
      * @param studentID ID ученика
      */
 
-    public static void addScoreToStudent(Callback callback, String score, String studentID){
-        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(score, studentID));
+    public static void addScoreToStudent(Callback callback, String score, String studentID, int studentScore){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(score, studentID, studentScore));
         FirebaseServer.AddScoreToStudent addScoreToStudent = new FirebaseServer.AddScoreToStudent();
         addScoreToStudent.execute(asyncTaskArguments);
     }

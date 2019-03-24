@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -37,7 +38,10 @@ import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.models.User;
 import com.example.admin.uscore001.util.GlideApp;
+import com.example.admin.uscore001.util.GlideAppModule;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -93,10 +97,14 @@ public class dashboard_activity extends AppCompatActivity implements
     private String intentMessageDecoded;
     private String studentID;
     private String scoreString;
+    private String currentUserScore;
 
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
+
+    static FirebaseFirestore firebaseFirestore2 = FirebaseFirestore.getInstance();
+    static CollectionReference STUDENTS$DB = firebaseFirestore2.collection("STUDENTS$DB");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -528,6 +536,7 @@ public class dashboard_activity extends AppCompatActivity implements
             String intentMessage = result.getContents();
             try {
                 intentMessageDecoded = URLDecoder.decode(intentMessage, "UTF-8");
+                Log.d(TAG, "intentMessageDecoded: " + intentMessageDecoded);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -556,7 +565,7 @@ public class dashboard_activity extends AppCompatActivity implements
 
                 // Очки ученика на данный момент
                 int indexOfA = messageWithoutSpaces.lastIndexOf("а");
-                String currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
+                currentUserScore = messageWithoutSpaces.substring(indexOfA+2);
                 Log.d(TAG, "currentUserScore: " + currentUserScore);
 
 
@@ -570,7 +579,15 @@ public class dashboard_activity extends AppCompatActivity implements
             alertDialog.setButton(Dialog.BUTTON_POSITIVE, getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    addScoreToStudent(scoreString.substring(1).trim(), studentID);
+                    counter1 = 0;
+                    try {
+                        String scoreToAdd = scoreString.substring(1).trim();
+                        String studentId = studentID.trim();
+                        String studentScore = currentUserScore;
+                        Teacher.addScoreToStudent(mAddScoreToStudent, scoreToAdd, studentId, Integer.parseInt(studentScore));
+                    }catch (Exception e){
+                        Log.d(TAG, "qr code scanning error die to: " + e.getMessage());
+                    }
                     alertDialog.dismiss();
                 }
             });
@@ -586,19 +603,15 @@ public class dashboard_activity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /**
-     * Добавление очков к ученику
-     */
-
-    public void addScoreToStudent(String requestedScore, String studentID){
-        Teacher.addScoreToStudent(mAddScoreToStudent, requestedScore, studentID);
-    }
-
+    int counter1 = 0;
     Callback mAddScoreToStudent = new Callback() {
         @Override
         public void execute(Object data, String... params) {
-            String message = (String) data;
-            Toast.makeText(dashboard_activity.this, message, Toast.LENGTH_SHORT).show();
+            if(counter1 == 0) {
+                String message = (String) data;
+                Toast.makeText(dashboard_activity.this, message, Toast.LENGTH_SHORT).show();
+                counter1 = 1;
+            }
         }
     };
 

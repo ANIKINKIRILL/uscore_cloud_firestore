@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.Settings;
 import com.example.admin.uscore001.models.Student;
 import com.example.admin.uscore001.models.Teacher;
 import com.google.firebase.auth.FirebaseAuth;
@@ -118,8 +119,8 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
         currentStudentID = sharedPreferences.getString(Student.ID, "");
         currentLimitScore = sharedPreferences.getString(Student.LIMIT_SCORE, "");
-        studentFIO = sharedPreferences.getString(Student.FIRST_NAME, "") + sharedPreferences.getString(Student.SECOND_NAME, "");
-        studentGroupName = sharedPreferences.getString(Student.GROUP_NAME, "");
+        studentFIO = sharedPreferences.getString(Student.FIRST_NAME, "") + " " + sharedPreferences.getString(Student.SECOND_NAME, "");
+        studentGroupName = Settings.getGroupName();
         studentScore = sharedPreferences.getInt(Student.SCORE, 0);
     }
 
