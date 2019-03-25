@@ -1,8 +1,8 @@
 package com.example.admin.uscore001.fragments;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,15 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.StudentRegisterRequestModel;
+import com.example.admin.uscore001.models.Teacher;
 import com.example.admin.uscore001.util.StudentRegisterRequestRecyclerViewAdapter;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -31,45 +27,56 @@ import java.util.ArrayList;
 
 public class AllRegisterRequests extends Fragment {
 
-    // widgets
+    // Виджеты
     RecyclerView recyclerView;
 
-    // Firebase
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference student_register_requests = firebaseFirestore.collection("STUDENT_REGISTER_REQUESTS");
-
-    // vars
+    // Переменные
     String teacherID;
-    ArrayList<StudentRegisterRequestModel> requestModels = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.all_register_requests, container, false);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        teacherID = sharedPreferences.getString("teacherID", "");
+        getTeacherData();
         init(view);
-        loadAllRequests();
+        getRegistrationRequests();
         return view;
     }
+
+    /**
+     * Инициализация виджетов
+     */
 
     private void init(View view){
         recyclerView = view.findViewById(R.id.recyclerView);
     }
 
-    private void loadAllRequests(){
-        student_register_requests.whereEqualTo("teacherID", teacherID).addSnapshotListener(allTeacherRegisterRequests);
+    /**
+     * Получение данных учителя
+     */
+
+    private void getTeacherData(){
+        try {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
+        }catch (Exception e){
+            e.getMessage();
+        }
     }
 
-    EventListener<QuerySnapshot> allTeacherRegisterRequests = new EventListener<QuerySnapshot>() {
+    /**
+     * Получить все запросы учителя на регистрацию ученика
+     */
+
+    private void getRegistrationRequests(){
+        Teacher.getRegistrationRequests(mGetRegistrationRequestsCallback, teacherID);
+    }
+
+    private Callback mGetRegistrationRequestsCallback = new Callback() {
         @Override
-        public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-            requestModels.clear();
-            for(DocumentSnapshot request : queryDocumentSnapshots.getDocuments()){
-                StudentRegisterRequestModel model = request.toObject(StudentRegisterRequestModel.class);
-                requestModels.add(model);
-            }
-            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requestModels, getContext());
+        public void execute(Object data, String... params) {
+            ArrayList<StudentRegisterRequestModel> requests = (ArrayList) data;
+            StudentRegisterRequestRecyclerViewAdapter adapter = new StudentRegisterRequestRecyclerViewAdapter(requests, getContext());
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
         }

@@ -85,6 +85,9 @@ public class FirebaseServer {
     private static ArrayList<RequestAddingScore> teacherNegativeRequests = new ArrayList<>();
     private static ArrayList<Penalty> teacherPenalties = new ArrayList<>();
     private static ArrayList<Teacher> teachersClasses = new ArrayList<>();
+    private static ArrayList<StudentRegisterRequestModel> registrationRequests = new ArrayList<>();
+    private static ArrayList<StudentRegisterRequestModel> confirmedRegistrationRequests = new ArrayList<>();
+    private static ArrayList<StudentRegisterRequestModel> deniedRegistrationRequests = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -1159,6 +1162,78 @@ public class FirebaseServer {
                         }
                         counter4 = 1;
                     }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить запросы учителя на регистрацию ученика в системе
+     */
+
+    public static class GetRegistrationRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            registrationRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherID = (String) asyncTaskArguments[0].mData.data[0];
+            STUDENT_REGISTER_REQUESTS.whereEqualTo("teacherID", teacherID).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        StudentRegisterRequestModel request = documentSnapshot.toObject(StudentRegisterRequestModel.class);
+                        registrationRequests.add(request);
+                    }
+                    callback.execute(registrationRequests);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить принятые запросы учителя на регистрацию ученика в системе
+     */
+
+    public static class GetConfirmedRegistrationRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            confirmedRegistrationRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherID = (String) asyncTaskArguments[0].mData.data[0];
+            STUDENT_REGISTER_REQUESTS.whereEqualTo("teacherID", teacherID).whereEqualTo("confirmed", true).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        StudentRegisterRequestModel request = documentSnapshot.toObject(StudentRegisterRequestModel.class);
+                        confirmedRegistrationRequests.add(request);
+                    }
+                    callback.execute(confirmedRegistrationRequests);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить отклоненные запросы учителя на регистрацию ученика в системе
+     */
+
+    public static class GetDeniedRegistrationRequests extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            deniedRegistrationRequests.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String teacherID = (String) asyncTaskArguments[0].mData.data[0];
+            STUDENT_REGISTER_REQUESTS.whereEqualTo("teacherID", teacherID).whereEqualTo("denied", true).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        StudentRegisterRequestModel request = documentSnapshot.toObject(StudentRegisterRequestModel.class);
+                        deniedRegistrationRequests.add(request);
+                    }
+                    callback.execute(deniedRegistrationRequests);
                 }
             });
             return null;

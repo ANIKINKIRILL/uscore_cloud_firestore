@@ -33,11 +33,15 @@ import com.jakewharton.processphoenix.ProcessPhoenix;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Адаптер для регистрации ученика в системе
+ */
+
 public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adapter<StudentRegisterRequestRecyclerViewAdapter.StudentRegisterRequestRecyclerViewViewHolder> {
 
     private static final String TAG = "StudentRegisterRequestR";
 
-    // vars
+    // Переменные
     ArrayList<StudentRegisterRequestModel> requestModels = new ArrayList<>();
     String teacherEmail;
     int counter = 0;
@@ -51,12 +55,9 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
 
     public StudentRegisterRequestRecyclerViewAdapter(ArrayList<StudentRegisterRequestModel> requestModels, Context context) {
         this.requestModels = requestModels;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-//        teacherEmail = sharedPreferences.getString(context.getString(R.string.intentTeacherEmail), "");
     }
 
     static class StudentRegisterRequestRecyclerViewViewHolder extends RecyclerView.ViewHolder{
-
         TextView fullName, email;
         CardView cardView;
         public StudentRegisterRequestRecyclerViewViewHolder(@NonNull View itemView) {
@@ -107,6 +108,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                     alertDialog.setMessage(message);
                     alertDialog.setPositiveButton("Да", new DialogInterface.OnClickListener() {
                         @Override
+
                         public void onClick(DialogInterface dialog, int which) {
                             // Регистрация пользователя в системе
                             firebaseAuth.createUserWithEmailAndPassword(email, "qwerty").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -114,23 +116,23 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
                                         // Создание обьекта класса Student
-//                                        Student student = new Student(email, model.getGroupID(),
-//                                                "", "0", "",
-//                                                "30", model.getTeacherID(), firstName,
-//                                                secondName, lastName,
-//                                                "y1igExymzKFaV3BU8zH8");
-//                                         Добавление в базу
+                                        Student student = new Student(email, model.getGroupID(),
+                                               "", 0, "",
+                                               "30", model.getTeacherID(), firstName,
+                                               secondName, lastName,
+                                               "y1igExymzKFaV3BU8zH8");
+                                        // Добавление в базу
                                         if(counter == 0) {
-//                                            student$db.add(student).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-//                                                @Override
-//                                                public void onComplete(@NonNull Task<DocumentReference> task) {
-//                                                    String documentID = task.getResult().getId();
-//                                                    HashMap<String, String> idMap = new HashMap<>();
-//                                                    idMap.put("id", documentID);
-//                                                    task.getResult().set(idMap, SetOptions.merge());
-//                                                }
-//                                            });
-//                                            counter = 1;
+                                           student$db.add(student).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                               @Override
+                                               public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                   String documentID = task.getResult().getId();
+                                                   HashMap<String, String> idMap = new HashMap<>();
+                                                   idMap.put("id", documentID);
+                                                   task.getResult().set(idMap, SetOptions.merge());
+                                               }
+                                           });
+                                           counter = 1;
                                         }
                                         // Изменение confirmed -> true
                                         student_register_requests$db.document(model.getId()).update("confirmed", true);

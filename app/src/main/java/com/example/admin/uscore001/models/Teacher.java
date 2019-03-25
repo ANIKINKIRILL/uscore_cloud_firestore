@@ -349,4 +349,40 @@ public class Teacher {
         decreaseStudentScore.execute(asyncTaskArguments);
     }
 
+    /**
+     * Получить запросы учителя на регистрацию ученика в системе
+     * @param callback      callback
+     * @param teacherID     id учителя
+     */
+
+    public static void getRegistrationRequests(Callback callback, String teacherID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID));
+        FirebaseServer.GetRegistrationRequests getRegistrationRequests = new FirebaseServer.GetRegistrationRequests();
+        getRegistrationRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить принятые запросы учителя на регистрацию ученика в системе
+     * @param callback      callback
+     * @param teacherID     id учителя
+     */
+
+    public static void getConfirmedRegistrationRequests(Callback callback, String teacherID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID));
+        FirebaseServer.GetConfirmedRegistrationRequests getConfirmedRegistrationRequests = new FirebaseServer.GetConfirmedRegistrationRequests();
+        getConfirmedRegistrationRequests.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить отклоненные запросы учителя на регистрацию ученика в системе
+     * @param callback      callback
+     * @param teacherID     id учителя
+     */
+
+    public static void getDeniedRegistrationRequests(Callback callback, String teacherID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID));
+        FirebaseServer.GetDeniedRegistrationRequests getDeniedRegistrationRequests = new FirebaseServer.GetDeniedRegistrationRequests();
+        getDeniedRegistrationRequests.execute(asyncTaskArguments);
+    }
+
 }

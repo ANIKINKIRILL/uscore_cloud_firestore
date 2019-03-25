@@ -245,7 +245,6 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 User.isAuthenticated = true;
                 Log.d(TAG, "signedIn: with login:" + Settings.getLogin() + "\n" +
                                      "password: " + Settings.getPassword() + "\n");
-                signIn.setEnabled(true);
                 String pickedGroup = (String) groupsSpinner.getSelectedItem();
                 Settings.setGroupName(pickedGroup);
             }else{
@@ -281,7 +280,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(goToDashboard);
             finish();
-
+            signIn.setEnabled(true);
         }
     };
 
