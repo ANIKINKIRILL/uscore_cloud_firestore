@@ -54,7 +54,7 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
     TextView emailAddress, score, group, username;
     TextView rateInGroup, rateInSchool, status;
     Button addCommentButton;
-    TextView showAllComments, ratingHint;
+    TextView showAllComments;
 
 
     // Переменные
@@ -111,7 +111,6 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
 
     private void init(){
         circleImageView = findViewById(R.id.imageView);
-        ratingHint = findViewById(R.id.ratingHint);
         emailAddress = findViewById(R.id.emailAddress);
         score = findViewById(R.id.score);
         group = findViewById(R.id.group);
@@ -171,7 +170,6 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
      */
 
     private void setStudentDetailData(){
-        ratingHint.setText(getResources().getString(R.string.notYoursRatingScoreHint));
         if(intentImageView.isEmpty()) {
             Glide.with(getApplicationContext()).load("https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png").into(circleImageView);
         }else {
@@ -179,8 +177,8 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
         }
         emailAddress.setText(intentEmail);
         username.setText(intentUsername);
-        score.setText(intentScore);
-        group.setText(intentGroup);
+        score.setText(intentScore + " (Очков)");
+        group.setText(intentGroup + " (Группа)");
         status.setText("Ученик");
     }
 

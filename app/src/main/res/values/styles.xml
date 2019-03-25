@@ -12,4 +12,9 @@
     <style name="ActivityNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@color/startblue_transparent</item>
     </style>
+
+    <!--ProgressBar Loading Style -->
+    <style name="ProgressBar">
+        <item name="colorAccent">@android:color/white</item>
+    </style>
 </resources>

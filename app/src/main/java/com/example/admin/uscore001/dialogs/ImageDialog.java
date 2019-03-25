@@ -61,7 +61,7 @@ public class ImageDialog extends DialogFragment implements View.OnClickListener{
      */
 
     private void configureDialog(){
-        getDialog().setTitle("Моя аватарка");
+        getDialog().setTitle("Фотография");
     }
 
     @Override

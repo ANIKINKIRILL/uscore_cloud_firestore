@@ -118,10 +118,12 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
             public void onClick(View v) {
                 // Если пользователь нажал на свою cardview
                 if(student.getId().equals(Settings.getUserId())){
+                    Log.d(TAG, "пользователь нажал на свою cardview");
                     Intent intent = new Intent(studentRecyclerViewHolder.cardViewLayout.getContext(), StudentProfile_activity2.class);
                     studentRecyclerViewHolder.cardViewLayout.getContext().startActivity(intent);
                 // Если пользователь нажал на чужую cardview
                 }else {
+                    Log.d(TAG, "пользователь нажал на чужую cardview");
                     Intent intent = new Intent(studentRecyclerViewHolder.cardViewLayout.getContext(), StudentDetailPage.class);
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentScore), studentRecyclerViewHolder.score.getText().toString());
                     intent.putExtra(studentRecyclerViewHolder.cardViewLayout.getContext().getString(R.string.intentGroup), studentRecyclerViewHolder.group.getText().toString());

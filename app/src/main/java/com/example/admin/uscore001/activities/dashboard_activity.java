@@ -61,6 +61,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 /**
  * Главное активити
  */
@@ -86,6 +88,7 @@ public class dashboard_activity extends AppCompatActivity implements
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ImageView notification_alarm;
+    CircleImageView userAvatar;
     android.support.v7.widget.Toolbar toolbar;
 
     // Переменные
@@ -138,13 +141,14 @@ public class dashboard_activity extends AppCompatActivity implements
      */
 
     private void init(){
+        userAvatar = findViewById(R.id.userAvatar);
         requestNumber = findViewById(R.id.requestNumber);
         notification_alarm = findViewById(R.id.notification_alarm);
         limitScoreView = findViewById(R.id.limitScore);
         navigationView = findViewById(R.id.navigationView);
 
         username = findViewById(R.id.username);
-        username.setText(currentUser.getEmail());
+        // username.setText(currentUser.getEmail());
 
         myProfileCardView = findViewById(R.id.myProfileCardView);
         myProfileCardView.setOnClickListener(this);
@@ -394,6 +398,8 @@ public class dashboard_activity extends AppCompatActivity implements
             Log.d(TAG, "teacher statusID: " + statusID);
             if (image_path.isEmpty()) {
                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+            }else{
+                GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
             }
             SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -413,6 +419,8 @@ public class dashboard_activity extends AppCompatActivity implements
             SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
             editorSettings.putString(Settings.USER_ID, teacherID);
             editorSettings.apply();
+
+            username.setText(teacherLastName + "." + teacherFirstName.substring(0,1)+ "." + teacherSecondName.substring(0,1));
 
             User.getUserGroupName(mGetUserGroupNameCallback, groupID);
 
@@ -738,6 +746,8 @@ public class dashboard_activity extends AppCompatActivity implements
             String image_path = student.getImage_path();
             if(image_path.isEmpty()){
                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+            }else{
+                GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
             }
             limitScore = student.getLimitScore();
             String studentID = student.getId();
@@ -762,6 +772,8 @@ public class dashboard_activity extends AppCompatActivity implements
             SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
             editorSettings.putString(Settings.USER_ID, id);
             editorSettings.apply();
+
+            username.setText("Привет, " + firstName);
 
             limitScoreView.setText("Осталось");
 

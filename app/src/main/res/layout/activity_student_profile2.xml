@@ -8,9 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/graylight"
@@ -31,6 +29,7 @@
                 android:layout_height="wrap_content">
             <ProgressBar
                 android:id="@+id/progressBar"
+                android:theme="@style/ProgressBar"
                 android:layout_centerInParent="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -81,57 +80,81 @@
                         android:layout_height="wrap_content"
                         android:text=""
                         android:textStyle="bold"
-                        android:textSize="20sp"
+                        tools:text="13/4"
+                        android:textSize="18sp"
                         android:paddingTop="10dp"
                         android:textColor="@color/startblue"/>
-
                 </LinearLayout>
+
                 <LinearLayout
-                    android:id="@+id/schoolLayout"
-                    android:gravity="center"
+                    android:layout_weight="3"
                     android:orientation="vertical"
+                    android:gravity="center"
                     android:layout_width="0dp"
-                    android:layout_weight="1.5"
                     android:layout_height="match_parent">
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/school"
+                        android:text="Рейтинг"
                         android:textSize="20sp"
-                        />
-                    <TextView
-                        android:id="@+id/rateInSchool"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textStyle="bold"
-                        android:textSize="20sp"
-                        android:paddingTop="10dp"
-                        android:textColor="@color/startblue"/>
+                        android:layout_margin="5dp"
+                        android:gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
-                </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/groupLayout"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:layout_width="0dp"
-                    android:layout_weight="1.5"
-                    android:layout_height="match_parent">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/group"
-                        android:textSize="20sp"
-                        />
-                    <TextView
-                        android:id="@+id/rateInGroup"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textStyle="bold"
-                        android:textSize="20sp"
-                        android:paddingTop="10dp"
-                        android:textColor="@color/startblue"/>
+                    <LinearLayout
+                        android:weightSum="3"
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:id="@+id/schoolLayout"
+                            android:gravity="center|top"
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_weight="1.5"
+                            android:layout_height="match_parent">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/school"
+                                android:textSize="18sp"
+                                />
+                            <TextView
+                                android:id="@+id/rateInSchool"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=""
+                                android:textStyle="bold"
+                                android:textSize="18sp"
+                                tools:text="3"
+                                android:paddingTop="10dp"
+                                android:textColor="@color/startblue"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/groupLayout"
+                            android:gravity="center|top"
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_weight="1.5"
+                            android:layout_height="match_parent">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/group"
+                                android:textSize="18sp"
+                                />
+                            <TextView
+                                android:id="@+id/rateInGroup"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=""
+                                android:textStyle="bold"
+                                android:textSize="18sp"
+                                android:paddingTop="10dp"
+                                tools:text="5"
+                                android:textColor="@color/startblue"/>
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -141,7 +164,7 @@
                 <TextView
                     android:id="@+id/status"
                     android:layout_margin="5dp"
-                    android:text=""
+                    tools:text="Ученик"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </RelativeLayout>
@@ -155,27 +178,6 @@
         android:orientation="vertical"
         android:layout_gravity="center"
         android:layout_marginTop="5dp">
-
-        <RelativeLayout
-            android:layout_marginStart="75dp"
-            android:layout_toRightOf="@id/userEmailLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/pointerImage"
-                android:src="@drawable/ic_pointer"
-                android:layout_width="50dp"
-                android:layout_height="50dp" />
-            <TextView
-                android:id="@+id/ratingHint"
-                android:layout_marginEnd="0dp"
-                android:textColor="@color/startblue_transparent"
-                android:layout_below="@id/pointerImage"
-                android:text="@string/yoursRatingScoreHint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </RelativeLayout>
-
         <LinearLayout
             android:id="@+id/userEmailLayout"
             android:orientation="horizontal"
@@ -189,13 +191,15 @@
             <TextView
                 android:id="@+id/emailAddress"
                 android:textStyle="bold"
+                tools:text="ky.anikin@mail.ru"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
                 android:text=""/>
         </LinearLayout>
-        <LinearLayout
+
+        <RelativeLayout
             android:layout_below="@id/userEmailLayout"
             android:id="@+id/scoreLayout"
             android:layout_marginTop="25dp"
@@ -204,18 +208,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
             <ImageView
+                android:id="@+id/scoreIcon"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:src="@drawable/ic_filter_9_plus_black_24dp"/>
             <TextView
                 android:id="@+id/score"
+                android:layout_toEndOf="@id/scoreIcon"
+                android:layout_centerVertical="true"
                 android:textStyle="bold"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
+                tools:text="2500 (Очков)"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
-                android:text=""/>
-        </LinearLayout>
+                android:text="(Очков)"/>
+        </RelativeLayout>
         <LinearLayout
             android:layout_below="@id/scoreLayout"
             android:id="@+id/groupBottomLayout"
@@ -232,10 +240,11 @@
                 android:id="@+id/group"
                 android:textStyle="bold"
                 android:layout_gravity="center_vertical"
+                tools:text="10-5 (Группа)"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="20dp"
-                android:text=""/>
+                android:text="(Группа)"/>
         </LinearLayout>
         <LinearLayout
             android:layout_below="@id/groupBottomLayout"

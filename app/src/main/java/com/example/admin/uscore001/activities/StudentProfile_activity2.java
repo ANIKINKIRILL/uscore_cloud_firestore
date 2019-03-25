@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -137,8 +138,8 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
         rateInSchool.setText(rateStudentInSchool);
         email.setText(studentEmail);
         username.setText(firstName + " " + secondName);
-        group.setText(groupName);
-        score.setText(Integer.toString(studentScore));
+        group.setText(groupName + " (Группа)");
+        score.setText(Integer.toString(studentScore) + " (Очков)");
         userStatus.setText("Ученик");
         countAddedCanceledScore.setText(studentConfirmedRequestsAmount+"/"+studentDeniedRequestsAmount);
 
@@ -165,6 +166,12 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.student_profile_activity_menu, menu);
+        return true;
     }
 
     @Override
