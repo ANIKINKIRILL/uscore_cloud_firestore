@@ -3,10 +3,8 @@ package com.example.admin.uscore001.dialogs;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,18 +16,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Option;
 import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.Student;
+import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.User;
+import com.example.admin.uscore001.util.RegisterActivityGroupAdapter;
+import com.example.admin.uscore001.util.StudentNameArrayAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -43,36 +41,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Активити 'Оштрафовать ученика' (Пользователь -> Учитель)
+ */
 
-public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnItemSelectedListener{
+public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener{
 
     private static final String TAG = "MakePenaltyDialog";
 
-    // widgets
+    // Виджеты
     private Spinner groupsPickerSpinner, studentPickerSpinner, optionSpinner;
-    private TextView scoreTextView, ok, cancel, optionID, studentIDTextView;
+    private TextView scoreTextView, ok, cancel, optionID;
 
-    // vars
-    private String selectedGroup;
-    private String selectedStudent;
+    // Переменные
     private String selectedOption;
-    private ArrayList<String> allStudentsFromPickedGroup = new ArrayList<>();
     private Context context;
-    private String selectedEmailStudentFromPickedGroup;
-    private int counter = 1;
-    private String pickedGroupID;
-    private String studentID;
     private String currentTeacherRequestID;
     private String currentTeacherID;
+    private String studentID;
+    private String groupId;
 
     // Firebase
-    DatabaseReference mDatabaseOptionsRef = FirebaseDatabase.getInstance().getReference("DefaultPenalty");
-    DatabaseReference mRefStudents = FirebaseDatabase.getInstance().getReference("Students");
-
-    // Firestore
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
-    CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
     CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
     CollectionReference reqeusts$DB = firebaseFirestore.collection("REQEUSTS$DB");
 
@@ -81,165 +71,194 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.make_penalty, container, false);
         try {
+            // try catch блок из-за возникновения проблемы с context`ом, так как после закрытия активити context = null
             context = inflater.getContext();
         }catch (Exception e){
             e.getMessage();
         }
+
         init(view);
+        dialogConfiguration();
+        getTeacherData();
+        getSchoolGroups();
+        populatePenaltySpinner();
 
         return view;
     }
 
+    /**
+     * Инициализация виджетов
+     * @param view      на чем находяться виджеты
+     */
     private void init(View view){
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        currentTeacherRequestID = sharedPreferences.getString("intentTeacherRequestID", "");
-        currentTeacherID = sharedPreferences.getString("teacherID", "");
-
-        getDialog().setTitle("Понизить очки");
-
         groupsPickerSpinner = view.findViewById(R.id.groupsPickerSpinner);
         studentPickerSpinner = view.findViewById(R.id.studentPickerSpinner);
         optionSpinner = view.findViewById(R.id.optionSpinner);
         scoreTextView = view.findViewById(R.id.scoreTextView);
-        studentIDTextView = view.findViewById(R.id.studentIDTextView);
         optionID = view.findViewById(R.id.optionID);
         ok = view.findViewById(R.id.ok);
         cancel = view.findViewById(R.id.cancel);
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        ok.setOnClickListener(this);
+        cancel.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.cancel:{
                 getDialog().dismiss();
+                break;
             }
-        });
+            case R.id.ok:{
+                if(!scoreTextView.getText().toString().trim().isEmpty()){
+                    // Внесение данных/наказания в БД
+                    addPenaltyToHistory(optionID.getText().toString(), groupId, studentID, scoreTextView.getText().toString());
+                    // Понижения баллов
+                    decreaseStudentScore(studentID, Integer.parseInt(scoreTextView.getText().toString()));
+                }
+                break;
+            }
+        }
+    }
 
-        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(view.getContext(), R.array.groupsWithoutTeachers, android.R.layout.simple_spinner_item);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        groupsPickerSpinner.setAdapter(arrayAdapter);
-        groupsPickerSpinner.setOnItemSelectedListener(this);
+    /**
+     * Настройки дилогового окна
+     */
 
-        ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(view.getContext(), R.array.defaultPenalty, android.R.layout.simple_spinner_item);
-        pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        optionSpinner.setAdapter(pickOptionAdapter);
-        optionSpinner.setOnItemSelectedListener(this);
+    private void dialogConfiguration(){
+        getDialog().setTitle("Штраф ученика");
+    }
 
+    /**
+     * Получение requestID учителя
+     * id учителя
+     */
+
+    private void getTeacherData(){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+        currentTeacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
+        currentTeacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
+    }
+
+    /**
+     * Получить список всех групп со школы
+     */
+
+    private void getSchoolGroups(){
+        User.getAllSchoolGroups(mGetAllSchoolGroupsCallback);
+    }
+
+    private Callback mGetAllSchoolGroupsCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            populateGroupSpinner((ArrayList<Group>) data);
+        }
+    };
+
+    /**
+     * Заполнение адаптера с выбором групп
+     */
+
+    private void populateGroupSpinner(ArrayList<Group> groups){
+        // try catch блок из-за возникновения проблемы с context`ом, так как после закрытия активити context = null
+        try {
+            RegisterActivityGroupAdapter groupAdapter = new RegisterActivityGroupAdapter(context, groups);
+            groupsPickerSpinner.setAdapter(groupAdapter);
+            groupsPickerSpinner.setOnItemSelectedListener(this);
+        }catch (Exception e){
+            e.getMessage();
+        }
+    }
+
+    /**
+     * Заполнение адаптера с выбором наказаний
+     */
+
+    private void populatePenaltySpinner(){
+        // try catch блок из-за возникновения проблемы с context`ом, так как после закрытия активити context = null
+        try {
+            ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(context, R.array.defaultPenalty, android.R.layout.simple_spinner_item);
+            pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            optionSpinner.setAdapter(pickOptionAdapter);
+            optionSpinner.setOnItemSelectedListener(this);
+        }catch (Exception e){
+            e.getMessage();
+        }
     }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         switch (adapterView.getId()){
+            // пользователь нажал на спиннер с выбором групп
             case R.id.groupsPickerSpinner:{
-                allStudentsFromPickedGroup.clear();
-                selectedGroup = adapterView.getSelectedItem().toString();
-                Log.d(TAG, "selected group: " + selectedGroup);
-                getGroupIdByGroupName(selectedGroup);
+                Group group = (Group) adapterView.getSelectedItem();
+                groupId = group.getId();
+                Student.loadGroupStudentsByGroupID(groupId, null, mGetAllGroupStudents);
                 break;
             }
+            // пользователь нажал на спиннер с выбором наказаний
             case R.id.optionSpinner:{
                 selectedOption = adapterView.getSelectedItem().toString();
                 Toast.makeText(getContext(), selectedOption, Toast.LENGTH_SHORT).show();
                 getSelectedOptionScore(selectedOption);
                 break;
             }
-        }
-    }
-
-    private void getGroupIdByGroupName(String selectedGroupName){
-        groups$DB.whereEqualTo("name", selectedGroupName).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                    Group group = documentSnapshot.toObject(Group.class);
-                    pickedGroupID = group.getId();
-                    loadAllGroupStudents(pickedGroupID);
-                    Log.d(TAG, "picked groupID: " + pickedGroupID);
-                }
+            // пользователь нажал на спиннер с выбором ученика
+            case R.id.studentPickerSpinner:{
+                Student student = (Student) adapterView.getSelectedItem();
+                studentID = student.getId();
+                break;
             }
-        });
+        }
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView){}
 
+    private Callback mGetAllGroupStudents = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Student> selectedGroupStudentsList = (ArrayList) data;
+            StudentNameArrayAdapter adapter = new StudentNameArrayAdapter(context, selectedGroupStudentsList);
+            studentPickerSpinner.setAdapter(adapter);
+            studentPickerSpinner.setOnItemSelectedListener(MakePenaltyDialog.this);
+        }
+    };
+
+    /**
+     * Получить очки наказания
+     * @param selectedOption        название наказания
+     */
+
     public void getSelectedOptionScore(String selectedOption){
         options$DB
-                .document(getString(R.string.penaltiesID))
-                .collection("options")
-                .whereEqualTo("name", selectedOption)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                            Option option = documentSnapshot.toObject(Option.class);
-                            String optionScore = option.getPoints();
-                            String optionIDValue = option.getId();
-                            scoreTextView.setText(optionScore);
-                            optionID.setText(optionIDValue);
-                            Log.d(TAG, "optionScore: " + scoreTextView.getText().toString());
-                            Log.d(TAG, "optionID: " + optionID.getText().toString());
-                        }
+            .document(getString(R.string.penaltiesID))
+            .collection("options")
+            .whereEqualTo("name", selectedOption)
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Option option = documentSnapshot.toObject(Option.class);
+                        String optionScore = option.getPoints();
+                        String optionIDValue = option.getId();
+                        scoreTextView.setText(optionScore);
+                        optionID.setText(optionIDValue);
+                        Log.d(TAG, "optionScore: " + scoreTextView.getText().toString());
+                        Log.d(TAG, "optionID: " + optionID.getText().toString());
                     }
-                });
-    }
-
-    public void loadAllGroupStudents(String pickedGroupID){
-        students$DB.whereEqualTo("groupID", pickedGroupID).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                for(DocumentSnapshot dataSnapshot : queryDocumentSnapshots.getDocuments()){
-                    Student student = dataSnapshot.toObject(Student.class);
-                    allStudentsFromPickedGroup.add(student.getFirstName() + " " + student.getSecondName());
                 }
-                createStudentsAdapter(pickedGroupID);
-                Log.d(TAG, "groups student amount: " + allStudentsFromPickedGroup.size());
-            }
-        });
+            });
     }
 
-    public void createStudentsAdapter(String pickedGroupID){
-        Log.d(TAG, "createStudentsAdapter pickedGroupID: " + pickedGroupID);
-        ArrayAdapter<String> studentsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, allStudentsFromPickedGroup);
-        studentsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        studentPickerSpinner.setAdapter(studentsAdapter);
-        studentPickerSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedStudent = adapterView.getSelectedItem().toString();
-                getStudentIDByGroupIDAndCredentials(pickedGroupID, selectedStudent);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView){}
-        });
-        ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loadPickedStudentEmail(pickedGroupID, selectedStudent);
-                // add penalty to the history "recent page"
-                String optionIDValue = optionID.getText().toString();
-                addPenaltyToHistory(optionIDValue, pickedGroupID, studentIDTextView.getText().toString(), scoreTextView.getText().toString());
-                getDialog().dismiss();
-                Toast.makeText(context, "Вы оштрафовали " + selectedStudent + " на " + scoreTextView.getText().toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    public void getStudentIDByGroupIDAndCredentials(String pickedGroupID, String selectedStudent){
-        String[] selectedStudentNameWords = selectedStudent.split(" ");
-        students$DB
-                .whereEqualTo("groupID", pickedGroupID)
-                .whereEqualTo("firstName", selectedStudentNameWords[0])
-                .whereEqualTo("secondName", selectedStudentNameWords[1])
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                            Student student = documentSnapshot.toObject(Student.class);
-                            studentIDTextView.setText(student.getId());
-                        }
-                    }
-                });
-    }
+    /**
+     * Внесение данных/наказания в БД
+     * @param optionID      id наказания
+     * @param groupID       id группы ученика
+     * @param studentID     id ученика
+     * @param score         очки наказания
+     */
 
     private void addPenaltyToHistory(String optionID, String groupID, String studentID, String score){
         Log.d(TAG, "addPenaltyToHistory: optionId: " + optionID + "groupID: " + groupID + "studentID: " + studentID + "scoreID: " + score);
@@ -268,54 +287,15 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
             });
     }
 
-    private void decreaseStudentScore(String groupID, String points, String selectedEmailStudentFromPickedGroup){
-        Log.d(TAG, "decreaseStudentScore: " + groupID + " " + selectedEmailStudentFromPickedGroup);
-        students$DB
-                .whereEqualTo("groupID", groupID)
-                .whereEqualTo("email", selectedEmailStudentFromPickedGroup)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                        for(DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()) {
-                            Student student = documentSnapshot.toObject(Student.class);
-                            if (counter != 0) {
-//                                String currentScore = student.getScore();
-                                String currentStudentID = student.getId();
-//                                int currentScoreInt = Integer.parseInt(currentScore);
-                                int pointsInt = Integer.parseInt(points);
-//                                int result = currentScoreInt - pointsInt;
-//                                if (result < 0) {
-//                                    result = 0;
-//                                }
-//                                String resultString = Integer.toString(result);
-//                                student.setScore(resultString);
-//                                students$DB.document(currentStudentID).update("score", resultString);
-                                counter = 0;
-                            }
-                        }
-                    }
-                });
+    /**
+     * Оштрафовать ученика
+     * @param studentID         id ученика
+     * @param scoreToDecrease   очки на которые учитель штрафует учинка
+     */
+
+    private void decreaseStudentScore(String studentID, int scoreToDecrease){
+        Teacher.decreaseStudentScore(studentID, scoreToDecrease);
+        getDialog().dismiss();
+        Toast.makeText(context, "Вы оштрафовали ученика. Для более детальной инфармации смотреть в своей истории", Toast.LENGTH_SHORT).show();
     }
-
-    public void loadPickedStudentEmail(String pickedGroupID, String username){
-        String[] fullNameWords = username.split(" ");
-        Log.d(TAG, "loadPickedStudentEmail: " + fullNameWords[0] + " " + fullNameWords[1]);
-        students$DB
-            .whereEqualTo("groupID", pickedGroupID)
-            .whereEqualTo("firstName", fullNameWords[0])
-            .whereEqualTo("secondName", fullNameWords[1])
-            .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                        Student student = documentSnapshot.toObject(Student.class);
-                        selectedEmailStudentFromPickedGroup = student.getEmail();
-                        Log.d(TAG, "selected student email: " + selectedEmailStudentFromPickedGroup);
-                        decreaseStudentScore(pickedGroupID, scoreTextView.getText().toString(), selectedEmailStudentFromPickedGroup);
-                    }
-                }
-            });
-    }
-
-
 }

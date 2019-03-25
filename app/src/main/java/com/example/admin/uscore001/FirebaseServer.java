@@ -203,16 +203,24 @@ public class FirebaseServer {
             STUDENTS$DB.whereEqualTo("groupID", groupID).orderBy("score", Query.Direction.DESCENDING).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    String rateInGroup = "";
-                    if(task.isSuccessful()){
-                        for(DocumentSnapshot documentSnapshot : task.getResult().getDocuments()){
+                    if(studentID != null) {
+                        String rateInGroup = "";
+                        if (task.isSuccessful()) {
+                            for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
+                                Student student = documentSnapshot.toObject(Student.class);
+                                studentsByGroupID.add(student);
+                                if (student.getId().equals(studentID)) {
+                                    rateInGroup = Integer.toString(studentsByGroupID.indexOf(student) + 1);
+                                }
+                            }
+                            callback.execute(studentsByGroupID, rateInGroup);
+                        }
+                    }else{
+                        for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
                             Student student = documentSnapshot.toObject(Student.class);
                             studentsByGroupID.add(student);
-                            if(student.getId().equals(studentID)){
-                                rateInGroup = Integer.toString(studentsByGroupID.indexOf(student) + 1);
-                            }
                         }
-                        callback.execute(studentsByGroupID, rateInGroup);
+                        callback.execute(studentsByGroupID);
                     }
                 }
             });
@@ -1125,5 +1133,37 @@ public class FirebaseServer {
             return null;
         }
     }
+
+    /**
+     * Оштрафовать ученика
+     */
+    static int counter4 = 0;
+    public static class DecreaseStudentScore extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            counter4 = 0;
+            String studentID = (String) asyncTaskArguments[0].mData.data[0];
+            int scoreToDecrease = (int) asyncTaskArguments[0].mData.data[1];
+            STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(counter4 == 0) {
+                        if (task.isSuccessful()) {
+                            Student student = task.getResult().toObject(Student.class);
+                            int studentScore = student.getScore();
+                            int resultScore = studentScore - scoreToDecrease;
+                            if (resultScore < 0) {
+                                resultScore = 0;
+                            }
+                            task.getResult().getReference().update("score", resultScore);
+                        }
+                        counter4 = 1;
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
 
 }

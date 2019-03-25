@@ -51,16 +51,6 @@
         android:layout_height="60dp" />
 
     <TextView
-        android:visibility="invisible"
-        android:textSize="22sp"
-        android:gravity="center"
-        tools:text="10000"
-        android:layout_below="@id/optionSpinner"
-        android:id="@+id/studentIDTextView"
-        android:layout_width="match_parent"
-        android:layout_height="60dp" />
-
-    <TextView
         android:padding="10dp"
         android:textColor="@color/startblue_transparent"
         android:id="@+id/ok"
