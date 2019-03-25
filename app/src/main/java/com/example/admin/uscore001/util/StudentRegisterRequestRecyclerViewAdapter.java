@@ -108,7 +108,6 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                     alertDialog.setMessage(message);
                     alertDialog.setPositiveButton("Да", new DialogInterface.OnClickListener() {
                         @Override
-
                         public void onClick(DialogInterface dialog, int which) {
                             // Регистрация пользователя в системе
                             firebaseAuth.createUserWithEmailAndPassword(email, "qwerty").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
