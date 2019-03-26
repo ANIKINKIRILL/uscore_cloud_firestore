@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/layout"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <Spinner
+        android:gravity="center"
+        android:id="@+id/teacherSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+    </Spinner>
+
+    <Spinner
+        android:layout_below="@id/teacherSpinner"
+        android:gravity="center"
+        android:id="@+id/options"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+    </Spinner>
+
+    <TextView
+        android:enabled="false"
+        android:padding="25dp"
+        android:layout_below="@id/options"
+        android:id="@+id/score"
+        android:gravity="center"
+        android:hint="Выбери за что ты хочешь получить баллы "
+        android:textColor="@android:color/black"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:singleLine="true"
+        android:layout_below="@id/score"
+        android:layout_above="@id/buttonsLayout"
+        android:hint="@string/description"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:id="@+id/requestBody"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_alignParentBottom="true"
+        android:weightSum="100"
+        android:padding="30dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+    <TextView
+        android:gravity="center"
+        android:layout_weight="50"
+        android:textColor="@color/startblue_transparent"
+        android:id="@+id/ok"
+        android:text="ОТПРАВИТЬ"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:gravity="center"
+        android:layout_weight="50"
+        android:textColor="@color/startblue_transparent"
+        android:id="@+id/cancel"
+        android:text="ОТМЕНА"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/scoreInvisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</RelativeLayout>

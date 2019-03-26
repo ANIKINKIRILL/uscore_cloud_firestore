@@ -248,8 +248,12 @@ public class dashboard_activity extends AppCompatActivity implements
             }
             case R.id.makeRequest:{
                 if(Integer.parseInt(limitScore) != 0) {
+                    /*
                     DialogRequestAddingScore dialogRequestAddingScore = new DialogRequestAddingScore();
                     dialogRequestAddingScore.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                    */
+                    Intent intent = new Intent(this, RequestAddingScoreActivity.class);
+                    startActivity(intent);
                 }else{
                     checkSpendLimitScoreDateAndCurrentDate(menu);
                 }
