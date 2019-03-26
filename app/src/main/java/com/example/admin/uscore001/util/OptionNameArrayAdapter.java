@@ -10,34 +10,35 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.admin.uscore001.R;
-import com.example.admin.uscore001.models.Group;
-import com.example.admin.uscore001.models.Teacher;
+import com.example.admin.uscore001.models.Option;
+import com.example.admin.uscore001.models.Penalty;
+import com.example.admin.uscore001.models.Student;
 
 import java.util.ArrayList;
 
 /**
- * Адаптер для отображения item учителя при регистрации ученика системе
+ * Адаптер для отображения item опции
  */
 
-public class RegisterActivityGroupAdapter extends ArrayAdapter {
+public class OptionNameArrayAdapter extends ArrayAdapter{
 
-    ArrayList<Group> groups = new ArrayList<>();
+    ArrayList<Option> penalties = new ArrayList<>();
     Context context;
 
-    public RegisterActivityGroupAdapter(@NonNull Context context, ArrayList<Group> groups) {
-        super(context, R.layout.register_activity_group_item);
-        this.groups = groups;
+    public OptionNameArrayAdapter(@NonNull Context context, ArrayList<Option> penalties) {
+        super(context, R.layout.register_activity_teacher_item);
+        this.penalties = penalties;
         this.context = context;
     }
 
     @Override
     public int getCount() {
-        return groups.size();
+        return penalties.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return groups.get(position);
+        return penalties.get(position);
     }
 
     @Override
@@ -49,21 +50,24 @@ public class RegisterActivityGroupAdapter extends ArrayAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         ViewHolder holder;
-        Group group = groups.get(position);
+        Option penalty = penalties.get(position);
         if(view != null){
             holder = (ViewHolder) view.getTag();
         }else{
-            view = LayoutInflater.from(context).inflate(R.layout.register_activity_group_item, null, false);
+            view = LayoutInflater.from(context).inflate(R.layout.register_activity_teacher_item, null, false);
             holder = new ViewHolder();
-            holder.groupName = view.findViewById(R.id.groupName);
+            holder.optionName = view.findViewById(R.id.teacherName);
             view.setTag(holder);
         }
-        holder.groupName.setText(group.getName());
+
+        holder.optionName.setText(penalty.getName());
+        holder.optionName.setTextColor(getContext().getResources().getColor(R.color.grayColor));
+
         return view;
     }
 
     static class ViewHolder{
-        TextView groupName;
+        TextView optionName;
     }
 
 }

@@ -134,6 +134,13 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.MakePenaltyActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MakePenaltyActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!--<service android:name=".FirebaseMessagingService">-->
             <!--<intent-filter>-->
                 <!--<action android:name="com.google.firebase.MESSAGING_EVENT" />-->

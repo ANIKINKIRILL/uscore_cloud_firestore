@@ -53,23 +53,23 @@
         android:layout_width="match_parent"
         android:layout_height="100dp">
 
-    <TextView
-        android:gravity="center"
-        android:layout_weight="50"
-        android:textColor="@color/startblue_transparent"
-        android:id="@+id/ok"
-        android:text="ОТПРАВИТЬ"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <TextView
+            android:gravity="center"
+            android:layout_weight="50"
+            android:textColor="@color/startblue_transparent"
+            android:id="@+id/ok"
+            android:text="ОТПРАВИТЬ"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    <TextView
-        android:gravity="center"
-        android:layout_weight="50"
-        android:textColor="@color/startblue_transparent"
-        android:id="@+id/cancel"
-        android:text="ОТМЕНА"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <TextView
+            android:gravity="center"
+            android:layout_weight="50"
+            android:textColor="@color/startblue_transparent"
+            android:id="@+id/cancel"
+            android:text="ОТМЕНА"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <TextView
             android:visibility="gone"

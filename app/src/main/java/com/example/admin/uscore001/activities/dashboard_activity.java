@@ -285,8 +285,14 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.makePenalty:{
+                /*
                 MakePenaltyDialog dialog = new MakePenaltyDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                */
+
+                Intent intent = new Intent(this, MakePenaltyActivity.class);
+                startActivity(intent);
+
                 break;
             }
             case R.id.studentRegisterRequests:{

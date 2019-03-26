@@ -6,8 +6,11 @@
 
     <TextView
         android:id="@+id/teacherName"
-        android:textSize="20sp"
-        tools:text="TEACHER NAME"
+        android:textSize="18sp"
+        android:padding="10dp"
+        android:textColor="@color/grayColor"
+        android:gravity="center"
+        tools:text="Роберт Альбертович Абзалов"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

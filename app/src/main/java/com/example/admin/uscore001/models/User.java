@@ -1,6 +1,7 @@
 package com.example.admin.uscore001.models;
 
 import android.support.annotation.NonNull;
+import android.telecom.Call;
 
 import com.example.admin.uscore001.AsyncTaskArguments;
 import com.example.admin.uscore001.AsyncTaskDataArgument;
@@ -122,6 +123,17 @@ public class User {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(option_name));
         FirebaseServer.GetOptionData getOptionData = new FirebaseServer.GetOptionData();
         getOptionData.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить список наказаний
+     * @param callback      callback
+     */
+
+    public static void getAllPenaltiesList(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.GetAllPenaltiesList getAllPenaltiesList = new FirebaseServer.GetAllPenaltiesList();
+        getAllPenaltiesList.execute(asyncTaskArguments);
     }
 
 }

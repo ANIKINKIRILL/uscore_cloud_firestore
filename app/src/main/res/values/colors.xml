@@ -23,6 +23,7 @@
     <color name="canceledColor">#d95335</color>
     <color name="inProcessColor">#5aa4d2</color>
     <color name="penaltyColor">#B1AEAE</color>
+    <color name="grayColor">#838282</color>
 
     <color name="signInButton">#3e6c89</color>
 

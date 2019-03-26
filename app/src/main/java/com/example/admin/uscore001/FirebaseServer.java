@@ -88,6 +88,7 @@ public class FirebaseServer {
     private static ArrayList<StudentRegisterRequestModel> registrationRequests = new ArrayList<>();
     private static ArrayList<StudentRegisterRequestModel> confirmedRegistrationRequests = new ArrayList<>();
     private static ArrayList<StudentRegisterRequestModel> deniedRegistrationRequests = new ArrayList<>();
+    private static ArrayList<Option> allPenaltiesList = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -1234,6 +1235,29 @@ public class FirebaseServer {
                         deniedRegistrationRequests.add(request);
                     }
                     callback.execute(deniedRegistrationRequests);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить список наказаний
+     */
+
+    public static class GetAllPenaltiesList extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            allPenaltiesList.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            OPTIONS$DB.document("6oemB2Fxo1hyrWrrNQ07").collection("options").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Option penalty = documentSnapshot.toObject(Option.class);
+                        allPenaltiesList.add(penalty);
+                    }
+                    callback.execute(allPenaltiesList);
                 }
             });
             return null;

@@ -6,70 +6,76 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <Spinner
-        android:padding="15dp"
-        android:layout_marginBottom="10dp"
-        android:layout_centerHorizontal="true"
+        android:gravity="center"
         android:id="@+id/groupsPickerSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="100dp"/>
 
     <Spinner
-        android:padding="15dp"
-        android:layout_marginBottom="10dp"
-        android:layout_centerHorizontal="true"
+        android:gravity="center"
         android:layout_below="@+id/groupsPickerSpinner"
         android:id="@+id/studentPickerSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="100dp"/>
 
     <Spinner
-        android:padding="15dp"
-        android:layout_marginBottom="10dp"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/studentPickerSpinner"
+        android:textColor="@color/grayColor"
         android:id="@+id/optionSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="100dp"/>
 
     <TextView
-        android:textSize="22sp"
-        android:gravity="center"
-        tools:text="10000"
-        android:layout_below="@id/optionSpinner"
         android:id="@+id/scoreTextView"
         android:layout_width="match_parent"
-        android:layout_height="60dp" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/optionSpinner"
+        android:gravity="center"
+        android:padding="25dp"
+        android:textSize="20sp"
+        android:textColor="@color/grayColor"
+        tools:text="Штраф: 100" />
 
     <TextView
         android:visibility="invisible"
-        android:textSize="22sp"
-        android:gravity="center"
-        tools:text="10000"
-        android:layout_below="@id/optionSpinner"
         android:id="@+id/optionID"
-        android:layout_width="match_parent"
-        android:layout_height="60dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-    <TextView
-        android:padding="10dp"
-        android:textColor="@color/startblue_transparent"
-        android:id="@+id/ok"
-        android:layout_margin="10dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/scoreTextView"
-        android:text="@string/ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    <TextView
-        android:padding="10dp"
-        android:textColor="@color/startblue_transparent"
-        android:id="@+id/cancel"
-        android:layout_margin="10dp"
-        android:layout_toLeftOf="@id/ok"
-        android:layout_below="@id/scoreTextView"
-        android:text="@string/cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_alignParentBottom="true"
+        android:weightSum="100"
+        android:padding="30dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <TextView
+            android:gravity="center"
+            android:layout_weight="50"
+            android:textColor="@color/startblue_transparent"
+            android:id="@+id/ok"
+            android:text="ОШТРАФОВАТЬ"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:gravity="center"
+            android:layout_weight="50"
+            android:textColor="@color/startblue_transparent"
+            android:id="@+id/cancel"
+            android:text="ОТМЕНА"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/scoreInvisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 
 

@@ -59,7 +59,7 @@ public class StudentNameArrayAdapter extends ArrayAdapter{
         }
 
         holder.studentName.setText(student.getFirstName() + " " + student.getSecondName());
-        holder.studentName.setTextSize(20);
+        holder.studentName.setTextColor(getContext().getResources().getColor(R.color.grayColor));
 
         return view;
     }

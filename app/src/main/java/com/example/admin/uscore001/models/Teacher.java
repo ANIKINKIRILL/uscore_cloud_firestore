@@ -384,5 +384,4 @@ public class Teacher {
         FirebaseServer.GetDeniedRegistrationRequests getDeniedRegistrationRequests = new FirebaseServer.GetDeniedRegistrationRequests();
         getDeniedRegistrationRequests.execute(asyncTaskArguments);
     }
-
 }
