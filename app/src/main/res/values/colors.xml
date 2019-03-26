@@ -18,10 +18,11 @@
     <color name="currentStudentCardViewColor">#E7E5E5</color>
     <color name="groupCardViewColor">#B1AEAE</color>
 
-    <color name="addedColor">#5ca95c</color>
+    <color name="addedColor">#EB5CA95C</color>
     <color name="newColor">#a9a55c</color>
     <color name="canceledColor">#d95335</color>
     <color name="inProcessColor">#5aa4d2</color>
+    <color name="penaltyColor">#B1AEAE</color>
 
     <color name="signInButton">#3e6c89</color>
 

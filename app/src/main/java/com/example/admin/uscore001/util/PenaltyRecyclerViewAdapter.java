@@ -1,5 +1,7 @@
 package com.example.admin.uscore001.util;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.admin.uscore001.R;
+import com.example.admin.uscore001.models.Group;
 import com.example.admin.uscore001.models.Option;
 import com.example.admin.uscore001.models.Penalty;
 import com.example.admin.uscore001.models.Student;
@@ -33,19 +36,23 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
     // Firebase
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     private CollectionReference options$db = firebaseFirestore.collection("OPTIONS$DB");
+    private CollectionReference groups$DB = firebaseFirestore.collection("GROUPS$DB");
     private CollectionReference students$DB = firebaseFirestore.collection("STUDENTS$DB");
     private CollectionReference teachers$DB = firebaseFirestore.collection("TEACHERS$DB");
 
     public class PenaltyRecyclerViewHolder extends RecyclerView.ViewHolder{
-        TextView date, score, option, username;
+        TextView date, score, username, option,group;
         CardView cardViewlayout;
+        View  dividerLine;
         public PenaltyRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             date = itemView.findViewById(R.id.date);
             score = itemView.findViewById(R.id.score);
-            option = itemView.findViewById(R.id.result);
             username = itemView.findViewById(R.id.teacherName);
             cardViewlayout = itemView.findViewById(R.id.cardViewLayout);
+            dividerLine = itemView.findViewById(R.id.dividerLine);
+            option = itemView.findViewById(R.id.option);
+            group = itemView.findViewById(R.id.group);
         }
     }
 
@@ -73,13 +80,58 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
         String studentID = penalty.getStudentID();
         String teacherID = penalty.getTeacherID();
 
+        // Установка divider
+        if(penaltyArrayList.indexOf(penalty)+1!=penaltyArrayList.size()) {
+            penaltyRecyclerViewHolder.dividerLine.setBackgroundColor(penaltyRecyclerViewHolder.cardViewlayout.
+                    getResources().getColor(R.color.penaltyColor));
+        }
+
         if(isTeacher){
-            setOptionScoreStudent(date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, true, false);
+            setData(groupID, date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, true, false);
         }
 
         if(isStudent){
-            setOptionScoreStudent(date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, false, true);
+            setData(groupID, date, optionID, score, studentID, teacherID, penaltyRecyclerViewHolder, false, true);
         }
+
+        /*
+         * Нажатие на view
+         */
+
+        penaltyRecyclerViewHolder.cardViewlayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String date = penalty.getDate();
+                String option = penaltyRecyclerViewHolder.option.getText().toString();
+                String score = penalty.getScore();
+                String userName = penaltyRecyclerViewHolder.username.getText().toString();
+                String group = penaltyRecyclerViewHolder.group.getText().toString();
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(penaltyRecyclerViewHolder.cardViewlayout.getContext());
+                alertDialog.setTitle("Подробная информация о штрафе").setPositiveButton("Хорошо", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                if(isStudent) {
+                    alertDialog.setMessage("Учитель: " + userName + "\n" +
+                            "Причина штрафа: " + option + "\n" +
+                            "Штраф: " + score + "\n" +
+                            "Дата: " + date);
+                }
+                if(isTeacher) {
+                    alertDialog.setMessage("Ученик: " + userName + "\n" +
+                            "Группа: " + group + "\n" +
+                            "Причина штрафа: " + option + "\n" +
+                            "Штраф: " + score + "\n" +
+                            "Дата: " + date);
+                }
+                alertDialog.show();
+            }
+        });
+
+
+
 
     }
 
@@ -88,7 +140,7 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
         return penaltyArrayList.size();
     }
 
-    private void setOptionScoreStudent(String date, String optionID, String score, String studentID,
+    private void setData(String groupID, String date, String optionID, String score, String studentID,
                                        String teacherID, PenaltyRecyclerViewHolder penaltyRecyclerViewHolder,
                                        boolean isTeacher, boolean isStudent){
         options$db.document("6oemB2Fxo1hyrWrrNQ07").collection("options").document(optionID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -98,8 +150,9 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
                 penaltyRecyclerViewHolder.option.setText(option.getName());
             }
         });
-        penaltyRecyclerViewHolder.score.setText(score);
-        penaltyRecyclerViewHolder.date.setText(date);
+        penaltyRecyclerViewHolder.score.setText("Очки: " + score);
+        penaltyRecyclerViewHolder.date.setText("Дата: " + date);
+
         if(isTeacher) {
             students$DB.document(studentID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
@@ -108,7 +161,14 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
                     penaltyRecyclerViewHolder.username.setText(student.getFirstName() + " " + student.getSecondName());
                 }
             });
+            groups$DB.document(groupID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                    penaltyRecyclerViewHolder.group.setText(documentSnapshot.toObject(Group.class).getName());
+                }
+            });
         }
+
         if(isStudent){
             teachers$DB.document(teacherID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
@@ -118,6 +178,7 @@ public class PenaltyRecyclerViewAdapter extends RecyclerView.Adapter<PenaltyRecy
                 }
             });
         }
+
     }
 
 }

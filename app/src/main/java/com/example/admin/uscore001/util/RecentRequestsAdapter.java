@@ -68,15 +68,16 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
 
     public class RequestsViewHolder extends RecyclerView.ViewHolder{
-        TextView date, score, result, teacherName;
+        TextView date, score, teacherName;
         CardView cardViewlayout;
+        View dividerLine;
         public RequestsViewHolder(@NonNull View itemView) {
             super(itemView);
             date = itemView.findViewById(R.id.date);
             score = itemView.findViewById(R.id.score);
-            result = itemView.findViewById(R.id.result);
             teacherName = itemView.findViewById(R.id.teacherName);
             cardViewlayout = itemView.findViewById(R.id.cardViewLayout);
+            dividerLine = itemView.findViewById(R.id.dividerLine);
         }
     }
 
@@ -101,8 +102,10 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
 
         findGroupOptionByID(request.getGroupID(), request.getOptionID(), requestsViewHolder);
 
-        requestsViewHolder.date.setText(request.getDate());
-        requestsViewHolder.score.setText(Integer.toString(request.getScore()));
+        requestsViewHolder.date.setText("Дата: " + request.getDate());
+        requestsViewHolder.score.setText("Очки: " + Integer.toString(request.getScore()));
+
+        /*
         if(request.isAnswered() && !request.isCanceled()){
            requestsViewHolder.result.setText("Принята");
         }else if(request.isCanceled() && !request.isAnswered()){
@@ -110,34 +113,28 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
         }else if(!request.isCanceled() && !request.isAnswered()){
             requestsViewHolder.result.setText("В процессе...");
         }
+        */
+
 
         if(Settings.getStatus().equals(STUDENT_STATUS)){                // Ученик
-            if(request.getGetter().length() > 15){
-                requestsViewHolder.teacherName.setText(request.getGetter().substring(0,15)+"...");
-            }else {
-                requestsViewHolder.teacherName.setText(request.getGetter());
-            }
+            requestsViewHolder.teacherName.setText(request.getGetter());
         }else if(Settings.getStatus().equals(TEACHER_STATUS)){         // Учитель
-            if((request.getFirstName()+request.getSecondName()).length() > 15){
-                requestsViewHolder.teacherName.setText((request.getFirstName()+ " " + request.getSecondName()).substring(0,15)+"...");
-            }else {
-                requestsViewHolder.teacherName.setText(request.getFirstName() + " " + request.getSecondName());
-            }
+            requestsViewHolder.teacherName.setText(request.getFirstName() + " " + request.getSecondName());
         }
 
 
-       if(request.isAnswered()){
-           requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
+       if(request.isAnswered() && requests.indexOf(request)+1!=requests.size()){
+           requestsViewHolder.dividerLine.setBackgroundColor(requestsViewHolder.cardViewlayout.
                                                 getResources().getColor(R.color.addedColor));
        }
 
-       if(request.isCanceled()){
-           requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
+       if(request.isCanceled() && requests.indexOf(request)+1!=requests.size()){
+           requestsViewHolder.dividerLine.setBackgroundColor(requestsViewHolder.cardViewlayout.
                    getResources().getColor(R.color.canceledColor));
        }
 
-       if(!request.isCanceled() && !request.isAnswered()){
-           requestsViewHolder.cardViewlayout.setBackgroundColor(requestsViewHolder.cardViewlayout.
+       if(!request.isCanceled() && !request.isAnswered() && requests.indexOf(request)+1!=requests.size()){
+           requestsViewHolder.dividerLine.setBackgroundColor(requestsViewHolder.cardViewlayout.
                    getResources().getColor(R.color.inProcessColor));
        }
 
@@ -154,8 +151,8 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                        requestStatus = "В процессе";
                    }
                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-                   alertDialog.setMessage("Ученик: " + request.getFirstName() + request.getLastName() + "\n" +
-                           "Группа:" + group + "\n" +
+                   alertDialog.setMessage("Ученик: " + request.getFirstName() + " " + request.getSecondName() + "\n" +
+                           "Группа: " + group + "\n" +
                            "Запрашиваемые очки: " + request.getScore() + "\n" +
                            "Дата: " + request.getDate() + "\n" +
                            "Сообщение ученика: " + request.getBody() + "\n" +
@@ -212,7 +209,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                        requestStatus = "В процессе";
                    }
                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-                   alertDialog.setMessage("Ученик: " + request.getFirstName() + request.getLastName() + "\n" +
+                   alertDialog.setMessage("Ученик: " + request.getFirstName() + " " + request.getSecondName() + "\n" +
                            "Группа: " + group + "\n" +
                            "Запрашиваемые очки: " + request.getScore() + "\n" +
                            "Дата: " + request.getDate() + "\n" +
