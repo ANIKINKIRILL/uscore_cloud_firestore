@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -57,10 +58,11 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
 
     public class StudentRecyclerViewHolder extends RecyclerView.ViewHolder{
         ImageView userAvatar;
-        TextView username, score, group;
-        RelativeLayout cardViewLayout;
+        TextView username, score, group, rating;
+        LinearLayout cardViewLayout;
         String studentID;
         String image_path;
+        View dividerLine;
         private StudentRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             userAvatar = itemView.findViewById(R.id.userAvatar);
@@ -68,6 +70,8 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
             score = itemView.findViewById(R.id.userScore);
             group = itemView.findViewById(R.id.userGroup);
             cardViewLayout = itemView.findViewById(R.id.cardViewLayout);
+            rating = itemView.findViewById(R.id.userRating);
+            dividerLine = itemView.findViewById(R.id.dividerLine);
         }
     }
 
@@ -96,6 +100,11 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<StudentRecycler
                 studentRecyclerViewHolder.group.setText((String)data);
             }
         }, student.getGroupID());
+        // Установка рейтинга ученика
+        studentRecyclerViewHolder.rating.setText(Integer.toString(students.indexOf(student) + 1));
+        if(Integer.parseInt(studentRecyclerViewHolder.rating.getText().toString()) == students.size()){
+            studentRecyclerViewHolder.dividerLine.setVisibility(View.GONE);
+        }
         // Установка фото ученика
         studentRecyclerViewHolder.image_path = student.getImage_path();
         if(studentRecyclerViewHolder.image_path.isEmpty()){

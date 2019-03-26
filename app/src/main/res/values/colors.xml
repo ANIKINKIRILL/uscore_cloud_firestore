@@ -15,7 +15,8 @@
 
     <color name="startblue_transparent">#597da3</color>
 
-    <color name="currentStudentCardViewColor">#adb8c4</color>
+    <color name="currentStudentCardViewColor">#E7E5E5</color>
+    <color name="groupCardViewColor">#B1AEAE</color>
 
     <color name="addedColor">#5ca95c</color>
     <color name="newColor">#a9a55c</color>

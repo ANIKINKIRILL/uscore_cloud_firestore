@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +14,7 @@
             android:layout_centerHorizontal="true"
             android:textColor="@android:color/darker_gray"
             android:textSize="25sp"
-            android:text="Рейтинг учеников по группе 10-6"
+            tools:text="Рейтинг учеников по группе 10-6"
             android:layout_alignParentTop="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -31,7 +29,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="20dp"
-            android:text=""
+            tools:text="Ты на 3 месте с 390 очками"
             android:textColor="@android:color/darker_gray"
             android:textSize="20sp" />
 

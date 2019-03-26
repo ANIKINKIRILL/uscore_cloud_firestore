@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telecom.Call;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -230,7 +231,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
             SharedPreferences.Editor editor = sharedPreferences.edit();
             String callbackResult = (String) data;
             editor.putString(Teacher.POSITION_DATA, callbackResult);
-            positionView.setText(callbackResult);
+            positionView.setText(callbackResult + " (должность)");
         }
     };
 
@@ -284,6 +285,12 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
                     }
                 }
             });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.student_profile_activity_menu, menu);
+        return true;
     }
 
     /**
