@@ -4,62 +4,40 @@
     android:focusableInTouchMode="true"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-    <!--<android.support.v7.widget.Toolbar-->
-        <!--android:id="@+id/toolBar"-->
-        <!--android:background="@color/startblue_transparent"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="?attr/actionBarSize">-->
-
-        <!--<RelativeLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content">-->
-            <!--<ImageView-->
-                <!--android:layout_centerVertical="true"-->
-                <!--android:id="@+id/back"-->
-                <!--android:src="@drawable/ic_arrow_back"-->
-                <!--android:layout_width="25dp"-->
-                <!--android:layout_height="match_parent" />-->
-
-            <!--<TextView-->
-                <!--android:layout_centerVertical="true"-->
-                <!--android:layout_marginStart="50dp"-->
-                <!--android:textSize="20sp"-->
-                <!--android:layout_toRightOf="@id/back"-->
-                <!--android:text="QR CODE"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content" />-->
-        <!--</RelativeLayout>-->
-
-    <!--</android.support.v7.widget.Toolbar>-->
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <EditText
         android:id="@+id/score"
         android:inputType="number"
         android:layout_margin="20dp"
-        android:hint="@string/score"
+        android:hint="Очки"
         android:layout_width="match_parent"
         android:layout_height="70dp" />
 
-    <Button
+    <ImageView
+        android:id="@+id/qrcode_image"
         android:layout_below="@id/score"
-        android:elevation="5dp"
+        android:layout_above="@id/generateButton"
+        tools:src="@drawable/qr_code_sample"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
         android:id="@+id/generateButton"
+        android:elevation="5dp"
         android:textColor="@android:color/white"
-        android:background="@color/signInButton"
+        android:layout_alignParentBottom="true"
+        android:background="@color/startblue_transparent"
         android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:layout_centerHorizontal="true"
         android:text="Сгенирировать QR CODE"
         android:layout_width="250dp"
         android:layout_height="50dp" />
 
-    <ImageView
-        android:layout_margin="20dp"
-        android:layout_below="@id/generateButton"
-        android:id="@+id/qrcode_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+
 
 </RelativeLayout>

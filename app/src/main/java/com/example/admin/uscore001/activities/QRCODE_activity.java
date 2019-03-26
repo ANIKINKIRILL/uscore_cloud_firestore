@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -141,6 +142,9 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                 finish();
                 break;
             }
+            case R.id.info:{
+                break;
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -172,6 +176,12 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.info_menu, menu);
+        return true;
     }
 
     /**

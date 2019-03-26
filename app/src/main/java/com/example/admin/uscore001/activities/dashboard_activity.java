@@ -224,11 +224,9 @@ public class dashboard_activity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.dashboard_menu, menu);
         if(Settings.getStatus().equals(Settings.STUDENT_STATUS)) {           // Ученик
             menu.findItem(R.id.scanQRCODE).setVisible(false);
-            menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.makePenalty).setVisible(false);
             menu.findItem(R.id.studentRegisterRequests).setVisible(false);
         }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
-            menu.findItem(R.id.askForScore).setVisible(false);
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
         }
@@ -246,11 +244,6 @@ public class dashboard_activity extends AppCompatActivity implements
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
-                break;
-            }
-            case R.id.askForScore:{
-                AskForScoreDialogFragment askForScoreDialogFragment = new AskForScoreDialogFragment();
-                askForScoreDialogFragment.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
             case R.id.makeRequest:{

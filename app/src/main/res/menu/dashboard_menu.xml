@@ -3,32 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/signOut"
-        android:title="@string/sign_out"
-        android:icon="@drawable/ic_exit_to_app_black_24dp">
-    </item>
-
-    <item
-        android:id="@+id/askForScore"
-        android:title="@string/ask_for_score"
-        android:icon="@drawable/ic_exit_to_app_black_24dp">
-    </item>
-
-    <item
         android:id="@+id/generateQERCODE"
-        android:title="@string/generate_qr_code"
+        android:title="QR CODE"
         android:icon="@drawable/ic_dashboard_black_24dp">
     </item>
 
     <item
         android:id="@+id/scanQRCODE"
-        android:title="@string/scan_qr_code"
-        android:icon="@drawable/ic_dashboard_black_24dp">
-    </item>
-
-    <item
-        android:id="@+id/changeLang"
-        android:title="@string/changeLang"
+        android:title="QR CODE"
         android:icon="@drawable/ic_dashboard_black_24dp">
     </item>
 
@@ -40,7 +22,13 @@
 
     <item
         android:id="@+id/makePenalty"
-        android:title="@string/make_penalty"
+        android:title="Оштрафовать ученика"
+        android:icon="@drawable/ic_dashboard_black_24dp">
+    </item>
+
+    <item
+        android:id="@+id/changeLang"
+        android:title="@string/changeLang"
         android:icon="@drawable/ic_dashboard_black_24dp">
     </item>
 
@@ -49,6 +37,12 @@
         android:title="Запросы на регистрацию"
         app:showAsAction="always"
         android:icon="@drawable/ic_fiber_new_white">
+    </item>
+
+    <item
+        android:id="@+id/signOut"
+        android:title="@string/sign_out"
+        android:icon="@drawable/ic_exit_to_app_black_24dp">
     </item>
 
 </menu>
