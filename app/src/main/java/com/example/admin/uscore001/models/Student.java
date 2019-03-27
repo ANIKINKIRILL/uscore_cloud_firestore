@@ -27,6 +27,7 @@ public class Student {
     private String lastName;
     private String statusID;
     private Timestamp spendLimitScoreDate;
+    private boolean change_password;
 
     public static final String STUDENT_DATA = "student_data";
     public static final String EMAIL = "email";
@@ -45,6 +46,7 @@ public class Student {
     public static final String DENIED_REQUESTS_AMOUNT = "denied_requests_amount";
     public static final String RATE_IN_GROUP = "rate_in_group";
     public static final String RATE_IN_SCHOOL = "rate_in_school";
+    public static final String CHANGE_PASSWORD = "change_password";
 
     public Student(
             String email,
@@ -73,6 +75,14 @@ public class Student {
 
     public Student(){
 
+    }
+
+    public boolean isChange_password() {
+        return change_password;
+    }
+
+    public void setChange_password(boolean change_password) {
+        this.change_password = change_password;
     }
 
     public Timestamp getSpendLimitScoreDate() {

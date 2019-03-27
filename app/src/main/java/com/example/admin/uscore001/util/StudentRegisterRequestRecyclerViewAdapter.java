@@ -129,6 +129,10 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                                    HashMap<String, String> idMap = new HashMap<>();
                                                    idMap.put("id", documentID);
                                                    task.getResult().set(idMap, SetOptions.merge());
+
+                                                   HashMap<String, Boolean> change_pass_Map = new HashMap<>();
+                                                   change_pass_Map.put("change_password", false);
+                                                   task.getResult().set(change_pass_Map, SetOptions.merge());
                                                }
                                            });
                                            counter = 1;

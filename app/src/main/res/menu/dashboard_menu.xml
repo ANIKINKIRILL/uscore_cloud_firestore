@@ -40,6 +40,12 @@
     </item>
 
     <item
+        android:id="@+id/testChangePassword"
+        android:title="Смена пароля"
+        android:icon="@drawable/ic_exit_to_app_black_24dp">
+    </item>
+
+    <item
         android:id="@+id/signOut"
         android:title="@string/sign_out"
         android:icon="@drawable/ic_exit_to_app_black_24dp">

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +30,7 @@ import android.widget.Toolbar;
 import com.example.admin.uscore001.Callback;
 import com.example.admin.uscore001.R;
 import com.example.admin.uscore001.Settings;
+import com.example.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.example.admin.uscore001.dialogs.DialogRequestAddingScore;
 import com.example.admin.uscore001.dialogs.MakePenaltyDialog;
 import com.example.admin.uscore001.dialogs.ShowRequestDialog;
@@ -42,6 +44,8 @@ import com.example.admin.uscore001.util.GlideAppModule;
 import com.example.admin.uscore001.util.SocailLinksAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.EmailAuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -118,9 +122,7 @@ public class dashboard_activity extends AppCompatActivity implements
         initToolbar();
         initActionBarDrawerToggle();
         loadKfuPictureIntoNavigationDrawerHeader();
-
         setCurrentUserData();
-
     }
 
     public void setCurrentUserData(){
@@ -229,6 +231,7 @@ public class dashboard_activity extends AppCompatActivity implements
         }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
+            menu.findItem(R.id.testChangePassword).setVisible(false);
         }
 
         return true;
@@ -298,6 +301,11 @@ public class dashboard_activity extends AppCompatActivity implements
             case R.id.studentRegisterRequests:{
                 Intent intent = new Intent(dashboard_activity.this, StudentRegisterRequestActivity.class);
                 startActivity(intent);
+                break;
+            }
+            case R.id.testChangePassword:{
+                ChangePasswordDialog dialog = new ChangePasswordDialog();
+                dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
         }
@@ -757,6 +765,11 @@ public class dashboard_activity extends AppCompatActivity implements
             String statusID = student.getStatusID();
             int scoreValue = student.getScore();
             String teacherID = student.getTeacherID();
+            boolean change_password = student.isChange_password();
+            if(!change_password){
+                ChangePasswordDialog dialog = new ChangePasswordDialog();
+                dialog.show(getSupportFragmentManager(), "open_dialog");
+            }
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(Student.EMAIL, Settings.getLogin());
@@ -769,6 +782,7 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Student.STATUS_ID, statusID);
             editor.putInt(Student.SCORE, scoreValue);
             editor.putString(Student.TEACHER_ID, teacherID);
+            editor.putBoolean(Student.CHANGE_PASSWORD, change_password);
             editor.apply();
 
             SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
