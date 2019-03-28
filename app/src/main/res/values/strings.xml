@@ -290,7 +290,8 @@
     </string-array>
 
     <string name="introSlide1Text" translatable="false">
-        Привет, друг. Разработчик новичек, не судите строго...
+        Зарабатывай, накапливай, обменивай баллы.
+        Баллы - это оценка твоей успеваемости и школьной активности
     </string>
 
     <string name="introSlide2Text" translatable="false">
@@ -308,7 +309,7 @@
     </string>
 
     <string name="introSlide5Text" translatable="false">
-        Остался 1 шаг до завершения. Терпения
+        Остался 1 шаг до завершения.
     </string>
 
     <string name="introSlide5TextContacts" translatable="false">
