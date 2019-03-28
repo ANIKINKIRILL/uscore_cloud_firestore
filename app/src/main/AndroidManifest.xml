@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.admin.uscore001">
+    package="com.it_score.admin.uscore001">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -8,15 +8,15 @@
     <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
-        android:name=".App"
+        android:name="com.it_score.admin.uscore001.App"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_icon_1"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/app_icon_1"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".activities.AppIntroActivity"
+        <activity android:name="com.it_score.admin.uscore001.activities.AppIntroActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.login_activity"
+        <activity android:name="com.it_score.admin.uscore001.activities.login_activity"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.LOGIN" />
@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.dashboard_activity"
+        <activity android:name="com.it_score.admin.uscore001.activities.dashboard_activity"
             android:theme="@style/ActivityNoActionBar"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
@@ -44,21 +44,21 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.register_activity">
+        <activity android:name="com.it_score.admin.uscore001.activities.register_activity">
             <intent-filter>
                 <action android:name="android.intent.action.RegisterActivity"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.StudentRegisterRequestActivity">
+        <activity android:name="com.it_score.admin.uscore001.activities.StudentRegisterRequestActivity">
             <intent-filter>
                 <action android:name="android.intent.action.StudentRegisterRequestActivity"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.TopScore_Activity"
+        <activity android:name="com.it_score.admin.uscore001.activities.TopScore_Activity"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.TOPSCORE" />
@@ -67,7 +67,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.QRCODE_activity">
+        <activity android:name="com.it_score.admin.uscore001.activities.QRCODE_activity">
             <intent-filter>
                 <action android:name="android.intent.action.QRCODE" />
 
@@ -75,7 +75,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.StudentProfile_activity2"
+        <activity android:name="com.it_score.admin.uscore001.activities.StudentProfile_activity2"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.STUDENT2" />
@@ -84,7 +84,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.StudentDetailPage">
+        <activity android:name="com.it_score.admin.uscore001.activities.StudentDetailPage">
             <intent-filter>
                 <action android:name="android.intent.action.StudentDetailPage" />
 
@@ -92,7 +92,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.CommentsPage"
+        <activity android:name="com.it_score.admin.uscore001.activities.CommentsPage"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.CommentPage" />
@@ -101,7 +101,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.TeacherProfile">
+        <activity android:name="com.it_score.admin.uscore001.activities.TeacherProfile">
             <intent-filter>
                 <action android:name="android.intent.action.TeacherProfile" />
 
@@ -109,7 +109,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.RecentActionsPage"
+        <activity android:name="com.it_score.admin.uscore001.activities.RecentActionsPage"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.RECENTACTIONS" />
@@ -118,7 +118,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.RequestDetailView"
+        <activity android:name="com.it_score.admin.uscore001.activities.RequestDetailView"
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.RequestDetail" />
@@ -127,16 +127,30 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.RequestAddingScoreActivity">
+        <activity android:name="com.it_score.admin.uscore001.activities.RequestAddingScoreActivity">
             <intent-filter>
                 <action android:name="android.intent.action.RequestAddingScoreActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.MakePenaltyActivity">
+        <activity android:name="com.it_score.admin.uscore001.activities.MakePenaltyActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MakePenaltyActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.AdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.AdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.AddTeacherAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.AddTeacherAdminSectionActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/firstName"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:hint="Имя"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/secondName"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:hint="Фамилия"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/lastName"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:hint="Отчество"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:hint="email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/requestID"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:hint="RequestID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Spinner
+        android:id="@+id/positionSpinner"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Spinner
+        android:id="@+id/subjectSpinner"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Spinner
+        android:id="@+id/groupSpinner"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/addTeacherButton"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:text="Добавить Учителя"
+        android:background="@color/startblue_transparent"
+        android:textColor="@android:color/white"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

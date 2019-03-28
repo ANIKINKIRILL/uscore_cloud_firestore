@@ -3,9 +3,9 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.example.admin.uscore001"
+        applicationId "com.it_score.admin.uscore001"
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -20,6 +20,13 @@ android {
         targetCompatibility 1.8
         sourceCompatibility 1.8
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+        ignoreWarnings true //false
+    }
+
 }
 
 dependencies {

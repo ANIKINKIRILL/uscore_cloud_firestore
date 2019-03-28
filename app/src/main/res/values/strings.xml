@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">USCORE</string>
+    <string name="app_name" translatable="false">IT-Лицей Баллы</string>
 
     <string name="settings">settings</string>
     <string name="teacher_data">teacher_data</string>
