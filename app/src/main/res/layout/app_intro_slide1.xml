@@ -15,7 +15,7 @@
         android:gravity="center"
         android:paddingLeft="32dp"
         android:paddingRight="29dp"
-        android:text="Welcome to USCORE"
+        android:text="@string/app_name"
         android:textColor="#ffffff"
         android:textSize="27sp"
         android:textStyle="bold" />
