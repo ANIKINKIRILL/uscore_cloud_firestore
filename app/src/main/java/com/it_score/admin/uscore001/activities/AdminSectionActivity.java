@@ -31,7 +31,7 @@ public class AdminSectionActivity extends AppCompatActivity implements View.OnCl
 
     // Виджеты
     private EditText groupName, teacherFullName;
-    private Button createGroupButton, addTeacherButton;
+    private Button createGroupButton, addTeacherButton, addOptionButton;
 
     // Firebase
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
@@ -54,9 +54,11 @@ public class AdminSectionActivity extends AppCompatActivity implements View.OnCl
         teacherFullName = findViewById(R.id.teacherFullName);
         createGroupButton = findViewById(R.id.createGroupButton);
         addTeacherButton = findViewById(R.id.addTeacherButton);
+        addOptionButton = findViewById(R.id.addOptionButton);
 
         createGroupButton.setOnClickListener(this);
         addTeacherButton.setOnClickListener(this);
+        addOptionButton.setOnClickListener(this);
     }
 
     /**
@@ -105,6 +107,11 @@ public class AdminSectionActivity extends AppCompatActivity implements View.OnCl
             }
             case R.id.addTeacherButton:{
                 Intent intent = new Intent(this, AddTeacherAdminSectionActivity.class);
+                startActivity(intent);
+                break;
+            }
+            case R.id.addOptionButton:{
+                Intent intent = new Intent(this, AddOptionActivity.class);
                 startActivity(intent);
                 break;
             }

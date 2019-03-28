@@ -151,4 +151,15 @@ public class User {
         getAllSubjectsList.execute(asyncTaskArguments);
     }
 
+    /**
+     * Получить список поощрений учителей
+     * @param callback          callback
+     */
+
+    public static void getAllEncouragementsList(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.GetAllEncouragementsList getAllEncouragementsList = new FirebaseServer.GetAllEncouragementsList();
+        getAllEncouragementsList.execute(asyncTaskArguments);
+    }
+
 }

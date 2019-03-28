@@ -23,10 +23,12 @@ import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.models.Option;
 import com.it_score.admin.uscore001.models.RequestAddingScore;
 import com.it_score.admin.uscore001.models.Student;
 import com.it_score.admin.uscore001.models.Teacher;
 import com.it_score.admin.uscore001.models.User;
+import com.it_score.admin.uscore001.util.EncouragementOptionArrayAdapter;
 import com.it_score.admin.uscore001.util.RequestAddingScoreAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -158,11 +160,25 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
      */
 
     private void populateOptionsSpinner(){
+        /*
         ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(this, R.array.options, android.R.layout.simple_spinner_item);
         pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         options.setAdapter(pickOptionAdapter);
         options.setOnItemSelectedListener(this);
+        */
+
+        User.getAllEncouragementsList(mGetAllEncouragementsCallback);
     }
+
+    private Callback mGetAllEncouragementsCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Option> encouragementsOptions = (ArrayList) data;
+            EncouragementOptionArrayAdapter adapter = new EncouragementOptionArrayAdapter(RequestAddingScoreActivity.this, encouragementsOptions);
+            options.setAdapter(adapter);
+            options.setOnItemSelectedListener(RequestAddingScoreActivity.this);
+        }
+    };
 
     @Override
     public void onClick(View v) {
@@ -246,9 +262,17 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
                 break;
             }
             case R.id.options:{
+                /*
                 selectedOption = parent.getItemAtPosition(position).toString();
                 getSelectedOptionScoreAndID(selectedOption);
                 Toast.makeText(getApplicationContext(), selectedOption, Toast.LENGTH_LONG).show();
+                */
+
+                Option option = (Option) parent.getSelectedItem();
+                selectedOption = option.getName();
+                score.setText("Баллы: " + option.getPoints());
+                scoreInvisible.setText(option.getPoints());
+                optionID = option.getId();
                 break;
             }
         }

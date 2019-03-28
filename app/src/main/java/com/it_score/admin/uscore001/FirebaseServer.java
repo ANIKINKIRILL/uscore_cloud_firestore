@@ -2,6 +2,7 @@ package com.it_score.admin.uscore001;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Path;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -82,6 +83,7 @@ public class FirebaseServer {
     private static ArrayList<Option> allPenaltiesList = new ArrayList<>();
     private static ArrayList<Position> allPositionsList = new ArrayList<>();
     private static ArrayList<Subject> allSubjectsList = new ArrayList<>();
+    private static ArrayList<Option> allEncouragementsList = new ArrayList<>();
 
     /**
      * Авторизация пользователя
@@ -1303,6 +1305,29 @@ public class FirebaseServer {
         }
     }
 
+
+    /**
+     * Получить список поощрений
+     */
+    
+    public static class GetAllEncouragementsList extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            allEncouragementsList.clear();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            OPTIONS$DB.document("a31J0nT0lYTRmvyp7T8F").collection("options").addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Option option = documentSnapshot.toObject(Option.class);
+                        allEncouragementsList.add(option);
+                    }
+                    callback.execute(allEncouragementsList);
+                }
+            });
+            return null;
+        }
+    }
 
 
 }

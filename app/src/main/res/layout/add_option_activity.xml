@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/optionName"
+        android:hint="Название"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/optionScore"
+        android:hint="Очки"
+        android:layout_marginTop="10dp"
+        android:inputType="number"
+        android:layout_marginEnd="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:weightSum="100"
+        android:orientation="horizontal"
+        android:layout_margin="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="55dp">
+        <Button
+            android:id="@+id/addOptionButton"
+            android:layout_weight="50"
+            android:layout_gravity="center"
+            android:layout_marginEnd="5dp"
+            android:text="Добавить Поощрение"
+            android:background="@color/startblue_transparent"
+            android:textColor="@android:color/white"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+        <Button
+            android:id="@+id/addPenaltyButton"
+            android:layout_weight="50"
+            android:layout_gravity="center"
+            android:text="Добавить Наказание"
+            android:background="@color/startblue_transparent"
+            android:textColor="@android:color/white"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+</LinearLayout>
