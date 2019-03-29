@@ -17,7 +17,10 @@ import android.widget.Toast;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.google.firebase.auth.FirebaseAuthProvider;
+import com.google.firestore.v1.UpdateDocumentRequest;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.Settings;
 import com.it_score.admin.uscore001.models.Student;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,6 +29,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Set;
 
 /**
  * Диалоговое окно со сменой пароля
@@ -98,9 +103,10 @@ public class ChangePasswordDialog extends DialogFragment implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.change_pass_button:{
+                // Пользователь = Ученик
                 String new_pass_value = new_pass_edit_text.getText().toString();
                 String repeat_pass_value = repeat_pass_edit_text.getText().toString();
-                if(new_pass_value.trim().equals(repeat_pass_value.trim()) && !new_pass_value.trim().isEmpty() && !repeat_pass_value.trim().isEmpty()) {
+                if (new_pass_value.trim().equals(repeat_pass_value.trim()) && !new_pass_value.trim().isEmpty() && !repeat_pass_value.trim().isEmpty()) {
                     currentUser.updatePassword(new_pass_value.trim()).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -124,12 +130,12 @@ public class ChangePasswordDialog extends DialogFragment implements View.OnClick
                                     repeat_pass_edit_text.setText("");
                                     YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(dialogLayout);
                                 }
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 e.getMessage();
                             }
                         }
                     });
-                }else{
+                } else {
                     Toast.makeText(getContext(), "Пароли не совпадают, попробуйте еще раз", Toast.LENGTH_SHORT).show();
                     new_pass_edit_text.setText("");
                     repeat_pass_edit_text.setText("");

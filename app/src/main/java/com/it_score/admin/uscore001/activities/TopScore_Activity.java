@@ -24,6 +24,8 @@ import com.it_score.admin.uscore001.fragments.TeacherDoesNotHaveGroupFragment;
 import com.it_score.admin.uscore001.models.Teacher;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import java.util.Set;
+
 /**
  * Активити с рейтингом учеников
  */
@@ -44,6 +46,7 @@ public class TopScore_Activity extends AppCompatActivity implements View.OnClick
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
+    public static final String ADMIN_STATUS = "26gmBm7N0oUVupLktAg6";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,6 +65,11 @@ public class TopScore_Activity extends AppCompatActivity implements View.OnClick
 
         if(getUserStatus().equals(STUDENT_STATUS)){            // Пользователь = Ученик
             setLaunchFragment();
+        }
+
+        if(getUserStatus().equals(ADMIN_STATUS)){              // Пользователь = Администратор
+            doFragmentTransaction(new EntireSchoolTopScoreFragment());
+            bottomNavigationView.getMenu().findItem(R.id.myGroup).setVisible(false);
         }
 
         bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
@@ -157,11 +165,19 @@ public class TopScore_Activity extends AppCompatActivity implements View.OnClick
 
         @Override
         public boolean onQueryTextChange(String newText) {
-            MyGroupTopScoreFragment.adapter.getFilter().filter(newText);
-            try {
-                EntireSchoolTopScoreFragment.adapter.getFilter().filter(newText);
-            }catch (Exception e){
-                Log.d(TAG, "onQueryTextChange: " + e.getMessage());
+            if(Settings.getStatus().equals(ADMIN_STATUS)){
+                try {
+                    EntireSchoolTopScoreFragment.adapter.getFilter().filter(newText);
+                }catch (Exception e){
+                    Log.d(TAG, "onQueryTextChange: " + e.getMessage());
+                }
+            }else {
+                MyGroupTopScoreFragment.adapter.getFilter().filter(newText);
+                try {
+                    EntireSchoolTopScoreFragment.adapter.getFilter().filter(newText);
+                } catch (Exception e) {
+                    Log.d(TAG, "onQueryTextChange: " + e.getMessage());
+                }
             }
             return true;
         }

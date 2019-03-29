@@ -257,6 +257,7 @@
                                         android:layout_height="match_parent" />
 
                                     <ImageView
+                                        android:id="@+id/recentCardViewImage"
                                         android:layout_gravity="center_vertical"
                                         android:layout_weight="60"
                                         android:layout_margin="20dp"

@@ -29,6 +29,8 @@ import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.Settings;
 import com.it_score.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.it_score.admin.uscore001.dialogs.ShowRequestDialog;
+import com.it_score.admin.uscore001.fragments.RulesBottomSheetFragment;
+import com.it_score.admin.uscore001.models.Admin;
 import com.it_score.admin.uscore001.models.RequestAddingScore;
 import com.it_score.admin.uscore001.models.Student;
 import com.it_score.admin.uscore001.models.Teacher;
@@ -98,7 +100,7 @@ public class dashboard_activity extends AppCompatActivity implements
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
-    public static final String ADMIN_LOGIN = "admin@mail.ru";
+    public static final String ADMIN_STATUS = "26gmBm7N0oUVupLktAg6";
 
     static FirebaseFirestore firebaseFirestore2 = FirebaseFirestore.getInstance();
     static CollectionReference STUDENTS$DB = firebaseFirestore2.collection("STUDENTS$DB");
@@ -116,7 +118,7 @@ public class dashboard_activity extends AppCompatActivity implements
     }
 
     public void setCurrentUserData(){
-        if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){
+        if(Settings.getStatus().equals(Settings.TEACHER_STATUS) || Settings.getStatus().equals(Settings.TEACHER_HELPER_STATUS)){
             limitScoreView.setVisibility(View.INVISIBLE);
             requestNumber.setOnClickListener(this);
             getTeacherClass(Settings.getLogin());
@@ -125,6 +127,16 @@ public class dashboard_activity extends AppCompatActivity implements
             getStudentClass(Settings.getLogin());
             requestNumber.setText("");
             notification_alarm.setVisibility(View.INVISIBLE);
+        }
+        if(Settings.getStatus().trim().equals(ADMIN_STATUS)){
+            getAdminClass(Settings.getLogin());
+            limitScoreView.setVisibility(View.INVISIBLE);
+            requestNumber.setText("Администратор");
+            notification_alarm.setVisibility(View.INVISIBLE);
+            TextView recentCardViewViewTitle = recentCardView.findViewById(R.id.recentTitle);
+            ImageView recentCardViewImage = recentCardView.findViewById(R.id.recentCardViewImage);
+            recentCardViewViewTitle.setText("Панель Администратора");
+            recentCardViewImage.setVisibility(View.GONE);
         }
     }
 
@@ -214,20 +226,19 @@ public class dashboard_activity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
         getMenuInflater().inflate(R.menu.dashboard_menu, menu);
-        if(Settings.getStatus().equals(Settings.STUDENT_STATUS) && !Settings.getLogin().trim().equals(ADMIN_LOGIN)) {           // Ученик
+        if(Settings.getStatus().equals(Settings.STUDENT_STATUS)) {           // Ученик
             menu.findItem(R.id.scanQRCODE).setVisible(false);
             menu.findItem(R.id.makePenalty).setVisible(false);
             menu.findItem(R.id.studentRegisterRequests).setVisible(false);
-            menu.findItem(R.id.adminSection).setVisible(false);
         }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
             menu.findItem(R.id.testChangePassword).setVisible(false);
-            menu.findItem(R.id.adminSection).setVisible(false);
         }
-
-        if(Settings.getStatus().equals(Settings.STUDENT_STATUS) && Settings.getLogin().trim().equals(ADMIN_LOGIN)){         // Админ
+        if(Settings.getStatus().trim().equals(ADMIN_STATUS)){         // Админ
             menu.findItem(R.id.scanQRCODE).setVisible(false);
+            menu.findItem(R.id.generateQERCODE).setVisible(false);
+            menu.findItem(R.id.makeRequest).setVisible(false);
             menu.findItem(R.id.makePenalty).setVisible(false);
             menu.findItem(R.id.studentRegisterRequests).setVisible(false);
         }
@@ -304,14 +315,6 @@ public class dashboard_activity extends AppCompatActivity implements
             case R.id.testChangePassword:{
                 ChangePasswordDialog dialog = new ChangePasswordDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
-                break;
-            }
-            case R.id.adminSection:{
-                /*
-                       Панель Администратора
-                 */
-                Intent intent = new Intent(this, AdminSectionActivity.class);
-                startActivity(intent);
                 break;
             }
         }
@@ -437,7 +440,7 @@ public class dashboard_activity extends AppCompatActivity implements
             editorSettings.putString(Settings.USER_ID, teacherID);
             editorSettings.apply();
 
-            username.setText(teacherLastName + "." + teacherFirstName.substring(0,1)+ "." + teacherSecondName.substring(0,1));
+            username.setText(teacherSecondName + "." + teacherFirstName.substring(0,1)+ "." + teacherLastName.substring(0,1));
 
             User.getUserGroupName(mGetUserGroupNameCallback, groupID);
 
@@ -461,6 +464,54 @@ public class dashboard_activity extends AppCompatActivity implements
                 "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n");
 
             editor.apply();
+
+        }
+    };
+
+    /**
+     * Поулчить класс адимина
+     * @param adminLogin        логин админа
+     */
+
+    public void getAdminClass(String adminLogin){
+        User.getAdminClass(mGetAdminClassCallback, adminLogin);
+    }
+
+    private Callback mGetAdminClassCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            Admin admin = (Admin) data;
+            String id = admin.getId();
+            String firstName = admin.getFirstName();
+            String secondName = admin.getSecondName();
+            String lastName = admin.getLastName();
+            String image_path = admin.getImage_path();
+            String positionID = admin.getPositionID();
+            String responsible_email = admin.getResponsible_email();
+            String statusID = admin.getStatusID();
+            int roomNumber = admin.getRoomNumber();
+            if (image_path.isEmpty()) {
+                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+            }else{
+                GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
+            }
+
+            SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
+            SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
+            editorSettings.putString(Settings.USER_ID, id);
+            editorSettings.apply();
+
+            Admin.setAdminIdSharedPreference(id);
+            Admin.setFirstNameSharedPreference(firstName);
+            Admin.setSecondNameSharedPreference(secondName);
+            Admin.setLastNameSharedPreference(lastName);
+            Admin.setImage_pathSharedPreference(image_path);
+            Admin.setPositionIDSharedPreference(positionID);
+            Admin.setResponsible_emailSharedPreference(responsible_email);
+            Admin.setStatusIDSharedPreference(statusID);
+            Admin.setAdminRoomNumber(roomNumber);
+
+            username.setText(secondName + "." + firstName.substring(0,1)+ "." + lastName.substring(0,1));
 
         }
     };
@@ -523,6 +574,10 @@ public class dashboard_activity extends AppCompatActivity implements
                     Intent intent = new Intent(dashboard_activity.this, TeacherProfile.class);
                     startActivity(intent);
                 }
+                if(Settings.getStatus().equals(getString(R.string.adminStatusValue))){
+                    Intent intent = new Intent(dashboard_activity.this, AdminProfileActivity.class);
+                    startActivity(intent);
+                }
                 break;
             }
             case R.id.topScores:{
@@ -536,14 +591,18 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.recentCardView:{
-                Intent intent = new Intent(this, RecentActionsPage.class);
-                startActivity(intent);
+                if(Settings.getStatus().equals(getString(R.string.adminStatusValue))){          // Админ
+                    Intent intent = new Intent(this, AdminSectionActivity.class);
+                    startActivity(intent);
+                }else {
+                    Intent intent = new Intent(this, RecentActionsPage.class);   // Учитель или Ученик
+                    startActivity(intent);
+                }
                 break;
             }
             case R.id.rulesCardView:{
-                Toast.makeText(this, "Это функция будет добвлена в скором времени", Toast.LENGTH_SHORT).show();
-//                RulesBottomSheetFragment rulesBottomSheetFragment = new RulesBottomSheetFragment();
-//                rulesBottomSheetFragment.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                RulesBottomSheetFragment rulesBottomSheetFragment = new RulesBottomSheetFragment();
+                rulesBottomSheetFragment.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
         }

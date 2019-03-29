@@ -35,7 +35,7 @@
             android:layout_weight="50"
             android:layout_gravity="center"
             android:layout_marginEnd="5dp"
-            android:text="Добавить Поощрение"
+            android:text="Поощрение"
             android:background="@color/startblue_transparent"
             android:textColor="@android:color/white"
             android:layout_width="0dp"
@@ -45,11 +45,20 @@
             android:id="@+id/addPenaltyButton"
             android:layout_weight="50"
             android:layout_gravity="center"
-            android:text="Добавить Наказание"
+            android:text="Наказание"
             android:background="@color/startblue_transparent"
             android:textColor="@android:color/white"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/releaseButton"
+        android:layout_gravity="center"
+        android:text="Регламент"
+        android:background="@color/startblue_transparent"
+        android:textColor="@android:color/white"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

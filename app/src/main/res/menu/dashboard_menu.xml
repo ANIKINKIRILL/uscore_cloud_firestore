@@ -51,11 +51,4 @@
         android:icon="@drawable/ic_exit_to_app_black_24dp">
     </item>
 
-    <item
-        android:id="@+id/adminSection"
-        android:title="Админка"
-        android:icon="@drawable/ic_format_list_numbered"
-        app:showAsAction="always">
-    </item>
-
 </menu>

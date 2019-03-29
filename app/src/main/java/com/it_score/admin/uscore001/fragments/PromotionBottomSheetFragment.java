@@ -10,8 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.models.Option;
+import com.it_score.admin.uscore001.models.User;
 import com.it_score.admin.uscore001.util.RulesListViewAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,20 +23,19 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+/**
+ * Фрагмент с поощрениями
+ */
+
 public class PromotionBottomSheetFragment extends Fragment {
 
     private static final String TAG = "PromotionBottomSheetFra";
 
-    // widgets
+    // Виджеты
     private ListView listView;
 
-    // vars
+    // Переменные
     private RulesListViewAdapter adapter;
-    private ArrayList<Option> options = new ArrayList<>();
-
-    // Firebase
-    FirebaseDatabase db = FirebaseDatabase.getInstance();
-    DatabaseReference optionsRef = db.getReference("Options");
 
     @Nullable
     @Override
@@ -45,35 +46,31 @@ public class PromotionBottomSheetFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Инициализация виджетоы
+     * @param view      окошко фрагмента
+     */
+
     private void init(View view){
         listView = view.findViewById(R.id.listView);
     }
 
+    /**
+     * Загрузить поощрения
+     */
+
     private void loadAllOptions(){
-        options.clear();
-        try {
-            optionsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Log.d(TAG, "onDataChange: loading options");
-                    for (DataSnapshot option : dataSnapshot.getChildren()) {
-//                        String optionValue = option.getValue(Option.class).getOption();
-//                        int scoreValue = option.getValue(Option.class).getScore();
-//                        Option optionClass = new Option(scoreValue, optionValue);
-//                        options.add(optionClass);
-                    }
-                    adapter = new RulesListViewAdapter(options, getContext());
-                    listView.setAdapter(adapter);
-                }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.d(TAG, "onCancelled: loading proccess is canceled");
-                }
-            });
-        }catch (Exception e){
-            Log.d(TAG, "loadAllOptions: " + e.getMessage());
-        }
+        User.getAllEncouragementsList(mGetAllEncouragementsListCallback);
     }
+
+    private Callback mGetAllEncouragementsListCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Option> options = (ArrayList) data;
+            adapter = new RulesListViewAdapter(options, getContext());
+            listView.setAdapter(adapter);
+        }
+    };
 
 
 }

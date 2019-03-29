@@ -14,6 +14,7 @@ public class Settings {
     public static final String USER_STATUS = "user_status";
     public static final String SETTINGS = "settings";
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
+    public static final String TEACHER_HELPER_STATUS = "BpYvYudLYGkfZLspkctl";
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
     public static final String GROUP_NAME = "group_name";
     private static SharedPreferences sharedPreferences;

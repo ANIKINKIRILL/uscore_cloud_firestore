@@ -40,6 +40,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
     public static final String TEACHER_STATUS = "PGIg1vm8SrHN6YLeN0TD";
+    public static final String ADMIN_STATUS = "26gmBm7N0oUVupLktAg6";
 
     @Nullable
     @Override
@@ -51,11 +52,10 @@ public class EntireSchoolTopScoreFragment extends Fragment {
             getSchoolRatingByStudent();
         }
 
-        if(Settings.getStatus().equals(TEACHER_STATUS)){
+        if(Settings.getStatus().equals(TEACHER_STATUS) || Settings.getStatus().equals(ADMIN_STATUS)){
             currentStudentRate.setVisibility(View.GONE);
             getSchoolRatingByTeacher();
         }
-
         return view;
     }
 

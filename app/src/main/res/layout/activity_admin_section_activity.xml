@@ -4,57 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/groupName"
+    <TextView
+        android:id="@+id/title"
+        android:text="Список Функций Администратора"
+        android:gravity="center"
+        android:textSize="22sp"
         android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
-        android:hint="Название группы"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <EditText
-        android:id="@+id/teacherFullName"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginBottom="10dp"
-        android:layout_below="@id/groupName"
-        android:hint="ФИО Учителя"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/adminFunctions"
+        android:layout_below="@id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <Button
-        android:id="@+id/createGroupButton"
-        android:layout_centerHorizontal="true"
-        android:text="Создать группу"
-        android:background="@color/startblue_transparent"
-        android:textColor="@android:color/white"
-        android:layout_below="@id/teacherFullName"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content" />
-
-    <Button
-        android:id="@+id/addOptionButton"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="20dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:text="Добавить Поощрение"
-        android:background="@color/startblue_transparent"
-        android:textColor="@android:color/white"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content" />
-
-    <Button
-        android:id="@+id/addTeacherButton"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:text="Добавить Учителя"
-        android:background="@color/startblue_transparent"
-        android:textColor="@android:color/white"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

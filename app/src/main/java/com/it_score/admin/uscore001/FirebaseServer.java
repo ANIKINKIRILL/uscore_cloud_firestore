@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.graphics.Path;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.telecom.Call;
 import android.util.Log;
 
+import com.it_score.admin.uscore001.models.Admin;
+import com.it_score.admin.uscore001.models.AdminFunction;
 import com.it_score.admin.uscore001.models.Group;
 import com.it_score.admin.uscore001.models.Option;
 import com.it_score.admin.uscore001.models.Penalty;
@@ -59,6 +62,7 @@ public class FirebaseServer {
     static CollectionReference SUBJECTS$DB = firebaseFirestore.collection("SUBJECTS$DB");
     static CollectionReference POSITIONS$DB = firebaseFirestore.collection("POSITIONS$DB");
     static CollectionReference OPTIONS$DB = firebaseFirestore.collection("OPTIONS$DB");
+    static CollectionReference ADMIN_FUNCTIONS = firebaseFirestore.collection("ADMIN_FUNCTIONS");
 
     // Переменные
     private static ArrayList<String> studentsByGroupName = new ArrayList<>();
@@ -84,6 +88,10 @@ public class FirebaseServer {
     private static ArrayList<Position> allPositionsList = new ArrayList<>();
     private static ArrayList<Subject> allSubjectsList = new ArrayList<>();
     private static ArrayList<Option> allEncouragementsList = new ArrayList<>();
+    private static ArrayList<AdminFunction> adminFunctions = new ArrayList<>();
+
+    // Постоянные переменны
+    public static final String ADMIN_STATUS_ID = "26gmBm7N0oUVupLktAg6";
 
     /**
      * Авторизация пользователя
@@ -1056,7 +1064,10 @@ public class FirebaseServer {
                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                         Teacher teacher = documentSnapshot.toObject(Teacher.class);
-                        teachersClasses.add(teacher);
+                        // Если адиминистратор, то не дабовляем его в список
+                        if(!teacher.getStatusID().trim().equals(ADMIN_STATUS_ID)) {
+                            teachersClasses.add(teacher);
+                        }
                     }
                     callback.execute(teachersClasses);
                 }
@@ -1323,6 +1334,51 @@ public class FirebaseServer {
                         allEncouragementsList.add(option);
                     }
                     callback.execute(allEncouragementsList);
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить класс админа
+     */
+
+    public static class GetAdminClass extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            String adminLogin = (String)asyncTaskArguments[0].mData.data[0];
+            TEACHERS$DB.whereEqualTo("responsible_email", adminLogin).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        Admin admin = documentSnapshot.toObject(Admin.class);
+                        callback.execute(admin);
+                    }
+                }
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Получить функции админа
+     */
+
+    public static class GetAdminFunctions extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            adminFunctions.clear();
+            Callback  callback = asyncTaskArguments[0].mCallback;
+            ADMIN_FUNCTIONS.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                        AdminFunction adminFunction = documentSnapshot.toObject(AdminFunction.class);
+                        adminFunctions.add(adminFunction);
+                    }
+                    callback.execute(adminFunctions);
                 }
             });
             return null;

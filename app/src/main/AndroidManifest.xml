@@ -162,6 +162,27 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.it_score.admin.uscore001.activities.AdminProfileActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.AdminProfileActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.AddGroupFunctionAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.AddGroupFunctionAdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.AddSubjectFunctionAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.AddSubjectFunctionAdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!--<service android:name=".FirebaseMessagingService">-->
             <!--<intent-filter>-->
                 <!--<action android:name="com.google.firebase.MESSAGING_EVENT" />-->

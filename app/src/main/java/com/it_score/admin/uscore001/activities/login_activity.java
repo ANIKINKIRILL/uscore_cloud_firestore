@@ -114,10 +114,10 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             pickedObject = adapterView.getSelectedItem().toString();
-            if(!pickedObject.equals("Учителя")) {                                   // Выбрали Группу
+            if(!pickedObject.equals("Учителя и Администрация")) {                                   // Выбрали Группу
                 loadGroupStudents(pickedObject);
             }else{
-                loadAllTeachers();                                                  // Выбрали Учителей
+                loadAllTeachers();                                                  // Выбрали Учителей и Администрацию
             }
         }
         @Override
@@ -227,6 +227,8 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             String statusID = data.toString();
             String studentStatus = getString(R.string.studentStatusValue);
             String teacherStatus = getString(R.string.teacherStatusValue);
+            String adminStatus = "26gmBm7N0oUVupLktAg6";
+            String teacherHelperStatus = "BpYvYudLYGkfZLspkctl";
             // Сохранение статуса пользователя
             if(statusID.equals(studentStatus)){
                 Settings.setStatus(studentStatus);
@@ -234,6 +236,13 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             if(statusID.equals(teacherStatus)){
                 Settings.setStatus(teacherStatus);
             }
+            if(statusID.equals(adminStatus)){
+                Settings.setStatus(adminStatus);
+            }
+            if(statusID.equals(teacherHelperStatus)){
+                Settings.setStatus(teacherHelperStatus);
+            }
+
             progressBar.setVisibility(View.INVISIBLE);
 
             Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
@@ -394,6 +403,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
         @Override
         public void execute(Object data, String... params) {
             email = (String) data;
+            Log.d(TAG, "mGetTeacherEmailCallback: " + email);
             signIn.setEnabled(true);
         }
     };

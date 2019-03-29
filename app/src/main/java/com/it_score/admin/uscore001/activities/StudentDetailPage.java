@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +16,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.Settings;
+import com.it_score.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.it_score.admin.uscore001.models.Student;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -189,5 +192,4 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
             }
         }
     }
-
 }

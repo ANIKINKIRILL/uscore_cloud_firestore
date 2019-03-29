@@ -12,6 +12,10 @@ import com.it_score.admin.uscore001.models.Option;
 
 import java.util.ArrayList;
 
+/**
+ * Адаптер для отображения поощрений
+ */
+
 public class RulesListViewAdapter extends BaseAdapter {
 
     ArrayList<Option> options = new ArrayList<>();
@@ -39,15 +43,29 @@ public class RulesListViewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        View infalatedView = LayoutInflater.from(context).inflate(R.layout.rules_list_item, null);
+        View inflatedView = view;
+        ViewHolder viewHolder;
         Option optionClass = options.get(i);
-        TextView option = infalatedView.findViewById(R.id.option);
-        TextView score = infalatedView.findViewById(R.id.score);
-//        option.setText(optionClass.getOption());
-//        score.setText(Integer.toString(optionClass.getScore()));
-        return infalatedView;
+        if(inflatedView != null){
+            viewHolder = (ViewHolder) inflatedView.getTag();
+        }else{
+            inflatedView = LayoutInflater.from(context).inflate(R.layout.rules_list_item, null);
+            viewHolder = new ViewHolder();
+            viewHolder.option = inflatedView.findViewById(R.id.option);
+            viewHolder.score = inflatedView.findViewById(R.id.score);
+            inflatedView.setTag(viewHolder);
+        }
+
+        viewHolder.option.setText(optionClass.getName());
+        viewHolder.score.setText(optionClass.getPoints());
+
+        return inflatedView;
     }
 
+    static class ViewHolder{
+        TextView option;
+        TextView score;
+    }
 
 
 }

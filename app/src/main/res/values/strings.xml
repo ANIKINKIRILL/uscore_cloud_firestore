@@ -4,7 +4,9 @@
     <string name="settings">settings</string>
     <string name="teacher_data">teacher_data</string>
     <string name="student_data">student_data</string>
+    <string name="admin_data">admin_data</string>
     <string name="studentStatusValue">y1igExymzKFaV3BU8zH8</string>
+    <string name="adminStatusValue">26gmBm7N0oUVupLktAg6</string>
     <string name="teacherStatusValue">PGIg1vm8SrHN6YLeN0TD</string>
     <string name="promotionsID">a31J0nT0lYTRmvyp7T8F</string>
     <string name="penaltiesID">6oemB2Fxo1hyrWrrNQ07</string>
@@ -211,7 +213,7 @@
     <string name="no_access">Недоступно</string>
 
     <string-array name="groups">
-        <item>Учителя</item>
+        <item>Учителя и Администрация</item>
         <item>11-1</item>
         <item>11-2</item>
         <item>11-3</item>

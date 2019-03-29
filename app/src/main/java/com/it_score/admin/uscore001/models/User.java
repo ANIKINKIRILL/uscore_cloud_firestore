@@ -162,4 +162,17 @@ public class User {
         getAllEncouragementsList.execute(asyncTaskArguments);
     }
 
+    /**
+     * Получить классс админа
+     * @param callback      callback
+     * @param login         login админа
+     */
+
+    public static void getAdminClass(Callback callback, String login){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(login));
+        FirebaseServer.GetAdminClass getAdminClass = new FirebaseServer.GetAdminClass();
+        getAdminClass.execute(asyncTaskArguments);
+    }
+
+
 }

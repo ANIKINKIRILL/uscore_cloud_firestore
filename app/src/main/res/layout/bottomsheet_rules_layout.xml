@@ -5,12 +5,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.design.widget.TabLayout
-        app:tabGravity="fill"
-        app:tabMode="scrollable"
         android:layout_alignParentTop="true"
         android:orientation="horizontal"
-        android:scrollbars="horizontal"
         android:id="@+id/tabs"
+        app:tabIndicatorColor="@color/startblue_transparent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
