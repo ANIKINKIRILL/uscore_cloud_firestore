@@ -282,7 +282,7 @@ public class FirebaseServer {
                 public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                     for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                         Teacher teacherObj = documentSnapshot.toObject(Teacher.class);
-                        teachers.add(teacherObj.getFirstName() + " " + teacherObj.getLastName());
+                        teachers.add(String.format("%s %s %s", teacherObj.getSecondName(), teacherObj.getFirstName(), teacherObj.getLastName()));
                     }
                     callback.execute(teachers);
                 }

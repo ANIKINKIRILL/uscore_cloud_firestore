@@ -389,9 +389,10 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
 
     public void getPickedTeacherEmail(String firstLastName){
         signIn.setEnabled(false);
-        String[] firstLastNameSplittedWithSpace = firstLastName.split(" ");
-        String firstName = firstLastNameSplittedWithSpace[0];
-        String lastName = firstLastNameSplittedWithSpace[1];
+        String[] fullNameSplitedWithSpace = firstLastName.split(" ");
+        String secondName = fullNameSplitedWithSpace[0];
+        String firstName = fullNameSplitedWithSpace[1];
+        String lastName = fullNameSplitedWithSpace[2];
         Teacher.getTeacherEmail(firstName, lastName, mGetTeacherEmailCallback);
     }
 

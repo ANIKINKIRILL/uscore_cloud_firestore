@@ -44,7 +44,7 @@ public class RequestAddingScoreAdapter extends ArrayAdapter {
         View view = LayoutInflater.from(context).inflate(R.layout.teacher_item, null);
         TextView teacherName = view.findViewById(R.id.teacherName);
         Teacher teacher = teachers.get(position);
-        teacherName.setText(teacher.getFirstName()+" "+teacher.getLastName());
+        teacherName.setText(teacher.getSecondName()+" "+teacher.getFirstName() + " "+teacher.getLastName());
         return view;
     }
 }

@@ -933,7 +933,7 @@ public class dashboard_activity extends AppCompatActivity implements
                         student$db.document(sharedPreferences.getString(Student.ID, "")).update("limitScore", "50");
                     }
                 }else{
-                    Toast.makeText(dashboard_activity.this, "На сегодня лимит исчерпан. Осталось " + hours + " часа", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(dashboard_activity.this, "На сегодня лимит исчерпан. Осталось " + (24-hours) + " часа", Toast.LENGTH_SHORT).show();
                 }
             }
         });

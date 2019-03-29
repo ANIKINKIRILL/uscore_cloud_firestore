@@ -15,6 +15,7 @@ import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.activities.AddGroupFunctionAdminSectionActivity;
 import com.it_score.admin.uscore001.activities.AddOptionActivity;
 import com.it_score.admin.uscore001.activities.AddSubjectFunctionAdminSectionActivity;
+import com.it_score.admin.uscore001.activities.AddTeacherAdminSectionActivity;
 import com.it_score.admin.uscore001.activities.EditTeacherAdminSectionActivity;
 import com.it_score.admin.uscore001.models.AdminFunction;
 
@@ -35,6 +36,7 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
     public static final String ADD_GROUP_FUN_ID = "MHv4mwDwlxw2BDpI7iAv";
     public static final String CHANGE_PASSWORD_FUN_ID = "NxD88xLfgyWmHpZuiKhy";
     public static final String EDIT_TEACHER_FUN_ID = "YeGNUFEcNqD8JuY3a9U7";
+    public static final String CREATE_TEACHER_FUN_ID = "Bcd0UOapnTtOMkEmTusO";
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView position, title, description;
@@ -102,6 +104,11 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
                     }
                     case CHANGE_PASSWORD_FUN_ID:{
                         Toast.makeText(context, "На данный момент не доступно", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                    case CREATE_TEACHER_FUN_ID:{
+                        Intent intent = new Intent(context, AddTeacherAdminSectionActivity.class);
+                        context.startActivity(intent);
                         break;
                     }
                 }

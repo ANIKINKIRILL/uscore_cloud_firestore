@@ -155,7 +155,7 @@ public class Teacher {
 
     @Override
     public String toString() {
-        return this.getFirstName() + " " + this.getLastName();
+        return this.getSecondName() + " " + this.getFirstName() + " " + this.getLastName();
     }
 
     /*
