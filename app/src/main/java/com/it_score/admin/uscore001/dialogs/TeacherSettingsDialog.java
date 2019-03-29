@@ -33,8 +33,8 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     private String teacherLastName;
     private String teacherSecondName;
     private String teacherFirstName;
-    private String subjectData;
-    private String positionData;
+//    private String subjectData;
+//    private String positionData;
 
     @Nullable
     @Override
@@ -61,8 +61,8 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
      */
 
     private void init(View view){
-        position = view.findViewById(R.id.position);
-        subject = view.findViewById(R.id.subject);
+//        position = view.findViewById(R.id.position);
+//        subject = view.findViewById(R.id.subject);
         firstName = view.findViewById(R.id.firstName);
         secondName = view.findViewById(R.id.secondName);
         lastName = view.findViewById(R.id.lastName);
@@ -85,8 +85,8 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
             teacherSecondName = sharedPreferences.getString(Teacher.SECOND_NAME, "");
             teacherLastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
             teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
-            subjectData = sharedPreferences.getString(Teacher.SUBJECT_DATA, "");
-            positionData = sharedPreferences.getString(Teacher.POSITION_DATA, "");
+//            subjectData = sharedPreferences.getString(Teacher.SUBJECT_DATA, "");
+//            positionData = sharedPreferences.getString(Teacher.POSITION_DATA, "");
         }catch (Exception e){
             Log.d(TAG, "getTeacherData: " + e.getMessage());
         }
@@ -100,8 +100,8 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
         firstName.setText(teacherFirstName);
         secondName.setText(teacherSecondName);
         lastName.setText(teacherLastName);
-        position.setText(positionData);
-        subject.setText(subjectData);
+//        position.setText(positionData);
+//        subject.setText(subjectData);
     }
 
     @Override

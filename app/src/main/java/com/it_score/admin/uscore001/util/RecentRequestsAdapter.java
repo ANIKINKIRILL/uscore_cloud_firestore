@@ -52,6 +52,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
         TextView date, score, teacherName;
         CardView cardViewlayout;
         View dividerLine;
+        TextView optionInvisible, groupInvisible;
         public RequestsViewHolder(@NonNull View itemView) {
             super(itemView);
             date = itemView.findViewById(R.id.date);
@@ -59,6 +60,8 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
             teacherName = itemView.findViewById(R.id.teacherName);
             cardViewlayout = itemView.findViewById(R.id.cardViewLayout);
             dividerLine = itemView.findViewById(R.id.dividerLine);
+            optionInvisible = itemView.findViewById(R.id.option);
+            groupInvisible = itemView.findViewById(R.id.group);
         }
     }
 
@@ -133,11 +136,11 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                    }
                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
                    alertDialog.setMessage("Ученик: " + request.getFirstName() + " " + request.getSecondName() + "\n" +
-                           "Группа: " + group + "\n" +
+                           "Группа: " + requestsViewHolder.groupInvisible.getText().toString() + "\n" +
                            "Запрашиваемые очки: " + request.getScore() + "\n" +
                            "Дата: " + request.getDate() + "\n" +
                            "Сообщение ученика: " + request.getBody() + "\n" +
-                           "Причина: " + option + "\n" +
+                           "Причина: " + requestsViewHolder.optionInvisible.getText().toString() + "\n" +
                             "Статус заявки: " + requestStatus);
                    if (!request.isAnswered() && !request.isCanceled()) {
                        alertDialog.setTitle("Хотите добавить ученику очки?");
@@ -191,11 +194,11 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                    }
                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
                    alertDialog.setMessage("Ученик: " + request.getFirstName() + " " + request.getSecondName() + "\n" +
-                           "Группа: " + group + "\n" +
+                           "Группа: " + requestsViewHolder.groupInvisible.getText().toString() + "\n" +
                            "Запрашиваемые очки: " + request.getScore() + "\n" +
                            "Дата: " + request.getDate() + "\n" +
                            "Сообщение ученика: " + request.getBody() + "\n" +
-                           "Причина: " + option + "\n" +
+                           "Причина: " + requestsViewHolder.optionInvisible.getText().toString() + "\n" +
                             "Статус заяки: " + requestStatus);
 
                    alertDialog.setTitle("Подробная информация о запросе");
@@ -272,6 +275,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isSuccessful()){
                     group = task.getResult().get("name").toString();
+                    requestsViewHolder.groupInvisible.setText(group);
                 }
             }
         });
@@ -285,6 +289,7 @@ public class RecentRequestsAdapter extends RecyclerView.Adapter<RecentRequestsAd
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if(task.isSuccessful()){
                         option = task.getResult().get("name").toString();
+                        requestsViewHolder.optionInvisible.setText(option);
                     }
                 }
             });

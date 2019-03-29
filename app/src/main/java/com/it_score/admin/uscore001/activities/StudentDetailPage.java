@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -179,15 +180,21 @@ public class StudentDetailPage extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.addCommentButton:{
+                /*
                 Intent intent = new Intent(StudentDetailPage.this, CommentsPage.class);
                 intent.putExtra("to_whom_send_email", emailAddress.getText().toString());
                 startActivity(intent);
+                */
+                Snackbar.make(v, "Эта функция пока не доступна", Snackbar.LENGTH_LONG).show();
                 break;
             }
             case R.id.showAllComments:{
+                /*
                 Intent intent = new Intent(StudentDetailPage.this, CommentsPage.class);
                 intent.putExtra("to_whom_send_email", emailAddress.getText().toString());
                 startActivity(intent);
+                */
+                Snackbar.make(v, "Эта функция пока не доступна", Snackbar.LENGTH_LONG).show();
                 break;
             }
         }

@@ -139,7 +139,6 @@ public class ChangePasswordDialog extends DialogFragment implements View.OnClick
                                     YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(dialogLayout);
                                 }
                             } catch (Exception e) {
-                                
                                 e.getMessage();
                             }
                         }
