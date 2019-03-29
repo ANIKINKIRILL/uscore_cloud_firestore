@@ -233,7 +233,6 @@ public class dashboard_activity extends AppCompatActivity implements
         }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
-            menu.findItem(R.id.testChangePassword).setVisible(false);
         }
         if(Settings.getStatus().trim().equals(ADMIN_STATUS)){         // Админ
             menu.findItem(R.id.scanQRCODE).setVisible(false);

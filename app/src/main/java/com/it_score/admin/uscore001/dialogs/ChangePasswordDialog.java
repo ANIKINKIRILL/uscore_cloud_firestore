@@ -133,7 +133,7 @@ public class ChangePasswordDialog extends DialogFragment implements View.OnClick
                                     }
                                 } else {
                                     Log.d(TAG, "onComplete: change password failed die to : " + task.getException().getMessage());
-                                    Toast.makeText(getContext(), "Неправильный пароль, попробуйте еще раз. Минимальное количество символов: 6", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Неправильный пароль, попробуйте еще раз. Минимальное количество символов: 6, перезайдите в свой профиль и попробуйте еще раз", Toast.LENGTH_SHORT).show();
                                     new_pass_edit_text.setText("");
                                     repeat_pass_edit_text.setText("");
                                     YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(dialogLayout);
