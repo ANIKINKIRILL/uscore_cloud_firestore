@@ -2,9 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/settings"
-        app:showAsAction="always"
-        android:title="Настройки"
+        android:id="@+id/changePassword"
+        android:title="Смена пароля"
         android:icon="@drawable/ic_settings_2"
         />
 </menu>

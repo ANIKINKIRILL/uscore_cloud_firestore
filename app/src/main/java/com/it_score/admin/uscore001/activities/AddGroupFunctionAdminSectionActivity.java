@@ -114,6 +114,7 @@ public class AddGroupFunctionAdminSectionActivity extends AppCompatActivity impl
                                 Toast.makeText(AddGroupFunctionAdminSectionActivity.this,
                                         "Группа: " + groupNameInput + " добавлена",
                                         Toast.LENGTH_SHORT).show();
+                                finish();
                             }
                         }
                     });

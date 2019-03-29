@@ -59,7 +59,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <TextView
-                        android:id="@+id/teacherName"
+                        android:id="@+id/subjectName"
                         tools:text="Физика"
                         android:textSize="15sp"
                         android:gravity="center"
@@ -132,7 +132,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
                 <TextView
-                    android:id="@+id/newTeacherName"
+                    android:id="@+id/newSubjectName"
                     tools:text="Математика"
                     android:textSize="15sp"
                     android:gravity="center"

@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.it_score.admin.uscore001.dialogs.ImageDialog;
 import com.it_score.admin.uscore001.dialogs.TeacherSettingsDialog;
 import com.it_score.admin.uscore001.models.Teacher;
@@ -168,6 +169,11 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         switch (item.getItemId()){
             case android.R.id.home:{
                 finish();
+                break;
+            }
+            case R.id.changePassword:{
+                ChangePasswordDialog dialog = new ChangePasswordDialog();
+                dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
                 break;
             }
         }

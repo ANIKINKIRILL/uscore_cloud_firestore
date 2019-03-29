@@ -15,6 +15,7 @@ import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.activities.AddGroupFunctionAdminSectionActivity;
 import com.it_score.admin.uscore001.activities.AddOptionActivity;
 import com.it_score.admin.uscore001.activities.AddSubjectFunctionAdminSectionActivity;
+import com.it_score.admin.uscore001.activities.EditTeacherAdminSectionActivity;
 import com.it_score.admin.uscore001.models.AdminFunction;
 
 import java.util.ArrayList;
@@ -95,7 +96,12 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
                         break;
                     }
                     case EDIT_TEACHER_FUN_ID:{
-
+                        Intent intent = new Intent(context, EditTeacherAdminSectionActivity.class);
+                        context.startActivity(intent);
+                        break;
+                    }
+                    case CHANGE_PASSWORD_FUN_ID:{
+                        Toast.makeText(context, "На данный момент не доступно", Toast.LENGTH_SHORT).show();
                         break;
                     }
                 }

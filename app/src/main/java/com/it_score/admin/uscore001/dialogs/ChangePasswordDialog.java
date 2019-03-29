@@ -112,17 +112,25 @@ public class ChangePasswordDialog extends DialogFragment implements View.OnClick
                         public void onComplete(@NonNull Task<Void> task) {
                             try {
                                 if (task.isSuccessful()) {
-                                    YoYo.with(Techniques.RollOut).duration(1000).repeat(0).playOn(dialogLayout);
-                                    Log.d(TAG, "onComplete: change password successfully");
-                                    Toast.makeText(getContext(), "Вы успешно поменяли пароль", Toast.LENGTH_SHORT).show();
-                                    getDialog().cancel();
-                                    SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
-                                    STUDENTS$DB.document(sharedPreferences.getString(Student.ID, "")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                            task.getResult().getReference().update("change_password", true);
-                                        }
-                                    });
+                                    if(Settings.getStatus().equals(getString(R.string.studentStatusValue))) {
+                                        YoYo.with(Techniques.RollOut).duration(1000).repeat(0).playOn(dialogLayout);
+                                        Log.d(TAG, "onComplete: change password successfully");
+                                        Toast.makeText(getContext(), "Вы успешно поменяли пароль", Toast.LENGTH_SHORT).show();
+                                        getDialog().cancel();
+                                        SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+                                        STUDENTS$DB.document(sharedPreferences.getString(Student.ID, "")).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                task.getResult().getReference().update("change_password", true);
+                                            }
+                                        });
+                                    }
+                                    if(Settings.getStatus().equals(getString(R.string.teacherStatusValue))){
+                                        YoYo.with(Techniques.RollOut).duration(1000).repeat(0).playOn(dialogLayout);
+                                        Log.d(TAG, "onComplete: change password successfully");
+                                        Toast.makeText(getContext(), "Вы успешно поменяли пароль", Toast.LENGTH_SHORT).show();
+                                        getDialog().cancel();
+                                    }
                                 } else {
                                     Log.d(TAG, "onComplete: change password failed die to : " + task.getException().getMessage());
                                     Toast.makeText(getContext(), "Неправильный пароль, попробуйте еще раз. Минимальное количество символов: 6", Toast.LENGTH_SHORT).show();
