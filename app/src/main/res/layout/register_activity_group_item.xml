@@ -7,8 +7,8 @@
     <TextView
         android:id="@+id/groupName"
         android:textSize="18sp"
-        android:textColor="@color/grayColor"
         tools:text="10-6"
+        android:background="@color/startblue_transparent"
         android:padding="10dp"
         android:gravity="center"
         android:layout_width="match_parent"

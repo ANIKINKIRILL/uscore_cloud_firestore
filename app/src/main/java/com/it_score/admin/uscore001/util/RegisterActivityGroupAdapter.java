@@ -58,6 +58,7 @@ public class RegisterActivityGroupAdapter extends ArrayAdapter {
             view.setTag(holder);
         }
         holder.groupName.setText(group.getName());
+        holder.groupName.setTextColor(getContext().getResources().getColor(android.R.color.white));
         return view;
     }
 

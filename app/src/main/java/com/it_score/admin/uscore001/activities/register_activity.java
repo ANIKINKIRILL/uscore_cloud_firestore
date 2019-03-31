@@ -1,5 +1,6 @@
 package com.it_score.admin.uscore001.activities;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -133,11 +134,22 @@ public class register_activity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if(isValid()){
+                register.setEnabled(false);
+                ProgressDialog progressDialog = new ProgressDialog(register_activity.this);
+                progressDialog.setTitle("Загрузка");
+                progressDialog.setMessage("Ваш запрос отправляется...");
+                progressDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                progressDialog.show();
                 // отправка запрса на регистрацию классному рукаводителю
-                String firstNameValue = firstName.getText().toString();
-                String secondNameValue = secondName.getText().toString();
-                String lastNameValue = lastName.getText().toString();
-                String emailValue = email.getText().toString();
+                String firstNameValue = firstName.getText().toString().trim();
+                String secondNameValue = secondName.getText().toString().trim();
+                String lastNameValue = lastName.getText().toString().trim();
+                String emailValue = email.getText().toString().trim();
                 String groupID = selectedGroupID;
                 String teacherID = selectedTeacherID;
                 boolean confirmed = false;
