@@ -188,14 +188,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     public void doSignIn(final String email, String password, Callback callback){
         signIn.setEnabled(false);
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Вход в аккаунт");
-        progressDialog.setMessage("Загрузка...");
-        progressDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        progressDialog.setMessage("Вход в аккаунт...");
         progressDialog.show();
         User.authenticate(email, password, callback);
     }
@@ -331,8 +324,8 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     public void getPickedStudentEmail(String pickedGroupID, String firstSecondStudentName){
         signIn.setEnabled(false);
         String firstSecondNameSplittedWithSpace[] = firstSecondStudentName.split(" ");
-        String firstName = firstSecondNameSplittedWithSpace[0];
-        String secondName = firstSecondNameSplittedWithSpace[1];
+        String firstName = firstSecondNameSplittedWithSpace[0].trim();
+        String secondName = firstSecondNameSplittedWithSpace[1].trim();
         Student.getStudentEmail(pickedGroupID, firstName, secondName, mGetStudentEmailCallback);
     }
 

@@ -1,5 +1,6 @@
 package com.it_score.admin.uscore001.dialogs;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.activities.RequestAddingScoreActivity;
 import com.it_score.admin.uscore001.models.RequestAddingScore;
 import com.it_score.admin.uscore001.models.Student;
 import com.it_score.admin.uscore001.models.Teacher;
@@ -55,6 +57,7 @@ public class DialogRequestAddingScore extends DialogFragment implements
     EditText requestBody;
     TextView ok, cancel, score;
     RelativeLayout dialogLayout;
+    ProgressDialog progressDialog;
 
     // Переменные
     String teacherName;
@@ -183,6 +186,9 @@ public class DialogRequestAddingScore extends DialogFragment implements
                                 }
                                 // Баллы, котрые даются на день хватает для отправки запроса
                                 else if (currentLimitScore + 5 >= scoreValue) {
+                                    progressDialog = new ProgressDialog(getContext());
+                                    progressDialog.setMessage("Отправляем запрос учителю...");
+                                    progressDialog.show();
                                     // Уменьшаем баллы, которые даются на дент
                                     decreaseLimitScore(scoreValue, currentStudentID);
                                     // Отправляем запрос
@@ -278,8 +284,15 @@ public class DialogRequestAddingScore extends DialogFragment implements
                 id, body, date, getter, image_path, senderEmail,
                 firstName, secondName, lastName, score, groupID,
                 requestID, optionID, answered, canceled, senderID);
-        Student.sendRequest(request);
+        Student.sendRequest(request, mSendRequestCallback);
     }
+
+    private Callback mSendRequestCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            progressDialog.dismiss();
+        }
+    };
 
     /**
      * Вычитание баллов на день за отправку запроса учителю

@@ -96,7 +96,7 @@ public class PositiveRequestsFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
             progressBar.setVisibility(View.GONE);
-            if(teacherWentTrough == 3 && positiveRequestsAmount == 0){
+            if(teacherWentTrough == 25 && positiveRequestsAmount == 0){
                 /*
                         Перенаправляем пользвателя на фрагмент что у него нет принятых заросов
                  */

@@ -249,9 +249,9 @@ public class FirebaseServer {
             String secondName = (String) dataArgument.data[2];
 
             STUDENTS$DB
-                .whereEqualTo("firstName", firstName)
-                .whereEqualTo("secondName", secondName)
-                .whereEqualTo("groupID", groupID)
+                .whereEqualTo("firstName", firstName.trim())
+                .whereEqualTo("secondName", secondName.trim())
+                .whereEqualTo("groupID", groupID.trim())
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -1016,19 +1016,21 @@ public class FirebaseServer {
     * Отправить запрос на добвление очков
     */
     static int counter1 = 0;
-    public static class SendRequest extends AsyncTask<RequestAddingScore, Void, Void>{
+    public static class SendRequest extends AsyncTask<AsyncTaskArguments, Void, Void>{
         @Override
-        protected Void doInBackground(RequestAddingScore... requestAddingScores) {
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             counter1 = 0;
-            String teacherRequestID = requestAddingScores[0].getRequestID();
-            String senderID = requestAddingScores[0].getSenderID();
+            Callback callback = asyncTaskArguments[0].mCallback;
+            RequestAddingScore request = (RequestAddingScore) asyncTaskArguments[0].mData.data[0];
+            String teacherRequestID = request.getRequestID();
+            String senderID = request.getSenderID();
             if(counter1 == 0) {
                 REQEUSTS$DB
                     .document(teacherRequestID)
                     .collection("STUDENTS")
                     .document(senderID)
                     .collection("REQUESTS")
-                    .add(requestAddingScores[0])
+                    .add(request)
                     .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentReference> task) {
@@ -1042,6 +1044,10 @@ public class FirebaseServer {
                                     .collection("STUDENTS")
                                     .document(senderID)
                                     .set(idField, SetOptions.merge());
+                                callback.execute("Запрос отправлен успешно");
+                            }else {
+                                callback.execute("Запрос не был отправлен из-за " + task.getException().getMessage() +
+                                        " обратитесь к администратору");
                             }
                             counter1 = 1;
                         }
@@ -1154,6 +1160,7 @@ public class FirebaseServer {
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             counter4 = 0;
+            Callback callback = asyncTaskArguments[0].mCallback;
             String studentID = (String) asyncTaskArguments[0].mData.data[0];
             int scoreToDecrease = (int) asyncTaskArguments[0].mData.data[1];
             STUDENTS$DB.document(studentID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1168,6 +1175,9 @@ public class FirebaseServer {
                                 resultScore = 0;
                             }
                             task.getResult().getReference().update("score", resultScore);
+                            callback.execute("Вы успешно оштрафовали ученика");
+                        }else {
+                            callback.execute("Штраф был неуспешен. Попробуйте еще раз. Обратитесь к администрации");
                         }
                         counter4 = 1;
                     }

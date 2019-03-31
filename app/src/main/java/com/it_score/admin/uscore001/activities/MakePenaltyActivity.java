@@ -1,6 +1,9 @@
 package com.it_score.admin.uscore001.activities;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -63,6 +66,7 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference options$DB = firebaseFirestore.collection("OPTIONS$DB");
     CollectionReference reqeusts$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,7 +74,7 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
         setContentView(R.layout.make_penalty);
         try {
             // try catch блок из-за возникновения проблемы с context`ом, так как после закрытия активити context = null
-            context = getApplicationContext();
+            context = MakePenaltyActivity.this;
         }catch (Exception e){
             e.getMessage();
         }
@@ -140,10 +144,13 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
             }
             case R.id.ok:{
                 if(!scoreTextView.getText().toString().trim().isEmpty()){
+                    progressDialog = new ProgressDialog(MakePenaltyActivity.this);
+                    progressDialog.setMessage("Штрафуем ученика...");
+                    progressDialog.show();
                     // Внесение данных/наказания в БД
                     addPenaltyToHistory(optionID.getText().toString(), groupId, studentID, scoreInvisible.getText().toString());
                     // Понижения баллов
-                    decreaseStudentScore(studentID, Integer.parseInt(scoreInvisible.getText().toString()));
+                    decreaseStudentScore(studentID, Integer.parseInt(scoreInvisible.getText().toString()), mDecreaseStudentScoreCallback);
                 }
                 break;
             }
@@ -245,7 +252,6 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
                 scoreTextView.setText("Штраф: " + penalty.getPoints());
                 scoreInvisible.setText(penalty.getPoints());
                 optionID.setText(penalty.getId());
-                Toast.makeText(this, selectedOption, Toast.LENGTH_SHORT).show();
                 break;
             }
             // пользователь нажал на спиннер с выбором ученика
@@ -311,9 +317,26 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
      * @param scoreToDecrease   очки на которые учитель штрафует учинка
      */
 
-    private void decreaseStudentScore(String studentID, int scoreToDecrease){
-        Teacher.decreaseStudentScore(studentID, scoreToDecrease);
-        Toast.makeText(context, "Вы оштрафовали ученика. Для более детальной инфармации смотреть в своей истории", Toast.LENGTH_SHORT).show();
-        finish();
+    private void decreaseStudentScore(String studentID, int scoreToDecrease, Callback callback){
+        Teacher.decreaseStudentScore(studentID, scoreToDecrease, callback);
     }
+
+    private Callback mDecreaseStudentScoreCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            progressDialog.dismiss();
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MakePenaltyActivity.this);
+            alertDialog.setTitle("Штраф ученика");
+            alertDialog.setMessage("Вы оштрафовали ученика. Для более детальной инфармации смотреть в 'Недавниe'");
+            alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                finish();
+            }
+        });
+        alertDialog.show();
+        }
+    };
+
 }

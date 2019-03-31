@@ -95,12 +95,11 @@ public class NewRequestsFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
             progressBar.setVisibility(View.GONE);
-            if(teacherWentTrough == 3 && newRequestsAmount == 0){
+            if(teacherWentTrough == 25 && newRequestsAmount == 0){
                 /*
                         Перенаправляем пользвателя на фрагмент что у него нет новых заросов
                  */
                 Toast.makeText(getContext(), "У тебя нет новых запросов", Toast.LENGTH_SHORT).show();
-
             }
         }
     };

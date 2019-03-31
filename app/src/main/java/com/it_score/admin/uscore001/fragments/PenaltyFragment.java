@@ -87,7 +87,7 @@ public class PenaltyFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
             progressBar.setVisibility(View.GONE);
-            if(teacherWentTrough == 3 && penaltiesAmount == 0){
+            if(teacherWentTrough == 25 && penaltiesAmount == 0){
                 /*
                         Перенаправляем пользвателя на фрагмент что у него нет штрафов
                  */

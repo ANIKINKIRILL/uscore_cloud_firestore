@@ -375,9 +375,10 @@ public class Student {
     }
     */
 
-    public static void sendRequest(RequestAddingScore request){
+    public static void sendRequest(RequestAddingScore request, Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(request));
         FirebaseServer.SendRequest sendRequest = new FirebaseServer.SendRequest();
-        sendRequest.execute(request);
+        sendRequest.execute(asyncTaskArguments);
     }
 
 }

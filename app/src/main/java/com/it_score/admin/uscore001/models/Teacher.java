@@ -343,8 +343,8 @@ public class Teacher {
      * @param scoreToDecrease   очки на которые учитель штрафует учинка
      */
 
-    public static void decreaseStudentScore(String studentID, int scoreToDecrease){
-        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(null, new AsyncTaskDataArgument(studentID, scoreToDecrease));
+    public static void decreaseStudentScore(String studentID, int scoreToDecrease, Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(studentID, scoreToDecrease));
         FirebaseServer.DecreaseStudentScore decreaseStudentScore = new FirebaseServer.DecreaseStudentScore();
         decreaseStudentScore.execute(asyncTaskArguments);
     }

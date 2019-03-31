@@ -77,7 +77,6 @@ public class EntireSchoolTopScoreFragment extends Fragment {
 
     private void getSchoolRatingByStudent(){
         progressDialog = new ProgressDialog(getContext());
-        progressDialog.setTitle("Загрузка");
         progressDialog.setMessage("Загрузка рейтинга школы...");
         progressDialog.show();
         Student.loadAllStudents(mGetSchoolRatingByStudent, Settings.getUserId());
@@ -112,7 +111,6 @@ public class EntireSchoolTopScoreFragment extends Fragment {
 
     private void getSchoolRatingByTeacher(){
         progressDialog = new ProgressDialog(getContext());
-        progressDialog.setTitle("Загрузка");
         progressDialog.setMessage("Загрузка рейтинга школы...");
         progressDialog.show();
         Student.loadAllStudents(mGetSchoolRatingByTeacher, Settings.getUserId());

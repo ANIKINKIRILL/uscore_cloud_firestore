@@ -136,7 +136,6 @@ public class register_activity extends AppCompatActivity {
             if(isValid()){
                 register.setEnabled(false);
                 ProgressDialog progressDialog = new ProgressDialog(register_activity.this);
-                progressDialog.setTitle("Загрузка");
                 progressDialog.setMessage("Ваш запрос отправляется...");
                 progressDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
                     @Override

@@ -1,6 +1,8 @@
 package com.it_score.admin.uscore001.dialogs;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +20,7 @@ import android.widget.Toast;
 
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.activities.MakePenaltyActivity;
 import com.it_score.admin.uscore001.models.Group;
 import com.it_score.admin.uscore001.models.Option;
 import com.it_score.admin.uscore001.models.Penalty;
@@ -294,8 +297,27 @@ public class MakePenaltyDialog extends DialogFragment implements AdapterView.OnI
      */
 
     private void decreaseStudentScore(String studentID, int scoreToDecrease){
-        Teacher.decreaseStudentScore(studentID, scoreToDecrease);
+        Teacher.decreaseStudentScore(studentID, scoreToDecrease, mDecreaseStudentScoreCallback);
         getDialog().dismiss();
         Toast.makeText(context, "Вы оштрафовали ученика. Для более детальной инфармации смотреть в своей истории", Toast.LENGTH_SHORT).show();
     }
+
+    private Callback mDecreaseStudentScoreCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            /*
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+            alertDialog.setTitle("Штраф ученика");
+            alertDialog.setMessage("Вы оштрафовали ученика. Для более детальной инфармации смотреть в 'Недавниe'");
+            alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            alertDialog.show();
+            */
+        }
+    };
+
 }

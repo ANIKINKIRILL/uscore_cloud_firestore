@@ -111,10 +111,10 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
                                         // Создание обьекта класса Student
-                                        Student student = new Student(email, model.getGroupID(),
+                                        Student student = new Student(email.trim(), model.getGroupID(),
                                                "", 100, "",
-                                               "50", model.getTeacherID(), firstName,
-                                               secondName, lastName,
+                                               "50", model.getTeacherID(), firstName.trim(),
+                                               secondName.trim(), lastName.trim(),
                                                "y1igExymzKFaV3BU8zH8");
                                         // Добавление в базу
                                         if(counter == 0) {
@@ -163,7 +163,6 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                 alertDialog.show();
             }
         });
-
     }
 
     @Override

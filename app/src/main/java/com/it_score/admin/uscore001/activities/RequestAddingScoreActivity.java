@@ -1,6 +1,9 @@
 package com.it_score.admin.uscore001.activities;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -58,6 +61,7 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
     EditText requestBody;
     TextView ok, cancel, score, scoreInvisible;
     RelativeLayout dialogLayout;
+    ProgressDialog progressDialog;
 
     // Переменные
     String teacherName;
@@ -223,7 +227,10 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
                                 }
                                 // Баллы, котрые даются на день хватает для отправки запроса
                                 else if (currentLimitScore + 5 >= scoreValue) {
-                                    // Уменьшаем баллы, которые даются на дент
+                                    progressDialog = new ProgressDialog(RequestAddingScoreActivity.this);
+                                    progressDialog.setMessage("Отправляем запрос учителю...");
+                                    progressDialog.show();
+                                    // Уменьшаем баллы, которые даются на день
                                     decreaseLimitScore(scoreValue, currentStudentID);
                                     // Отправляем запрос
                                     sendRequest(
@@ -231,12 +238,6 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
                                             firstName, secondName, "", scoreValue, groupID,
                                             requestID, option, answered, canceled, currentStudentID
                                     );
-                                    finish();
-                                    try {
-                                        Toast.makeText(getApplicationContext(), "Успешно отправленно " + teacherName, Toast.LENGTH_SHORT).show();
-                                    } catch (Exception e1) {
-                                        Log.d(TAG, "toast message: " + e1.getMessage());
-                                    }
                                 }
                                 counter = 1;
                             }
@@ -327,8 +328,26 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
                 id, body, date, getter, image_path, senderEmail,
                 firstName, secondName, lastName, score, groupID,
                 requestID, optionID, answered, canceled, senderID);
-        Student.sendRequest(request);
+        Student.sendRequest(request, mSendRequestCallback);
     }
+
+    private Callback mSendRequestCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            progressDialog.dismiss();
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(RequestAddingScoreActivity.this);
+            alertDialog.setTitle("Запрос учителю");
+            alertDialog.setMessage("Ваш запрос отправлен успешно, теперь можно посмотреть запрос в 'Недавниe'");
+            alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    finish();
+                }
+            });
+            alertDialog.show();
+        }
+    };
 
     /**
      * Вычитание баллов на день за отправку запроса учителю

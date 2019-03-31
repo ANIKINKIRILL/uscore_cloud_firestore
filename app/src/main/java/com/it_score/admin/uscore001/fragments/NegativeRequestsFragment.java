@@ -96,7 +96,7 @@ public class NegativeRequestsFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
             progressBar.setVisibility(View.GONE);
-            if(teacherWentTrough == 3 && negativeRequestsAmount == 0){
+            if(teacherWentTrough == 25 && negativeRequestsAmount == 0){
                 /*
                         Перенаправляем пользвателя на фрагмент что у него нет отклоненных заросов
                  */

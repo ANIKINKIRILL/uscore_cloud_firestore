@@ -111,7 +111,6 @@ public class MyGroupTopScoreFragment extends Fragment {
     private void getGroupRatingByStudent(){
         try {
             progressDialog = new ProgressDialog(getContext());
-            progressDialog.setTitle("Загрузка");
             progressDialog.setMessage("Загрузка рейтинга твоей группы...");
             progressDialog.show();
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
@@ -128,7 +127,6 @@ public class MyGroupTopScoreFragment extends Fragment {
 
     private void getGroupRatingByTeacher(){
         progressDialog = new ProgressDialog(getContext());
-        progressDialog.setTitle("Загрузка");
         progressDialog.setMessage("Загрузка рейтинга вашей группы...");
         progressDialog.show();
         Student.loadGroupStudentsByGroupID(teacherGroupID, Settings.getUserId(), mGetGroupRatingCallbackForTeacher);
