@@ -39,7 +39,6 @@
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.DASHBOARD" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -62,7 +61,6 @@
             android:theme="@style/ActivityNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.TOPSCORE" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

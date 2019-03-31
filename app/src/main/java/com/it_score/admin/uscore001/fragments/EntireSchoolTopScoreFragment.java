@@ -1,5 +1,6 @@
 package com.it_score.admin.uscore001.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
     // Виджеты
     RecyclerView recyclerView;
     TextView currentStudentRate;
+    ProgressDialog progressDialog;
 
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
@@ -74,6 +76,10 @@ public class EntireSchoolTopScoreFragment extends Fragment {
      */
 
     private void getSchoolRatingByStudent(){
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Загрузка");
+        progressDialog.setMessage("Загрузка рейтинга школы...");
+        progressDialog.show();
         Student.loadAllStudents(mGetSchoolRatingByStudent, Settings.getUserId());
     }
 
@@ -93,6 +99,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                 recyclerView.setAdapter(adapter);
                 currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentSchoolRate, Integer.toString(studentScore)));
+                progressDialog.dismiss();
             }catch (Exception e){
                 Log.d(TAG, "execute: " + e.getMessage());
             }
@@ -104,6 +111,10 @@ public class EntireSchoolTopScoreFragment extends Fragment {
      */
 
     private void getSchoolRatingByTeacher(){
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Загрузка");
+        progressDialog.setMessage("Загрузка рейтинга школы...");
+        progressDialog.show();
         Student.loadAllStudents(mGetSchoolRatingByTeacher, Settings.getUserId());
     }
 
@@ -118,6 +129,7 @@ public class EntireSchoolTopScoreFragment extends Fragment {
             adapter = new StudentRecyclerAdapter(ratedStudentsList);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
+            progressDialog.dismiss();
         }
     };
 

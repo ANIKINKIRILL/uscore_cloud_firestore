@@ -866,7 +866,7 @@ public class dashboard_activity extends AppCompatActivity implements
                 limitScoreView.setText("В данный момент ты не можешь добавлять быллы");
             }else{
                 String leftText = limitScoreView.getText().toString();
-                String result = leftText + ": " + limitScore + " осталось";
+                String result = leftText + ": " + limitScore + " очков";
                 limitScoreView.setText(result);
             }
 

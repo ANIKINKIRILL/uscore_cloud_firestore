@@ -1,5 +1,6 @@
 package com.it_score.admin.uscore001.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.it_score.admin.uscore001.Callback;
@@ -39,6 +41,7 @@ public class MyGroupTopScoreFragment extends Fragment {
     TextView title;
     RecyclerView recyclerView;
     TextView currentStudentRate;
+    ProgressDialog progressDialog;
 
     // Постоянные переменные
     public static final String STUDENT_STATUS = "y1igExymzKFaV3BU8zH8";
@@ -107,6 +110,10 @@ public class MyGroupTopScoreFragment extends Fragment {
 
     private void getGroupRatingByStudent(){
         try {
+            progressDialog = new ProgressDialog(getContext());
+            progressDialog.setTitle("Загрузка");
+            progressDialog.setMessage("Загрузка рейтинга твоей группы...");
+            progressDialog.show();
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
             String groupID = sharedPreferences.getString(Student.GROUP_ID, "");
             Student.loadGroupStudentsByGroupID(groupID, Settings.getUserId(), mGetGroupRatingCallbackForStudent);
@@ -120,6 +127,10 @@ public class MyGroupTopScoreFragment extends Fragment {
      */
 
     private void getGroupRatingByTeacher(){
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Загрузка");
+        progressDialog.setMessage("Загрузка рейтинга вашей группы...");
+        progressDialog.show();
         Student.loadGroupStudentsByGroupID(teacherGroupID, Settings.getUserId(), mGetGroupRatingCallbackForTeacher);
     }
 
@@ -142,6 +153,7 @@ public class MyGroupTopScoreFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                 recyclerView.setAdapter(adapter);
                 currentStudentRate.setText(String.format("Ты на %s месте с %s очками", currentStudentRateInGroup, Integer.toString(studentScore)));
+                progressDialog.dismiss();
             }catch (Exception e){
                 Log.d(TAG, "execute: " + e.getMessage());
             }
@@ -159,6 +171,7 @@ public class MyGroupTopScoreFragment extends Fragment {
             adapter = new StudentRecyclerAdapter(ratedStudentsList);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(adapter);
+            progressDialog.dismiss();
         }
     };
 
