@@ -603,10 +603,12 @@ public class FirebaseServer {
             String firstName = (String) asyncTaskArguments[0].mData.data[1];
             String secondName = (String) asyncTaskArguments[0].mData.data[2];
             String lastName = (String) asyncTaskArguments[0].mData.data[3];
+            String subjectID = (String) asyncTaskArguments[0].mData.data[4];
             HashMap<String, Object> updateCredentialsMap = new HashMap<>();
             updateCredentialsMap.put("firstName", firstName.trim());
             updateCredentialsMap.put("secondName", secondName.trim());
             updateCredentialsMap.put("lastName", lastName.trim());
+            updateCredentialsMap.put("subjectID", subjectID);
             TEACHERS$DB.document(teacherID).update(updateCredentialsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {

@@ -246,8 +246,8 @@ public class Teacher {
      * @param lastName          Отчество
      */
 
-    public static void updateCredentials(Callback callback, String teacherID, String firstName, String secondName, String lastName){
-        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID, firstName, secondName, lastName));
+    public static void updateCredentials(Callback callback, String teacherID, String firstName, String secondName, String lastName, String subjectID){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(teacherID, firstName, secondName, lastName, subjectID));
         FirebaseServer.UpdateTeacherCredentials updateTeacherCredentials = new FirebaseServer.UpdateTeacherCredentials();
         updateTeacherCredentials.execute(asyncTaskArguments);
     }

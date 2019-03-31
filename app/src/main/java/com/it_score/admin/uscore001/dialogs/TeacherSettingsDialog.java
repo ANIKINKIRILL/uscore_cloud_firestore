@@ -1,5 +1,6 @@
 package com.it_score.admin.uscore001.dialogs;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,11 +12,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.models.Subject;
 import com.it_score.admin.uscore001.models.Teacher;
+import com.it_score.admin.uscore001.models.User;
+import com.it_score.admin.uscore001.util.SubjectArrayAdapter;
+
+import java.util.ArrayList;
 
 /**
  * Окно, где учитель может изменить свои данные (ФИО, ПРЕДМЕТ, ПОЗИЦИЯ)
@@ -26,15 +35,17 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     private static final String TAG = "TeacherSettingsDialog";
 
     // Виджеты
-    private EditText position, subject, firstName, secondName, lastName;
+    private EditText firstName, secondName, lastName;
+    private Spinner subjectSpinner;
+    private TextView subjectNow;
+    private ProgressDialog progressDialog;
 
     // Переменные
     private String teacherID;
     private String teacherLastName;
     private String teacherSecondName;
     private String teacherFirstName;
-//    private String subjectData;
-//    private String positionData;
+    private String subjectID;
 
     @Nullable
     @Override
@@ -43,7 +54,9 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
         init(view);
         configureDialog();
         getTeacherData();
+        getSubjectNameBySubjectID(subjectID);
         setTeacherData();
+        populateSubjectSpinner();
         return view;
     }
 
@@ -61,11 +74,11 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
      */
 
     private void init(View view){
-//        position = view.findViewById(R.id.position);
-//        subject = view.findViewById(R.id.subject);
         firstName = view.findViewById(R.id.firstName);
         secondName = view.findViewById(R.id.secondName);
         lastName = view.findViewById(R.id.lastName);
+        subjectSpinner = view.findViewById(R.id.subjectSpinner);
+        subjectNow = view.findViewById(R.id.subjectNow);
         android.widget.TextView ok = view.findViewById(R.id.ok);
         android.widget.TextView cancel = view.findViewById(R.id.cancel);
 
@@ -85,8 +98,7 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
             teacherSecondName = sharedPreferences.getString(Teacher.SECOND_NAME, "");
             teacherLastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
             teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
-//            subjectData = sharedPreferences.getString(Teacher.SUBJECT_DATA, "");
-//            positionData = sharedPreferences.getString(Teacher.POSITION_DATA, "");
+            subjectID = sharedPreferences.getString(Teacher.SUBJECT_ID, "");
         }catch (Exception e){
             Log.d(TAG, "getTeacherData: " + e.getMessage());
         }
@@ -100,9 +112,41 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
         firstName.setText(teacherFirstName);
         secondName.setText(teacherSecondName);
         lastName.setText(teacherLastName);
-//        position.setText(positionData);
-//        subject.setText(subjectData);
     }
+
+    /**
+     * Получить предмет учителя по id предмета
+     * @param subjectID     id предмета учителя
+     */
+
+    private void getSubjectNameBySubjectID(String subjectID){
+        Teacher.getSubjectValueByID(mGetSubjectByIdCallback, subjectID);
+    }
+
+    private Callback mGetSubjectByIdCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            String subjectName = (String) data;
+            subjectNow.setText(subjectName);
+        }
+    };
+
+    /**
+     * Наполнить спиннер с выбором предмета
+     */
+
+    private void populateSubjectSpinner(){
+        User.getAllSubjectsList(mGetAllSubjectsListCallback);
+    }
+
+    private Callback mGetAllSubjectsListCallback = new Callback() {
+        @Override
+        public void execute(Object data, String... params) {
+            ArrayList<Subject> subjects = (ArrayList) data;
+            SubjectArrayAdapter adapter = new SubjectArrayAdapter(getContext(), subjects);
+            subjectSpinner.setAdapter(adapter);
+        }
+    };
 
     @Override
     public void onClick(View v) {
@@ -111,7 +155,14 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
                 String new_first_name = firstName.getText().toString();
                 String new_second_name = secondName.getText().toString();
                 String new_last_name = lastName.getText().toString();
-                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name);
+                // Получить выбраный предмет
+                Subject subject = (Subject) subjectSpinner.getSelectedItem();
+                String subjectID = subject.getId();
+                progressDialog = new ProgressDialog(getContext());
+                progressDialog.setTitle("Обновление");
+                progressDialog.setMessage("Мы изменяем Ваш профиль...");
+                progressDialog.show();
+                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name, subjectID);
                 break;
             }
             case R.id.cancel:{
@@ -129,6 +180,7 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     Callback mUpdateCredentialsCallback = new Callback() {
         @Override
         public void execute(Object data, String... params) {
+            progressDialog.dismiss();
             String resultMessage = (String) data;
             Toast.makeText(getContext(), resultMessage, Toast.LENGTH_SHORT).show();
             getDialog().dismiss();
