@@ -1,6 +1,8 @@
 package com.it_score.admin.uscore001.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -47,6 +49,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
     private CheckBox checkBox;
     public static ProgressBar progressBar;
     private Spinner groupsSpinner, usersSpinner;
+    private ProgressDialog progressDialog;
 
     // Переменные
     private String pickedObject;
@@ -184,7 +187,16 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
 
     public void doSignIn(final String email, String password, Callback callback){
         signIn.setEnabled(false);
-        progressBar.setVisibility(View.VISIBLE);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Вход в аккаунт");
+        progressDialog.setMessage("Загрузка...");
+        progressDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        progressDialog.show();
         User.authenticate(email, password, callback);
     }
 
@@ -210,7 +222,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             }else{
                 String failureReason = params[0];
                 Toast.makeText(login_activity.this, failureReason, Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.INVISIBLE);
+                progressDialog.dismiss();
                 signIn.setEnabled(true);
                 Log.d(TAG, "signIn failed");
             }
@@ -229,13 +241,15 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
             String teacherStatus = getString(R.string.teacherStatusValue);
             String adminStatus = "26gmBm7N0oUVupLktAg6";
             String teacherHelperStatus = "BpYvYudLYGkfZLspkctl";
-            // Сохранение статуса пользователя
+            // Сохранение статуса ученика
             if(statusID.equals(studentStatus)){
                 Settings.setStatus(studentStatus);
             }
+            // Сохранение статуса учителя
             if(statusID.equals(teacherStatus)){
                 Settings.setStatus(teacherStatus);
             }
+            // Сохранение статуса админа
             if(statusID.equals(adminStatus)){
                 Settings.setStatus(adminStatus);
             }
@@ -243,7 +257,7 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 Settings.setStatus(teacherHelperStatus);
             }
 
-            progressBar.setVisibility(View.INVISIBLE);
+            progressDialog.dismiss();
 
             Intent goToDashboard = new Intent(login_activity.this, dashboard_activity.class);
             goToDashboard.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
