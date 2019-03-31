@@ -452,6 +452,8 @@ public class dashboard_activity extends AppCompatActivity implements
 
             User.getUserGroupName(mGetUserGroupNameCallback, groupID);
 
+//            getTeacherRequestsNumber(teacherRequestID);
+
             /*
                 --------------------------------------------------------------
                 |    Проверка Данных                                         |
@@ -565,7 +567,7 @@ public class dashboard_activity extends AppCompatActivity implements
                             });
                         Log.d(TAG, "student request amount of answered canceled being false: " + requestCounter);
                     }
-                    requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
+//                    requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
 //                    changeNotificationAlarmImage();
                 }
             });
@@ -828,10 +830,16 @@ public class dashboard_activity extends AppCompatActivity implements
             String firstName = student.getFirstName();
             String secondName = student.getSecondName();
             String image_path = student.getImage_path();
-            if(image_path.isEmpty()){
-                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-            }else{
-                GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
+            // оборачиваем в try catch чтобы не было краша когда актитвити уже убито,
+            // но мы все еще пытаемся загрузить фото
+            try {
+                if (image_path.isEmpty()) {
+                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                } else {
+                    GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
+                }
+            }catch (Exception e){
+                e.getMessage();
             }
             limitScore = student.getLimitScore();
             String studentID = student.getId();
