@@ -34,7 +34,6 @@
         android:layout_height="wrap_content" />
 
     <EditText
-        android:singleLine="true"
         android:layout_below="@id/score"
         android:layout_above="@id/buttonsLayout"
         android:hint="@string/description"
