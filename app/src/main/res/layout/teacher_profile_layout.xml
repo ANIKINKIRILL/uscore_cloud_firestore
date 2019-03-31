@@ -65,7 +65,7 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wiliam Snoe"
+                    tools:text="Wiliam Snoe"
                     android:textColor="#fff"
                     android:textStyle="bold"
                     android:textSize="21sp"/>
@@ -136,7 +136,7 @@
                     <TextView
                         android:id="@+id/status"
                         android:layout_margin="5dp"
-                        android:text="STUDENT"
+                        tools:text="STUDENT"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
                 </RelativeLayout>
@@ -166,7 +166,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
-                    android:text="Wiliam@gmail.com"/>
+                    tools:text="Wiliam@gmail.com"/>
             </LinearLayout>
             <!--<LinearLayout-->
                 <!--android:layout_marginTop="25dp"-->
@@ -204,7 +204,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
-                    android:text="position"/>
+                    tools:text="position"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_marginTop="25dp"
@@ -223,8 +223,29 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="20dp"
-                    android:text="subject"/>
+                    tools:text="subject"/>
             </LinearLayout>
+
+            <!--<LinearLayout-->
+                <!--android:layout_marginTop="25dp"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:paddingLeft="25dp"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content">-->
+                <!--<ImageView-->
+                    <!--android:layout_width="36dp"-->
+                    <!--android:layout_height="36dp"-->
+                    <!--android:src="@drawable/icons8_classroom"/>-->
+                <!--<TextView-->
+                    <!--android:id="@+id/roomNumber"-->
+                    <!--android:text="324 (Кабинет учителя)"-->
+                    <!--android:textStyle="bold"-->
+                    <!--android:layout_gravity="center_vertical"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:paddingLeft="20dp" />-->
+            <!--</LinearLayout>-->
+
             <LinearLayout
                 android:id="@+id/showAllComments"
                 android:layout_marginTop="25dp"

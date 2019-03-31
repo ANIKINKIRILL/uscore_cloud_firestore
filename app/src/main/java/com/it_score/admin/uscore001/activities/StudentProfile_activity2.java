@@ -163,15 +163,21 @@ public class StudentProfile_activity2 extends AppCompatActivity implements View.
                 break;
             }
             case R.id.addCommentButton:{
+                /*
                 Intent intent = new Intent(StudentProfile_activity2.this, CommentsPage.class);
                 intent.putExtra("to_whom_send_email", email.getText().toString());
                 startActivity(intent);
+                */
+                Toast.makeText(this, "Эта функция пока не доступна", Toast.LENGTH_SHORT).show();
                 break;
             }
             case R.id.showAllComments:{
+                /*
                 Intent intent = new Intent(StudentProfile_activity2.this, CommentsPage.class);
                 intent.putExtra("to_whom_send_email", email.getText().toString());
                 startActivity(intent);
+                */
+                Toast.makeText(this, "Эта функция пока не доступна", Toast.LENGTH_SHORT).show();
                 break;
             }
         }

@@ -81,6 +81,32 @@
     </LinearLayout>
 
 
+    <!--<LinearLayout-->
+        <!--android:id="@+id/roomNumberLayout"-->
+        <!--android:layout_below="@id/lastNameLayout"-->
+        <!--android:layout_marginBottom="7dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:weightSum="100"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--<TextView-->
+            <!--android:gravity="center"-->
+            <!--android:layout_weight="70"-->
+            <!--android:text="Кабинет: "-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="fill_parent" />-->
+        <!--<EditText-->
+            <!--android:id="@+id/roomNumber"-->
+            <!--android:gravity="center"-->
+            <!--android:singleLine="true"-->
+            <!--android:imeOptions="actionNext"-->
+            <!--android:hint=""-->
+            <!--android:layout_weight="30"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+    <!--</LinearLayout>-->
+
+
     <LinearLayout
         android:layout_below="@id/lastNameLayout"
         android:id="@+id/subjectLayout"

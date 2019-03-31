@@ -7,7 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -64,7 +66,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class dashboard_activity extends AppCompatActivity implements
                                         View.OnClickListener,
-                                        ActionBar.OnNavigationListener, android.support.v7.app.ActionBar.OnNavigationListener {
+                                        ActionBar.OnNavigationListener, android.support.v7.app.ActionBar.OnNavigationListener,
+        NavigationView.OnNavigationItemSelectedListener{
 
     private static final String TAG = "dashboard_activity";
 
@@ -151,6 +154,8 @@ public class dashboard_activity extends AppCompatActivity implements
         limitScoreView = findViewById(R.id.limitScore);
         navigationView = findViewById(R.id.navigationView);
 
+        navigationView.setNavigationItemSelectedListener(this);
+
         username = findViewById(R.id.username);
         // username.setText(currentUser.getEmail());
 
@@ -202,7 +207,7 @@ public class dashboard_activity extends AppCompatActivity implements
     public void loadKfuPictureIntoNavigationDrawerHeader(){
         try {
             ImageView view = navigationView.getHeaderView(0).findViewById(R.id.imageView);
-            GlideApp.with(this).load(R.drawable.itl).centerCrop().into(view);
+            GlideApp.with(this).load(R.drawable.itl).fitCenter().into(view);
         }catch (Exception e){
             Log.d(TAG, "NavigationDrawerImage: " + e.getMessage());
         }
@@ -957,4 +962,67 @@ public class dashboard_activity extends AppCompatActivity implements
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {}
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()){
+            case R.id.my_profile:{
+                Intent intent = new Intent(this, StudentProfile_activity2.class);
+                startActivity(intent);
+                break;
+            }
+            case R.id.actions:{
+                Intent intent = new Intent(this, RecentActionsPage.class);
+                startActivity(intent);
+                break;
+            }
+            case R.id.vkPage:{
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://vk.com/itlkpfu"));
+                startActivity(intent);
+                break;
+            }
+            case R.id.youtube:{
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://www.youtube.com/channel/UCwTgHIPCI3xgzJp6NTa_V1g"));
+                startActivity(intent);
+                break;
+            }
+            case R.id.instagram:{
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://www.instagram.com/itlkpfu/"));
+                startActivity(intent);
+                break;
+            }
+            case R.id.developer:{
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://vk.com/k.anikin2013"));
+                startActivity(intent);
+                break;
+            }
+            case R.id.rateApp:{
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.it_score.admin.uscore001"));
+                startActivity(intent);
+                break;
+            }
+            case R.id.exit:{
+                User.exit();
+                Intent intent = new Intent(dashboard_activity.this, login_activity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                break;
+            }
+            case R.id.tech_help:{
+                Intent intent = new Intent(
+                    Intent.ACTION_SENDTO,
+                    Uri.fromParts("mailto", "ky.anikin@mail.ru", null)
+                );
+                startActivity(Intent.createChooser(intent, "Использовать"));
+                break;
+            }
+        }
+        return true;
+    }
 }
