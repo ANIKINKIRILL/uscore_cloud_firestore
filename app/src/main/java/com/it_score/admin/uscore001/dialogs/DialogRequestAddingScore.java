@@ -301,7 +301,7 @@ public class DialogRequestAddingScore extends DialogFragment implements
      */
 
     public void decreaseLimitScore(int requestedScoreValue, String studentId){
-        Teacher.decreaseStudentLimitScore(null, requestedScoreValue, studentId);
+        Teacher.decreaseStudentLimitScore(null, studentId);
     }
 
 }

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -70,11 +71,10 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
     private String optionID;
     private String teacherRequestID;
     private static int counter = 0;
+    private String studentLimit;
 
     // Firebase
     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    CollectionReference students$db = firebaseFirestore.collection("STUDENTS$DB");
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -164,13 +164,6 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
      */
 
     private void populateOptionsSpinner(){
-        /*
-        ArrayAdapter<CharSequence> pickOptionAdapter = ArrayAdapter.createFromResource(this, R.array.options, android.R.layout.simple_spinner_item);
-        pickOptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        options.setAdapter(pickOptionAdapter);
-        options.setOnItemSelectedListener(this);
-        */
-
         User.getAllEncouragementsList(mGetAllEncouragementsCallback);
     }
 
@@ -192,57 +185,56 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
         String firstName = sharedPreferences.getString(Student.FIRST_NAME, "");
         String secondName = sharedPreferences.getString(Student.SECOND_NAME, "");
         String senderImage = sharedPreferences.getString(Student.IMAGE_PATH, "");
+        studentLimit = sharedPreferences.getString(Student.LIMIT_SCORE, "");
         switch (v.getId()) {
             case R.id.ok: {
-                counter = 0;
-                String id = "";
-                String body = requestBody.getText().toString();
-                String date = addedDate;
-                String getter = teacherName;
-                String image_path = senderImage;
-                String senderEmail = currentUser.getEmail();
-                int scoreValue = Integer.parseInt(scoreInvisible.getText().toString());
-                String groupID = currentUserGroupID;
-                String requestID = teacherRequestID;
-                String option = optionID;
-                boolean answered = false;
-                boolean canceled = false;
-                String senderID = currentStudentID;
-                students$db.document(currentStudentID)
-                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                if(Integer.parseInt(studentLimit) != 0) {
+                    counter = 0;
+                    String id = "";
+                    String body = requestBody.getText().toString();
+                    String date = addedDate;
+                    String getter = teacherName;
+                    String image_path = senderImage;
+                    String senderEmail = currentUser.getEmail();
+                    int scoreValue = Integer.parseInt(scoreInvisible.getText().toString());
+                    String groupID = currentUserGroupID;
+                    String requestID = teacherRequestID;
+                    String option = optionID;
+                    boolean answered = false;
+                    boolean canceled = false;
+                    String senderID = currentStudentID;
+                    progressDialog = new ProgressDialog(RequestAddingScoreActivity.this);
+                    progressDialog.setMessage("Отправляем запрос учителю...");
+                    progressDialog.show();
+                    // Уменьшаем баллы, которые даются на день
+                    decreaseLimitScore(currentStudentID);
+                    // Отправляем запрос
+                    sendRequest(
+                            id, body, date, getter, image_path, senderEmail,
+                            firstName, secondName, "", scoreValue, groupID,
+                            requestID, option, answered, canceled, currentStudentID
+                    );
+                }else{
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(RequestAddingScoreActivity.this);
+                    alertDialog.setTitle("Удаленный запрос учителю");
+                    alertDialog.setMessage("Превышен лимит на удаленные запросы, Вы можете обратится к учителю с QR-кодом");
+                    alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
-                        public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            if(counter == 0) {
-                                Student student = documentSnapshot.toObject(Student.class);
-                                int currentLimitScore = Integer.parseInt(student.getLimitScore());
-                                Log.d(TAG, "currentStudentLimitScore: " + currentLimitScore);
-                                // Запрашиваемые баллы больше чем баллы которые остались на день
-                                if (currentLimitScore + 5 < scoreValue) {
-                                    try {
-                                        Toast.makeText(getApplicationContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
-                                        YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(dialogLayout);
-                                    } catch (Exception e1) {
-                                        Log.d(TAG, "onEvent: " + e1.getMessage());
-                                    }
-                                }
-                                // Баллы, котрые даются на день хватает для отправки запроса
-                                else if (currentLimitScore + 5 >= scoreValue) {
-                                    progressDialog = new ProgressDialog(RequestAddingScoreActivity.this);
-                                    progressDialog.setMessage("Отправляем запрос учителю...");
-                                    progressDialog.show();
-                                    // Уменьшаем баллы, которые даются на день
-                                    decreaseLimitScore(scoreValue, currentStudentID);
-                                    // Отправляем запрос
-                                    sendRequest(
-                                            id, body, date, getter, image_path, senderEmail,
-                                            firstName, secondName, "", scoreValue, groupID,
-                                            requestID, option, answered, canceled, currentStudentID
-                                    );
-                                }
-                                counter = 1;
-                            }
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(RequestAddingScoreActivity.this, QRCODE_activity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }).setNegativeButton("ПОЗЖЕ", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(RequestAddingScoreActivity.this, dashboard_activity.class);
+                            startActivity(intent);
+                            finish();
                         }
                     });
+                    alertDialog.show();
+                }
                 break;
             }
             case R.id.cancel: {
@@ -335,28 +327,45 @@ public class RequestAddingScoreActivity extends AppCompatActivity implements
         @Override
         public void execute(Object data, String... params) {
             progressDialog.dismiss();
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(RequestAddingScoreActivity.this);
-            alertDialog.setTitle("Запрос учителю");
-            alertDialog.setMessage("Ваш запрос отправлен успешно, теперь можно посмотреть запрос в 'Недавниe'");
-            alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    finish();
-                }
-            });
-            alertDialog.show();
+            // Иногда происходит краш, оборачиваем в try/catch
+            try {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(RequestAddingScoreActivity.this);
+                alertDialog.setTitle("Запрос учителю");
+                alertDialog.setMessage("Ваш запрос отправлен успешно, теперь можно посмотреть запрос в 'Недавниe'");
+                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(RequestAddingScoreActivity.this, RecentActionsPage.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).setNegativeButton("ГЛАВНОЕ МЕНЮ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(RequestAddingScoreActivity.this, dashboard_activity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).setNeutralButton("ПРОДОЛЖИТЬ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     };
 
     /**
      * Вычитание баллов на день за отправку запроса учителю
-     * @param requestedScoreValue       запрашиваемые очки
      * @param studentId                 id ученика
      */
 
-    public void decreaseLimitScore(int requestedScoreValue, String studentId){
-        Teacher.decreaseStudentLimitScore(null, requestedScoreValue, studentId);
+    public void decreaseLimitScore(String studentId){
+        Teacher.decreaseStudentLimitScore(null, studentId);
     }
 
 }

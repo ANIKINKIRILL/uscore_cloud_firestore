@@ -48,18 +48,22 @@ public class EncouragementOptionArrayAdapter extends ArrayAdapter{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
-        ViewHolder holder;
-        Option option = options.get(position);
-        if(view != null){
-            holder = (ViewHolder) view.getTag();
-        }else{
-            view = LayoutInflater.from(context).inflate(R.layout.register_activity_teacher_item, null, false);
-            holder = new ViewHolder();
-            holder.optionName = view.findViewById(R.id.teacherName);
-            view.setTag(holder);
-        }
+        try {
+            ViewHolder holder;
+            Option option = options.get(position);
+            if (view != null) {
+                holder = (ViewHolder) view.getTag();
+            } else {
+                view = LayoutInflater.from(context).inflate(R.layout.register_activity_teacher_item, null, false);
+                holder = new ViewHolder();
+                holder.optionName = view.findViewById(R.id.teacherName);
+                view.setTag(holder);
+            }
 
-        holder.optionName.setText(option.getName());
+            holder.optionName.setText(option.getName());
+        }catch (Exception e){
+            e.getMessage();
+        }
 //        holder.optionName.setTextColor(getContext().getResources().getColor(R.color.grayColor));
 
         return view;

@@ -43,6 +43,7 @@ public class Student {
     public static final String RATE_IN_GROUP = "rate_in_group";
     public static final String RATE_IN_SCHOOL = "rate_in_school";
     public static final String CHANGE_PASSWORD = "change_password";
+    public static final String LIMIT_REMOTE_REQUEST_NUMBER = "limit_remote_request_number";
 
     public Student(
             String email,

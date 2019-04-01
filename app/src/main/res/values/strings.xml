@@ -195,7 +195,7 @@
     <string name="requestDetailsOption">requestDetailOption</string>
 
     <string name="social">Соц.сети</string>
-    <string name="make_request">Отправить запрос</string>
+    <string name="make_request">Отправить удаленный запрос</string>
     <string name="description">описание</string>
     <string name="add_cancel">+/-</string>
     <string name="all_tab">Все</string>

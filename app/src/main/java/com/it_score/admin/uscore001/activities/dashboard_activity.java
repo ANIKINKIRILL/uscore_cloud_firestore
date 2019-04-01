@@ -26,6 +26,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.Settings;
@@ -33,6 +35,7 @@ import com.it_score.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.it_score.admin.uscore001.dialogs.ShowRequestDialog;
 import com.it_score.admin.uscore001.fragments.RulesBottomSheetFragment;
 import com.it_score.admin.uscore001.models.Admin;
+import com.it_score.admin.uscore001.models.LimitRemoteRequest;
 import com.it_score.admin.uscore001.models.RequestAddingScore;
 import com.it_score.admin.uscore001.models.Student;
 import com.it_score.admin.uscore001.models.Teacher;
@@ -79,6 +82,7 @@ public class dashboard_activity extends AppCompatActivity implements
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
     CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    CollectionReference LIMIT_REMOTE_REQUEST = firebaseFirestore.collection("LIMIT_REMOTE_REQUEST");
 
     // Виджеты
     TextView username, requestNumber, limitScoreView;
@@ -267,15 +271,13 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.makeRequest:{
-                if(Integer.parseInt(limitScore) != 0) {
-                    /*
-                    DialogRequestAddingScore dialogRequestAddingScore = new DialogRequestAddingScore();
-                    dialogRequestAddingScore.show(getSupportFragmentManager(), getString(R.string.open_dialog));
-                    */
-                    Intent intent = new Intent(this, RequestAddingScoreActivity.class);
+                if(Integer.parseInt(limitScore) != 0){
+                    Intent intent = new Intent(dashboard_activity.this, RequestAddingScoreActivity.class);
                     startActivity(intent);
+                    Log.d(TAG, "makeIntent: called");
                 }else{
                     checkSpendLimitScoreDateAndCurrentDate(menu);
+                    Log.d(TAG, "makeIntent: did not call");
                 }
                 break;
             }
@@ -828,10 +830,14 @@ public class dashboard_activity extends AppCompatActivity implements
             String firstName = student.getFirstName();
             String secondName = student.getSecondName();
             String image_path = student.getImage_path();
-            if(image_path.isEmpty()){
-                image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
-            }else{
-                GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
+            try {
+                if (image_path.isEmpty()) {
+                    image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
+                } else {
+                    GlideApp.with(dashboard_activity.this).load(image_path).centerCrop().into(userAvatar);
+                }
+            }catch (Exception e){
+                e.getMessage();
             }
             limitScore = student.getLimitScore();
             String studentID = student.getId();
@@ -863,15 +869,19 @@ public class dashboard_activity extends AppCompatActivity implements
             editorSettings.putString(Settings.USER_ID, id);
             editorSettings.apply();
 
+            getLimit_Remote_Request_Number();
+
             username.setText("Привет, " + firstName);
 
             limitScoreView.setText("Осталось");
 
             if(Integer.parseInt(limitScore) == 0){
-                limitScoreView.setText("В данный момент ты не можешь добавлять баллы");
+                String leftText = limitScoreView.getText().toString();
+                String result = limitScore + " удаленных запросов. Попробуйте обновить, нажав на кнопку еще раз";
+                limitScoreView.setText(result);
             }else{
                 String leftText = limitScoreView.getText().toString();
-                String result = leftText + ": " + limitScore + " очков";
+                String result = leftText + ": " + limitScore + " удаленных запросов";
                 limitScoreView.setText(result);
             }
 
@@ -906,12 +916,33 @@ public class dashboard_activity extends AppCompatActivity implements
     };
 
     /**
+     * Получить лимит удаленых запросов
+     */
+
+    private void getLimit_Remote_Request_Number(){
+        LIMIT_REMOTE_REQUEST.document("FdqR3mJBKDBrBG9BKwD9").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                LimitRemoteRequest limitRemoteRequest = documentSnapshot.toObject(LimitRemoteRequest.class);
+                String limit = limitRemoteRequest.getLimit();
+                Log.d(TAG, "LimitRemoteRequest limit: " + limit);
+                SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(Student.LIMIT_REMOTE_REQUEST_NUMBER, limit);
+                editor.apply();
+            }
+        });
+    }
+
+    /**
      * Проверка на то что прошло заданное время после того как ученик потратил все свои очки на день
      * @param menu      Главное меню dashboard_activity
      */
 
     private void checkSpendLimitScoreDateAndCurrentDate(Menu menu){
+        Log.d(TAG, "checkSpendLimitScoreDateAndCurrentDate: called");
         SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+        String limit_remote_request = sharedPreferences.getString(Student.LIMIT_REMOTE_REQUEST_NUMBER, "5");
         student$db.document(sharedPreferences.getString(Student.ID, "")).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
@@ -919,7 +950,7 @@ public class dashboard_activity extends AppCompatActivity implements
                 // дата, когда студен потратил все свои очки
                 Date studentSpendLimitScoreDate = student.getSpendLimitScoreDate().toDate();
                 Log.d(TAG, "studentSpendLimitScoreDate: " + studentSpendLimitScoreDate.toString());
-                // дата в данный момент по Москве
+                // дата в данный момент НА ТЕЛЕФОНЕ
                 Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
                 Date currentDate = calendar.getTime();
                 Log.d(TAG, "currentDate: " + currentDate.toString());
@@ -933,12 +964,30 @@ public class dashboard_activity extends AppCompatActivity implements
                 Log.d(TAG, "difference in minutes: " + minutes);
                 Log.d(TAG, "difference in hours: " + hours);
                 Log.d(TAG, "difference in days: " + days);
-                if(hours >= 24){
+                if(seconds >= 30){
                     if(Integer.parseInt(limitScore) == 0) {
-                        student$db.document(sharedPreferences.getString(Student.ID, "")).update("limitScore", "50");
+                        student$db.document(sharedPreferences.getString(Student.ID, "")).update("limitScore", limit_remote_request);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString(Student.LIMIT_SCORE, limit_remote_request);
+                        editor.apply();
                     }
                 }else{
-                    Toast.makeText(dashboard_activity.this, "На сегодня лимит исчерпан. Осталось " + (24-hours) + " часа", Toast.LENGTH_SHORT).show();
+                    android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(dashboard_activity.this);
+                    alertDialog.setTitle("Удаленный запрос учителю");
+                    alertDialog.setMessage("Превышен лимит на удаленные запросы, Вы можете обратится к учителю с QR-кодом");
+                    alertDialog.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(dashboard_activity.this, QRCODE_activity.class);
+                            startActivity(intent);
+                        }
+                    }).setNegativeButton("ПОЗЖЕ", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
                 }
             }
         });
@@ -967,8 +1016,14 @@ public class dashboard_activity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()){
             case R.id.my_profile:{
-                Intent intent = new Intent(this, StudentProfile_activity2.class);
-                startActivity(intent);
+                if(Settings.getStatus().equals(STUDENT_STATUS)) {
+                    Intent intent = new Intent(this, StudentProfile_activity2.class);
+                    startActivity(intent);
+                }
+                if(Settings.getStatus().equals(TEACHER_STATUS)){
+                    Intent intent = new Intent(this, TeacherProfile.class);
+                    startActivity(intent);
+                }
                 break;
             }
             case R.id.actions:{

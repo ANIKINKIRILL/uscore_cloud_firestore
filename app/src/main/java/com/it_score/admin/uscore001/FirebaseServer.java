@@ -1044,10 +1044,14 @@ public class FirebaseServer {
                                     .collection("STUDENTS")
                                     .document(senderID)
                                     .set(idField, SetOptions.merge());
-                                callback.execute("Запрос отправлен успешно");
+                                if(counter1 == 0) {
+                                    callback.execute("Запрос отправлен успешно");
+                                }
                             }else {
-                                callback.execute("Запрос не был отправлен из-за " + task.getException().getMessage() +
-                                        " обратитесь к администратору");
+                                if(counter1 == 0) {
+                                    callback.execute("Запрос не был отправлен из-за " + task.getException().getMessage() +
+                                            " обратитесь к администратору");
+                                }
                             }
                             counter1 = 1;
                         }
@@ -1121,8 +1125,7 @@ public class FirebaseServer {
         @Override
         protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
             counter2 = 0;
-            int requestedScoreValue = (int) asyncTaskArguments[0].mData.data[0];
-            String studentId = (String) asyncTaskArguments[0].mData.data[1];
+            String studentId = (String) asyncTaskArguments[0].mData.data[0];
             STUDENTS$DB
                 .document(studentId)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -1132,9 +1135,11 @@ public class FirebaseServer {
                         if(counter2 == 0) {
                             String limitScore = student.getLimitScore();
                             int limitScoreInteger = Integer.parseInt(limitScore);
-                            int result = limitScoreInteger - requestedScoreValue;
-                            String resultString = Integer.toString(result);
-                            if(result <= 0){
+                            limitScoreInteger = limitScoreInteger - 1;
+                            String resultString = Integer.toString(limitScoreInteger);
+                            Log.d(TAG, "decreaseLimitScore: studentID " + studentId);
+                            Log.d(TAG, "decreaseLimitScore: result " + resultString);
+                            if(limitScoreInteger <= 0){
                                 resultString = "0";
                                 Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC+3"));
                                 Date currentDate = calendar.getTime();
@@ -1142,10 +1147,18 @@ public class FirebaseServer {
                                 map.put("spendLimitScoreDate", currentDate);
                                 STUDENTS$DB.document(studentId).set(map, SetOptions.merge());
                             }
-                            STUDENTS$DB.document(studentId).update("limitScore", resultString);
-                            Log.d(TAG, "decreaseLimitScore: " + resultString);
+                            STUDENTS$DB.document(studentId).update("limitScore", resultString).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful()){
+                                        Log.d(TAG, "decreaseLimitScore: successful updated");
+                                    }else{
+                                        Log.d(TAG, "decreaseLimitScore: " + task.getException().getMessage());
+                                    }
+                                }
+                            });
+                            counter2 = 1;
                         }
-                        counter2 = 1;
                     }
                 });
             return null;

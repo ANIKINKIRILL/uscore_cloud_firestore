@@ -32,6 +32,8 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Активити с генерацией QRCODE
@@ -137,24 +139,15 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()){
             case R.id.generateButton:{
                 String scoreValue = score.getText().toString();
-                if(!scoreValue.trim().isEmpty()) {
-                    if (Integer.parseInt(currentLimitScore) < Integer.parseInt(scoreValue)) {
-                        try {
-                            Toast.makeText(getApplicationContext(), "Ваш лимит меньше, чем запрашиваемые очки", Toast.LENGTH_SHORT).show();
-                            YoYo.with(Techniques.Shake).repeat(0).duration(1000).playOn(score);
-                        } catch (Exception e1) {
-                            Log.d(TAG, "onEvent: " + e1.getMessage());
-                        }
-                    }else if (Integer.parseInt(currentLimitScore) >= Integer.parseInt(scoreValue)){
-                        try {
-                            generateQRCODE();
-                        } catch (UnsupportedEncodingException | WriterException e) {
-                            e.printStackTrace();
-                        }
+                if(!scoreValue.trim().isEmpty() && Integer.parseInt(scoreValue) <= 1500) {
+                    try {
+                        generateQRCODE();
+                    } catch (UnsupportedEncodingException | WriterException e) {
+                        e.printStackTrace();
                     }
                 }else{
                     YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(score);
-                    score.setError("Введите очки");
+                    score.setError("Ошибка, не ввели очки или запрос больше, чем на 1500 баллов");
                 }
                 break;
             }
@@ -172,8 +165,11 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
      */
 
     private void generateQRCODE() throws UnsupportedEncodingException, WriterException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String addedDate = simpleDateFormat.format(new Date());
         String message = URLEncoder.encode(
                 currentStudentID + "\n" +
+                        "Дата создания QR-кода: " + addedDate + "\n" +
                         "Очки: " + score.getText().toString() + "\n" +
                         "ФИО: " + studentFIO + "\n" +
                         "Группа: " + studentGroupName + "\n" +
@@ -189,7 +185,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
         Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
         qrcode_image.setImageBitmap(bitmap);
-        Teacher.decreaseStudentLimitScore(null, Integer.parseInt(score.getText().toString()), currentStudentID);
+//        Teacher.decreaseStudentLimitScore(null, Integer.parseInt(score.getText().toString()), currentStudentID);
     }
 
 }

@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/generateQERCODE"
-        android:title="QR CODE"
+        android:title="QR-код"
         android:icon="@drawable/ic_dashboard_black_24dp">
     </item>
 
     <item
         android:id="@+id/scanQRCODE"
-        android:title="QR CODE"
+        android:title="QR-код"
         android:icon="@drawable/ic_dashboard_black_24dp">
     </item>
 
