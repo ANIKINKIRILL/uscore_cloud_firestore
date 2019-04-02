@@ -37,6 +37,7 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
     public static final String CHANGE_PASSWORD_FUN_ID = "NxD88xLfgyWmHpZuiKhy";
     public static final String EDIT_TEACHER_FUN_ID = "YeGNUFEcNqD8JuY3a9U7";
     public static final String CREATE_TEACHER_FUN_ID = "Bcd0UOapnTtOMkEmTusO";
+    public static final String CHANGE_LIMIT_REMOTE_REQUEST_ID = "lijh9X81op4PHlqSLU3q";
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView position, title, description;
@@ -109,6 +110,9 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
                     case CREATE_TEACHER_FUN_ID:{
                         Intent intent = new Intent(context, AddTeacherAdminSectionActivity.class);
                         context.startActivity(intent);
+                        break;
+                    }
+                    case CHANGE_LIMIT_REMOTE_REQUEST_ID:{
                         break;
                     }
                 }

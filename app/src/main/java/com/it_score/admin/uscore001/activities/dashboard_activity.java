@@ -26,8 +26,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.Settings;
@@ -35,7 +33,7 @@ import com.it_score.admin.uscore001.dialogs.ChangePasswordDialog;
 import com.it_score.admin.uscore001.dialogs.ShowRequestDialog;
 import com.it_score.admin.uscore001.fragments.RulesBottomSheetFragment;
 import com.it_score.admin.uscore001.models.Admin;
-import com.it_score.admin.uscore001.models.LimitRemoteRequest;
+import com.it_score.admin.uscore001.models.LimitObject;
 import com.it_score.admin.uscore001.models.RequestAddingScore;
 import com.it_score.admin.uscore001.models.Student;
 import com.it_score.admin.uscore001.models.Teacher;
@@ -703,7 +701,16 @@ public class dashboard_activity extends AppCompatActivity implements
         public void execute(Object data, String... params) {
             if(counter1 == 0) {
                 String message = (String) data;
-                Toast.makeText(dashboard_activity.this, message, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(dashboard_activity.this, message, Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(dashboard_activity.this);
+                alertDialog.setTitle("QR-код");
+                alertDialog.setMessage(message);
+                alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 counter1 = 1;
             }
         }
@@ -923,9 +930,9 @@ public class dashboard_activity extends AppCompatActivity implements
         LIMIT_REMOTE_REQUEST.document("FdqR3mJBKDBrBG9BKwD9").addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                LimitRemoteRequest limitRemoteRequest = documentSnapshot.toObject(LimitRemoteRequest.class);
+                LimitObject limitRemoteRequest = documentSnapshot.toObject(LimitObject.class);
                 String limit = limitRemoteRequest.getLimit();
-                Log.d(TAG, "LimitRemoteRequest limit: " + limit);
+                Log.d(TAG, "LimitObject limit: " + limit);
                 SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(Student.LIMIT_REMOTE_REQUEST_NUMBER, limit);

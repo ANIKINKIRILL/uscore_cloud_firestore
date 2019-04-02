@@ -1,6 +1,7 @@
 package com.it_score.admin.uscore001.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
@@ -8,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,14 +16,18 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.Settings;
+import com.it_score.admin.uscore001.models.LimitObject;
 import com.it_score.admin.uscore001.models.Student;
-import com.it_score.admin.uscore001.models.Teacher;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -56,11 +60,16 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
     private String studentGroupName;
     private int studentScore;
 
+    // Firebase
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    private CollectionReference QR_CODE_LIMIT = firebaseFirestore.collection("QR_CODE_LIMIT");
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.qrcode_page);
         init();
+        getQRCODE_limit();
         initActionBar();
         getStudentData();
     }
@@ -91,10 +100,31 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
 
     private void initActionBar(){
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("QR CODE");
+        actionBar.setTitle("QR-код");
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.startblue_transparent)));
+    }
+
+    /**
+     * Получить лимит за qr code
+     */
+
+    private void getQRCODE_limit(){
+        QR_CODE_LIMIT.document("TY9MpQFh4xVkOLpJif28").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                LimitObject limitObject = documentSnapshot.toObject(LimitObject.class);
+                String limit = limitObject.getLimit();
+                SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(Student.LIMIT_QRCODE_NUMBER, limit);
+                editor.apply();
+
+                score.setHint("Максимум: " + limit);
+
+            }
+        });
     }
 
     /**
@@ -138,8 +168,10 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.generateButton:{
+                SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
+                String qrcode_limit = sharedPreferences.getString(Student.LIMIT_QRCODE_NUMBER, "1500");
                 String scoreValue = score.getText().toString();
-                if(!scoreValue.trim().isEmpty() && Integer.parseInt(scoreValue) <= 1500) {
+                if(!scoreValue.trim().isEmpty() && Integer.parseInt(scoreValue) <= Integer.parseInt(qrcode_limit)) {
                     try {
                         generateQRCODE();
                     } catch (UnsupportedEncodingException | WriterException e) {
@@ -147,7 +179,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                     }
                 }else{
                     YoYo.with(Techniques.Shake).duration(1000).repeat(0).playOn(score);
-                    score.setError("Ошибка, не ввели очки или запрос больше, чем на 1500 баллов");
+                    score.setError(String.format("Ошибка, не ввели очки или запрос больше, чем на %s баллов", qrcode_limit));
                 }
                 break;
             }
@@ -169,12 +201,10 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         String addedDate = simpleDateFormat.format(new Date());
         String message = URLEncoder.encode(
                 currentStudentID + "\n" +
-                        "Дата создания QR-кода: " + addedDate + "\n" +
                         "Очки: " + score.getText().toString() + "\n" +
                         "ФИО: " + studentFIO + "\n" +
                         "Группа: " + studentGroupName + "\n" +
                         "Баллы ученика: " + studentScore, "UTF-8");
-
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         BitMatrix bitMatrix = null;
         bitMatrix = multiFormatWriter.encode(
@@ -185,7 +215,6 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
         Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
         qrcode_image.setImageBitmap(bitmap);
-//        Teacher.decreaseStudentLimitScore(null, Integer.parseInt(score.getText().toString()), currentStudentID);
     }
 
 }

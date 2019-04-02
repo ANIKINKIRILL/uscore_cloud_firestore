@@ -542,7 +542,7 @@ public class FirebaseServer {
                     if(counter3 == 0) {
                         int resultScore = studentScore + Integer.parseInt(score);
                         STUDENTS$DB.document(studentID).update("score", resultScore);
-                        String message = "Вы успешно добавили очки";
+                        String message = String.format("Вы успешно добавили очки ($s)", score);
                         callback.execute(message);
                     }
                     counter3 = 1;

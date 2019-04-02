@@ -179,8 +179,7 @@ public class MyGroupTopScoreFragment extends Fragment {
 
     private void setTitle(){
         try {
-            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Settings.SETTINGS, Context.MODE_PRIVATE);
-            title.setText(String.format("Рейтинг учеников по группе %s", sharedPreferences.getString(Settings.GROUP_NAME, "")));
+            title.setText("Рейтинг учеников по Вашей группе");
         }catch (Exception e){
             Log.d(TAG, "setTitle: " + e.getMessage());
         }
