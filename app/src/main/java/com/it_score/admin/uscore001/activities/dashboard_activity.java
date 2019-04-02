@@ -26,6 +26,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.Settings;
@@ -80,6 +82,7 @@ public class dashboard_activity extends AppCompatActivity implements
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     CollectionReference student$db = firebaseFirestore.collection("STUDENTS$DB");
     CollectionReference requests$DB = firebaseFirestore.collection("REQEUSTS$DB");
+    CollectionReference TEACHERS$DB = firebaseFirestore.collection("TEACHERS$DB");
     CollectionReference LIMIT_REMOTE_REQUEST = firebaseFirestore.collection("LIMIT_REMOTE_REQUEST");
 
     // Виджеты
@@ -443,6 +446,9 @@ public class dashboard_activity extends AppCompatActivity implements
             editor.putString(Teacher.SECOND_NAME, teacherSecondName);
             editor.putString(Teacher.LAST_NAME, teacherLastName);
 
+            getTeacherRealEmail(teacherID);
+            getTeacherRoomNumber(teacherID);
+
             SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
             SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
             editorSettings.putString(Settings.USER_ID, teacherID);
@@ -469,12 +475,73 @@ public class dashboard_activity extends AppCompatActivity implements
                 "positionID: " + sharedPreferences.getString(Teacher.POSITION_ID, "") + "\n" +
                 "imagePath : " + sharedPreferences.getString(Teacher.IMAGE_PATH, "") + "\n" +
                 "email: " + sharedPreferences.getString(Teacher.EMAIL, "") + "\n" +
-                "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n");
+                "groupID: " + sharedPreferences.getString(Teacher.GROUP_ID, "") + "\n" +
+                "roomNumber: " + sharedPreferences.getString(Teacher.ROOM_NUMBER, "") + "\n");
 
             editor.apply();
 
         }
     };
+
+    /**
+     * Получить realEmail учителя
+     */
+
+    private void getTeacherRealEmail(String teacherID){
+        TEACHERS$DB.document(teacherID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    try {
+                        if (task.getResult().contains("realEmail")) {
+                            String realEmail = task.getResult().get("realEmail").toString();
+                            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString(Teacher.REAL_EMAIL, realEmail);
+                            editor.apply();
+                        }else{
+                            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString(Teacher.REAL_EMAIL, "");
+                            editor.apply();
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Получить roomNumber учителя
+     */
+
+    private void getTeacherRoomNumber(String teacherID){
+        TEACHERS$DB.document(teacherID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    try {
+                        if (task.getResult().contains("roomNumber")) {
+                            String roomNumber = task.getResult().get("roomNumber").toString();
+                            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString(Teacher.ROOM_NUMBER, roomNumber);
+                            editor.apply();
+                        }else{
+                            SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString(Teacher.ROOM_NUMBER, "");
+                            editor.apply();
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * Поулчить класс адимина

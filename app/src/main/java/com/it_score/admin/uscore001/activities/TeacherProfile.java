@@ -56,7 +56,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
 
     // widgets
     CircleImageView imageView;
-    TextView usernameView, status, emailAddress, positionView, subjectView, countAddedScore;
+    TextView usernameView, status, emailAddress, positionView, subjectView, countAddedScore, roomNumberTextView;
     Button profileSettings;
     LinearLayout showAllComments;
 
@@ -71,6 +71,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     private String positionID;
     private String subjectID;
     private String teacherID;
+    private String roomNumber;
 
     // Firebase
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -106,10 +107,11 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         teacherImagePath = sharedPreferences.getString(Teacher.IMAGE_PATH, "");
         firstName = sharedPreferences.getString(Teacher.FIRST_NAME, "");
         lastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
-        email = sharedPreferences.getString(Teacher.EMAIL, "");
+        email = sharedPreferences.getString(Teacher.REAL_EMAIL, "Почта отсутствует");
         requestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
         subjectID = sharedPreferences.getString(Teacher.SUBJECT_ID, "");
         positionID = sharedPreferences.getString(Teacher.POSITION_ID, "");
+        roomNumber = sharedPreferences.getString(Teacher.ROOM_NUMBER, "Кабинет отсутствует");
     }
 
     /**
@@ -126,6 +128,7 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         subjectView = findViewById(R.id.subject);
         profileSettings = findViewById(R.id.profileSettings);
         showAllComments = findViewById(R.id.showAllComments);
+        roomNumberTextView = findViewById(R.id.roomNumber);
 
         showAllComments.setOnClickListener(this);
         imageView.setOnClickListener(this);
@@ -228,8 +231,6 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         }
     };
 
-
-
     /**
      * Загрузка данных учителя в виджеты
      *
@@ -244,7 +245,16 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
         GlideApp.with(this).load(teacherImagePath).centerCrop().into(imageView);
         usernameView.setText(String.format("%s %s", firstName, lastName));
         status.setText("Учитель");
-        emailAddress.setText(email);
+        if(email.equals("")){
+            emailAddress.setText("Почта отсутствует");
+        }else {
+            emailAddress.setText(email);
+        }
+        if(roomNumber.equals("")){
+            roomNumberTextView.setText("Кабинет отсутствует");
+        }else {
+            roomNumberTextView.setText(String.format(roomNumber + " (кабинет)"));
+        }
     }
 
     /**

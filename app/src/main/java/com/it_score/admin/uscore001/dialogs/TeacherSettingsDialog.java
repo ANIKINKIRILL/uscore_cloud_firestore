@@ -1,11 +1,14 @@
 package com.it_score.admin.uscore001.dialogs;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +20,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.it_score.admin.uscore001.App;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
 import com.it_score.admin.uscore001.models.Subject;
@@ -35,7 +39,7 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     private static final String TAG = "TeacherSettingsDialog";
 
     // Виджеты
-    private EditText firstName, secondName, lastName;
+    private EditText firstName, secondName, lastName, email, roomNumber;
     private Spinner subjectSpinner;
     private TextView subjectNow;
     private ProgressDialog progressDialog;
@@ -77,8 +81,10 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
         firstName = view.findViewById(R.id.firstName);
         secondName = view.findViewById(R.id.secondName);
         lastName = view.findViewById(R.id.lastName);
-        subjectSpinner = view.findViewById(R.id.subjectSpinner);
         subjectNow = view.findViewById(R.id.subjectNow);
+        subjectSpinner = view.findViewById(R.id.subjectSpinner);
+        email = view.findViewById(R.id.emailAddress);
+        roomNumber = view.findViewById(R.id.roomNumber);
         android.widget.TextView ok = view.findViewById(R.id.ok);
         android.widget.TextView cancel = view.findViewById(R.id.cancel);
 
@@ -152,9 +158,13 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.ok:{
+                Log.d(TAG, "onClick: called");
                 String new_first_name = firstName.getText().toString();
                 String new_second_name = secondName.getText().toString();
                 String new_last_name = lastName.getText().toString();
+                String realEmail = email.getText().toString();
+                String roomNumberValue = roomNumber.getText().toString();
+                Log.d(TAG, "teachersSettingsDialog: realEmail:" + realEmail + " roomNumber:" + roomNumberValue);
                 // Получить выбраный предмет
                 Subject subject = (Subject) subjectSpinner.getSelectedItem();
                 String subjectID = subject.getId();
@@ -162,7 +172,7 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
                 progressDialog.setTitle("Обновление");
                 progressDialog.setMessage("Мы изменяем Ваш профиль...");
                 progressDialog.show();
-                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name, subjectID);
+                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name, subjectID, realEmail, roomNumberValue);
                 break;
             }
             case R.id.cancel:{
@@ -174,17 +184,15 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     }
 
     /**
-     * Callback, который вернёться после обновления ФИО учителя
+     * Callback, который вернёться после обновления данных учителя
      */
 
     Callback mUpdateCredentialsCallback = new Callback() {
         @Override
         public void execute(Object data, String... params) {
             progressDialog.dismiss();
-            String resultMessage = (String) data;
-            Toast.makeText(getContext(), resultMessage, Toast.LENGTH_SHORT).show();
             getDialog().dismiss();
+            Toast.makeText(getContext(), "При след. запуске приложения данные обновяться", Toast.LENGTH_SHORT).show();
         }
     };
-
 }

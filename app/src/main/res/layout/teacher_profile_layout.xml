@@ -226,25 +226,25 @@
                     tools:text="subject"/>
             </LinearLayout>
 
-            <!--<LinearLayout-->
-                <!--android:layout_marginTop="25dp"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:paddingLeft="25dp"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content">-->
-                <!--<ImageView-->
-                    <!--android:layout_width="36dp"-->
-                    <!--android:layout_height="36dp"-->
-                    <!--android:src="@drawable/icons8_classroom"/>-->
-                <!--<TextView-->
-                    <!--android:id="@+id/roomNumber"-->
-                    <!--android:text="324 (Кабинет учителя)"-->
-                    <!--android:textStyle="bold"-->
-                    <!--android:layout_gravity="center_vertical"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:paddingLeft="20dp" />-->
-            <!--</LinearLayout>-->
+            <LinearLayout
+                android:layout_marginTop="25dp"
+                android:orientation="horizontal"
+                android:paddingLeft="25dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/icons8_classroom"/>
+                <TextView
+                    android:id="@+id/roomNumber"
+                    android:text="324 (Кабинет учителя)"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/showAllComments"
