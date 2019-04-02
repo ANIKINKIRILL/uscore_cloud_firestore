@@ -108,7 +108,11 @@ public class FirebaseServer {
                     if(task.isSuccessful()){
                         callback.execute(true, login, password);
                     }else{
-                        callback.execute(false, "Неправильный пароль, попробуйте еще раз или обратитесь к администрации");
+                        if(task.getException().getMessage().contains("network")){
+                            callback.execute(false, "NETWORK_ERROR");
+                        }else {
+                            callback.execute(false, "Неправильный пароль, попробуйте еще раз или обратитесь к администрации");
+                        }
                     }
                 }
             });

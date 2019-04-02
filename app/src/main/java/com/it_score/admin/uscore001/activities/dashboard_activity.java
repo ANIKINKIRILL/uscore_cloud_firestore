@@ -1038,7 +1038,7 @@ public class dashboard_activity extends AppCompatActivity implements
                 Log.d(TAG, "difference in minutes: " + minutes);
                 Log.d(TAG, "difference in hours: " + hours);
                 Log.d(TAG, "difference in days: " + days);
-                if(seconds >= 30){
+                if(hours >= 24){
                     if(Integer.parseInt(limitScore) == 0) {
                         student$db.document(sharedPreferences.getString(Student.ID, "")).update("limitScore", limit_remote_request);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -1048,7 +1048,8 @@ public class dashboard_activity extends AppCompatActivity implements
                 }else{
                     android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(dashboard_activity.this);
                     alertDialog.setTitle("Удаленный запрос учителю");
-                    alertDialog.setMessage("Превышен лимит на удаленные запросы, Вы можете обратится к учителю с QR-кодом");
+                    alertDialog.setMessage("Превышен лимит на удаленные запросы, Вы можете обратится к учителю с QR-кодом. " +
+                            "Осталось ждать: " + (24-hours) + " часа");
                     alertDialog.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {

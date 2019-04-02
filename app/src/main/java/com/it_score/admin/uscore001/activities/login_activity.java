@@ -1,6 +1,7 @@
 package com.it_score.admin.uscore001.activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -214,10 +215,17 @@ public class login_activity extends AppCompatActivity implements View.OnClickLis
                 Settings.setGroupName(pickedGroup);
             }else{
                 String failureReason = params[0];
-                Toast.makeText(login_activity.this, failureReason, Toast.LENGTH_SHORT).show();
+                if(failureReason.contains("NETWORK_ERROR")){
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(login_activity.this);
+                    alertDialog.setTitle("Вход в аккаунт");
+                    alertDialog.setMessage("Потеряна связь с интернетом");
+                    alertDialog.show();
+                }else {
+                    Toast.makeText(login_activity.this, failureReason, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "signIn failed");
+                }
                 progressDialog.dismiss();
                 signIn.setEnabled(true);
-                Log.d(TAG, "signIn failed");
             }
         }
     };
