@@ -62,7 +62,6 @@
                         <TextView
                             android:layout_marginStart="40dp"
                             android:textSize="17dp"
-                            android:textColor="@android:color/darker_gray"
                             android:layout_below="@id/userAvatar"
                             android:id="@+id/requestNumber"
                             android:text="Запросы"

@@ -244,14 +244,12 @@ public class dashboard_activity extends AppCompatActivity implements
         }else if(Settings.getStatus().equals(Settings.TEACHER_STATUS)){      // Учитель
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
-            menu.findItem(R.id.testChangePassword).setVisible(false);
             menu.findItem(R.id.changeLang).setVisible(false);
         }
         if(Settings.getStatus().trim().equals(ADMIN_STATUS)){         // Админ
             menu.findItem(R.id.scanQRCODE).setVisible(false);
             menu.findItem(R.id.generateQERCODE).setVisible(false);
             menu.findItem(R.id.makeRequest).setVisible(false);
-            menu.findItem(R.id.makePenalty).setVisible(false);
             menu.findItem(R.id.studentRegisterRequests).setVisible(false);
             menu.findItem(R.id.changeLang).setVisible(false);
         }
@@ -449,6 +447,8 @@ public class dashboard_activity extends AppCompatActivity implements
             getTeacherRealEmail(teacherID);
             getTeacherRoomNumber(teacherID);
 
+            getTeacherRequestsNumber(teacherID);
+
             SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
             SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
             editorSettings.putString(Settings.USER_ID, teacherID);
@@ -564,6 +564,7 @@ public class dashboard_activity extends AppCompatActivity implements
             String positionID = admin.getPositionID();
             String responsible_email = admin.getResponsible_email();
             String statusID = admin.getStatusID();
+            String realEmail = admin.getRealEmail();
             int roomNumber = admin.getRoomNumber();
             if (image_path.isEmpty()) {
                 image_path = "https://cdn2.iconfinder.com/data/icons/male-users-2/512/2-512.png";
@@ -585,11 +586,17 @@ public class dashboard_activity extends AppCompatActivity implements
             Admin.setResponsible_emailSharedPreference(responsible_email);
             Admin.setStatusIDSharedPreference(statusID);
             Admin.setAdminRoomNumber(roomNumber);
+            Admin.setRealEmailSharedPreferences(realEmail);
 
             username.setText(secondName + "." + firstName.substring(0,1)+ "." + lastName.substring(0,1));
 
         }
     };
+
+    /**
+     * Получить количество новых запросов на учителя
+     * @param teacherRequestID  requestID учителя
+     */
 
     public void getTeacherRequestsNumber(String teacherRequestID){
         requestCounter = 0;
@@ -599,41 +606,21 @@ public class dashboard_activity extends AppCompatActivity implements
             .addSnapshotListener(new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                    requestCounter = 0;
                     for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                         documentSnapshot
                             .getReference()
                             .collection("REQUESTS")
                             .whereEqualTo("answered", false)
                             .whereEqualTo("canceled", false)
-                            /*
-                            .get()
-                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                    if(task.isSuccessful()){
-                                        Log.d(TAG, "onComplete: successful");
-                                        requestCounter += task.getResult().getDocuments().size();
-                                        Log.d(TAG, "onComplete: " + requestCounter);
-                                        requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
-                                    }else{
-                                        Log.d(TAG, "onComplete: " + task.getException().getMessage());
-                                    }
-                                }
-                            });
-                            */
-
                             .addSnapshotListener(new EventListener<QuerySnapshot>() {
                                 @Override
                                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                                     requestCounter += queryDocumentSnapshots.getDocuments().size();
-                                    Log.d(TAG, "requestCounter: " + requestCounter);
+                                    Log.d(TAG, "getTeacherRequestsNumber(): " + requestCounter);
                                 }
                             });
-                        Log.d(TAG, "student request amount of answered canceled being false: " + requestCounter);
+                        Log.d(TAG, "getTeacherRequestsNumber(): " + requestCounter);
                     }
-                    requestNumber.setText(getResources().getString(R.string.my_requests) + " " + Integer.toString(requestCounter));
-//                    changeNotificationAlarmImage();
                 }
             });
     }
@@ -1099,11 +1086,20 @@ public class dashboard_activity extends AppCompatActivity implements
                     Intent intent = new Intent(this, TeacherProfile.class);
                     startActivity(intent);
                 }
+                if(Settings.getStatus().equals(ADMIN_STATUS)){
+                    Intent intent = new Intent(this, AdminProfileActivity.class);
+                    startActivity(intent);
+                }
                 break;
             }
             case R.id.actions:{
-                Intent intent = new Intent(this, RecentActionsPage.class);
-                startActivity(intent);
+                if(Settings.getStatus().equals(ADMIN_STATUS)){
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    Toast.makeText(this, "Недоступно", Toast.LENGTH_SHORT).show();
+                }else {
+                    Intent intent = new Intent(this, RecentActionsPage.class);
+                    startActivity(intent);
+                }
                 break;
             }
             case R.id.vkPage:{

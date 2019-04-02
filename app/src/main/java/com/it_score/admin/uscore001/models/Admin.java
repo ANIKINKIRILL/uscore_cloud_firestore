@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import com.it_score.admin.uscore001.App;
 import com.it_score.admin.uscore001.AsyncTaskArguments;
+import com.it_score.admin.uscore001.AsyncTaskDataArgument;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.FirebaseServer;
 
@@ -21,6 +22,7 @@ public class Admin {
     private String responsible_email;
     private String image_path;
     private String statusID;
+    private String realEmail;
     private int roomNumber;
 
     static SharedPreferences sharedPreferences;
@@ -35,6 +37,7 @@ public class Admin {
     public static final String ADMIN_POSITION_ID = "position_id";
     public static final String ADMIN_STATUS_ID = "status_id";
     public static final String ADMIN_ROOM_NUMBER = "room_number";
+    public static final String ADMIN_REAL_EMAIL = "real_email";
 
     public Admin(){}
 
@@ -47,7 +50,8 @@ public class Admin {
             String responsible_email,
             String image_path,
             String statusID,
-            int roomNumber
+            int roomNumber,
+            String realEmail
     ){
         this.id = id;
         this.firstName = firstName;
@@ -58,12 +62,26 @@ public class Admin {
         this.image_path = image_path;
         this.statusID = statusID;
         this.roomNumber = roomNumber;
+        this.realEmail = realEmail;
     }
 
     static {
         Context context = App.context;
         sharedPreferences = context.getSharedPreferences(ADMIN_DATA, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+    }
+
+    public String getRealEmail() {
+        return realEmail;
+    }
+
+    public static void setRealEmailSharedPreferences(String realEmail){
+        editor.putString(ADMIN_REAL_EMAIL, realEmail);
+        editor.apply();
+    }
+
+    public static String getRealEmailSharedPreferences(){
+        return sharedPreferences.getString(ADMIN_REAL_EMAIL, "");
     }
 
     public int getRoomNumber() {
@@ -229,6 +247,23 @@ public class Admin {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
         FirebaseServer.GetAdminFunctions getAdminFunctions = new FirebaseServer.GetAdminFunctions();
         getAdminFunctions.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Обновить данные админа
+     *
+     * @param callback      callback после получения данных
+     * @param firstName     имя
+     * @param secondName    фамилия
+     * @param lastName      отчество
+     * @param realEmail     настоящий email
+     * @param roomNumber    кабинет
+     */
+
+    public static void updateCredentials(Callback callback, String adminID, String firstName, String secondName, String lastName, String realEmail, int roomNumber){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(adminID, firstName, secondName, lastName, realEmail, roomNumber));
+        FirebaseServer.UpdateAdminCredentials updateAdminCredentials = new FirebaseServer.UpdateAdminCredentials();
+        updateAdminCredentials.execute(asyncTaskArguments);
     }
 
 

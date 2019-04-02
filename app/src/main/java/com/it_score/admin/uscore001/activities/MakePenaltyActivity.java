@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.Settings;
+import com.it_score.admin.uscore001.models.Admin;
 import com.it_score.admin.uscore001.models.Group;
 import com.it_score.admin.uscore001.models.Option;
 import com.it_score.admin.uscore001.models.Penalty;
@@ -41,9 +43,10 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Активити 'Оштрафовать ученика' (Пользователь -> Учитель)
+ * Активити 'Оштрафовать ученика' (Пользователь -> Учитель, Админ)
  */
 
 public class MakePenaltyActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, View.OnClickListener{
@@ -59,6 +62,7 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
     private Context context;
     private String currentTeacherRequestID;
     private String currentTeacherID;
+    private String currentAdminID;
     private String studentID;
     private String groupId;
 
@@ -81,7 +85,12 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
 
         init();
         initActionBar();
-        getTeacherData();
+        if(Settings.getStatus().equals(getString(R.string.teacherStatusValue))) {
+            getTeacherData();
+        }
+        if(Settings.getStatus().equals(getString(R.string.adminStatusValue))){
+            getAdminData();
+        }
         getSchoolGroups();
         getAllPenalties();
     }
@@ -144,13 +153,22 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
             }
             case R.id.ok:{
                 if(!scoreTextView.getText().toString().trim().isEmpty()){
-                    progressDialog = new ProgressDialog(MakePenaltyActivity.this);
-                    progressDialog.setMessage("Штрафуем ученика...");
-                    progressDialog.show();
-                    // Внесение данных/наказания в БД
-                    addPenaltyToHistory(optionID.getText().toString(), groupId, studentID, scoreInvisible.getText().toString());
-                    // Понижения баллов
-                    decreaseStudentScore(studentID, Integer.parseInt(scoreInvisible.getText().toString()), mDecreaseStudentScoreCallback);
+                    if(Settings.getStatus().equals(getString(R.string.teacherStatusValue))) {
+                        progressDialog = new ProgressDialog(MakePenaltyActivity.this);
+                        progressDialog.setMessage("Штрафуем ученика...");
+                        progressDialog.show();
+                        // Внесение данных/наказания в БД
+                        addPenaltyToHistory(optionID.getText().toString(), groupId, studentID, scoreInvisible.getText().toString());
+                        // Понижения баллов
+                        decreaseStudentScore(studentID, Integer.parseInt(scoreInvisible.getText().toString()), mDecreaseStudentScoreCallback);
+                    }
+                    if(Settings.getStatus().equals(getString(R.string.adminStatusValue))){
+                        progressDialog = new ProgressDialog(MakePenaltyActivity.this);
+                        progressDialog.setMessage("Штрафуем ученика...");
+                        progressDialog.show();
+                        // Понижения баллов
+                        decreaseStudentScore(studentID, Integer.parseInt(scoreInvisible.getText().toString()), mDecreaseStudentScoreCallback);
+                    }
                 }
                 break;
             }
@@ -158,14 +176,22 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
     }
 
     /**
-     * Получение requestID учителя
-     * id учителя
+     * Получение данны учителя
      */
 
     private void getTeacherData(){
         SharedPreferences sharedPreferences = context.getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
         currentTeacherRequestID = sharedPreferences.getString(Teacher.TEACHER_REQUEST_ID, "");
         currentTeacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
+    }
+
+    /**
+     * Получение данные админа
+     */
+
+    private void getAdminData(){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Admin.ADMIN_DATA, Context.MODE_PRIVATE);
+        currentAdminID = sharedPreferences.getString(Admin.ADMIN_ID, "");
     }
 
     /**
@@ -327,7 +353,12 @@ public class MakePenaltyActivity extends AppCompatActivity implements AdapterVie
             progressDialog.dismiss();
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(MakePenaltyActivity.this);
             alertDialog.setTitle("Штраф ученика");
-            alertDialog.setMessage("Вы оштрафовали ученика. Для более детальной инфармации смотреть в 'Недавниe'");
+            if(Settings.getStatus().equals(getString(R.string.teacherStatusValue))) {
+                alertDialog.setMessage("Вы оштрафовали ученика. Для более детальной инфармации смотреть в 'Недавниe'");
+            }
+            if(Settings.getStatus().equals(getString(R.string.adminStatusValue))) {
+                alertDialog.setMessage("Вы успешно оштрафовали ученика");
+            }
             alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

@@ -56,8 +56,8 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/lastNameLayout"
         android:layout_below="@id/secondNameLayout"
+        android:id="@+id/lastNameLayout"
         android:layout_marginBottom="7dp"
         android:orientation="horizontal"
         android:weightSum="100"
@@ -132,8 +132,9 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/subjectLayout"
+        android:visibility="gone"
         android:layout_below="@id/emailLayout"
+        android:id="@+id/subjectLayout"
         android:layout_marginBottom="7dp"
         android:orientation="horizontal"
         android:weightSum="100"
@@ -154,6 +155,7 @@
     </LinearLayout>
 
     <Spinner
+        android:visibility="gone"
         android:id="@+id/subjectSpinner"
         android:layout_below="@id/subjectLayout"
         android:gravity="center"
@@ -161,8 +163,8 @@
         android:layout_height="wrap_content"/>
 
     <LinearLayout
-        android:id="@+id/buttonsLayout"
         android:layout_below="@id/subjectSpinner"
+        android:id="@+id/buttonsLayout"
         android:weightSum="100"
         android:orientation="horizontal"
         android:layout_width="match_parent"

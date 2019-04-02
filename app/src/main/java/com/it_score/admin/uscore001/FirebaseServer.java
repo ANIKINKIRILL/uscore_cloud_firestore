@@ -1418,5 +1418,37 @@ public class FirebaseServer {
         }
     }
 
+    /**
+     * Обновить данные админа
+     */
+
+    public static class UpdateAdminCredentials extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            String adminID = (String) asyncTaskArguments[0].mData.data[0];
+            String firstName = (String) asyncTaskArguments[0].mData.data[1];
+            String secondName = (String) asyncTaskArguments[0].mData.data[2];
+            String lastName = (String) asyncTaskArguments[0].mData.data[3];
+            String realEmail = (String) asyncTaskArguments[0].mData.data[4];
+            int roomNumber = (int) asyncTaskArguments[0].mData.data[5];
+            HashMap<String, Object> updateCredentialsMap = new HashMap<>();
+            updateCredentialsMap.put("firstName", firstName.trim());
+            updateCredentialsMap.put("secondName", secondName.trim());
+            updateCredentialsMap.put("lastName", lastName.trim());
+            updateCredentialsMap.put("realEmail", realEmail);
+            updateCredentialsMap.put("roomNumber", roomNumber);
+            TEACHERS$DB.document(adminID).update(updateCredentialsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        asyncTaskArguments[0].mCallback.execute("Вы успешно изменили свой профиль");
+                    }else{
+                        asyncTaskArguments[0].mCallback.execute("Что-то пошло не так. Изменения не сохранены");
+                    }
+                }
+            });
+            return null;
+        }
+    }
 
 }

@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.dialogs.AdminSettingsDialog;
 import com.it_score.admin.uscore001.dialogs.ImageDialog;
 import com.it_score.admin.uscore001.dialogs.TeacherSettingsDialog;
 import com.it_score.admin.uscore001.models.Admin;
@@ -39,6 +40,7 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
     private String teacherImagePath;
     private String secondName;
     private int roomNumberValue;
+    private String realEmail;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,6 +91,7 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
         secondName = sharedPreferences.getString(Admin.ADMIN_SECOND_NAME, "");
         lastName = sharedPreferences.getString(Admin.ADMIN_LAST_NAME, "");
         email = sharedPreferences.getString(Admin.ADMIN_EMAIL, "");
+        realEmail = sharedPreferences.getString(Admin.ADMIN_REAL_EMAIL, "");
         roomNumberValue = sharedPreferences.getInt(Admin.ADMIN_ROOM_NUMBER, 0);
     }
 
@@ -105,8 +108,12 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
         GlideApp.with(this).load(teacherImagePath).centerCrop().into(imageView);
         usernameView.setText(String.format("%s %s %s", secondName, firstName, lastName));
         positionView.setText("Администрация");
-        emailView.setText(email);
         roomNumber.setText(String.format("Кабинет: %s", Integer.toString(roomNumberValue)));
+        if(realEmail.equals("")){
+            emailView.setText("Почта отсутствует");
+        }else {
+            emailView.setText(realEmail);
+        }
     }
 
     @Override
@@ -118,10 +125,8 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
                 break;
             }
             case R.id.profileSettings:{
-                /*
-                TeacherSettingsDialog dialog = new TeacherSettingsDialog();
+                AdminSettingsDialog dialog = new AdminSettingsDialog();
                 dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
-                */
                 break;
             }
         }

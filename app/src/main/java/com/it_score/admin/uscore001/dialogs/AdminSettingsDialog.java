@@ -1,28 +1,25 @@
 package com.it_score.admin.uscore001.dialogs;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.it_score.admin.uscore001.App;
 import com.it_score.admin.uscore001.Callback;
 import com.it_score.admin.uscore001.R;
+import com.it_score.admin.uscore001.models.Admin;
 import com.it_score.admin.uscore001.models.Subject;
 import com.it_score.admin.uscore001.models.Teacher;
 import com.it_score.admin.uscore001.models.User;
@@ -31,38 +28,33 @@ import com.it_score.admin.uscore001.util.SubjectArrayAdapter;
 import java.util.ArrayList;
 
 /**
- * Окно, где учитель может изменить свои данные (ФИО, ПРЕДМЕТ, ПОЧТА, КАБИНЕТ)
+ * Окно, где admin может изменить свои данные (ФИО, КАБИНЕТ, ПОЧТА)
  */
 
-public class TeacherSettingsDialog extends DialogFragment implements View.OnClickListener{
+public class AdminSettingsDialog extends DialogFragment implements View.OnClickListener{
 
     private static final String TAG = "TeacherSettingsDialog";
 
     // Виджеты
     private EditText firstName, secondName, lastName, email, roomNumber;
-    private Spinner subjectSpinner;
-    private TextView subjectNow;
     private ProgressDialog progressDialog;
 
     // Переменные
-    private String teacherID;
-    private String teacherLastName;
-    private String teacherSecondName;
-    private String teacherFirstName;
-    private String subjectID;
-    private String roomNumberValue;
-    private String realEmailValue;
+    private String adminID;
+    private String adminLastName;
+    private String adminSecondName;
+    private String adminFirstName;
+    private int adminRoomNumber;
+    private String adminRealEmail;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.teacher_settings_dialog, container, false);
+        View view = inflater.inflate(R.layout.admin_settings_dialog, container, false);
         init(view);
         configureDialog();
         getTeacherData();
-        getSubjectNameBySubjectID(subjectID);
         setTeacherData();
-        populateSubjectSpinner();
         return view;
     }
 
@@ -83,12 +75,10 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
         firstName = view.findViewById(R.id.firstName);
         secondName = view.findViewById(R.id.secondName);
         lastName = view.findViewById(R.id.lastName);
-        subjectNow = view.findViewById(R.id.subjectNow);
-        subjectSpinner = view.findViewById(R.id.subjectSpinner);
         email = view.findViewById(R.id.emailAddress);
         roomNumber = view.findViewById(R.id.roomNumber);
-        android.widget.TextView ok = view.findViewById(R.id.ok);
-        android.widget.TextView cancel = view.findViewById(R.id.cancel);
+        TextView ok = view.findViewById(R.id.ok);
+        TextView cancel = view.findViewById(R.id.cancel);
 
         ok.setOnClickListener(this);
         cancel.setOnClickListener(this);
@@ -101,14 +91,13 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
     private void getTeacherData(){
         // Оборачиваем в try catch блок для того чтобы не было ошибки когда Context = null
         try {
-            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
-            teacherFirstName = sharedPreferences.getString(Teacher.FIRST_NAME, "");
-            teacherSecondName = sharedPreferences.getString(Teacher.SECOND_NAME, "");
-            teacherLastName = sharedPreferences.getString(Teacher.LAST_NAME, "");
-            teacherID = sharedPreferences.getString(Teacher.TEACHER_ID, "");
-            subjectID = sharedPreferences.getString(Teacher.SUBJECT_ID, "");
-            roomNumberValue = sharedPreferences.getString(Teacher.ROOM_NUMBER, "");
-            realEmailValue = sharedPreferences.getString(Teacher.REAL_EMAIL, "");
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(Admin.ADMIN_DATA, Context.MODE_PRIVATE);
+            adminFirstName = sharedPreferences.getString(Admin.ADMIN_FIRST_NAME, "");
+            adminSecondName = sharedPreferences.getString(Admin.ADMIN_SECOND_NAME, "");
+            adminLastName = sharedPreferences.getString(Admin.ADMIN_LAST_NAME, "");
+            adminRoomNumber = sharedPreferences.getInt(Admin.ADMIN_ROOM_NUMBER, 0);
+            adminID = sharedPreferences.getString(Admin.ADMIN_ID, "");
+            adminRealEmail = sharedPreferences.getString(Admin.ADMIN_REAL_EMAIL, "");
         }catch (Exception e){
             Log.d(TAG, "getTeacherData: " + e.getMessage());
         }
@@ -119,46 +108,13 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
      */
 
     private void setTeacherData(){
-        firstName.setText(teacherFirstName);
-        secondName.setText(teacherSecondName);
-        lastName.setText(teacherLastName);
-        roomNumber.setText(roomNumberValue);
-        email.setText(realEmailValue);
+        firstName.setText(adminFirstName);
+        secondName.setText(adminSecondName);
+        lastName.setText(adminLastName);
+        email.setText(adminRealEmail);
+        roomNumber.setText(Integer.toString(adminRoomNumber));
     }
 
-    /**
-     * Получить предмет учителя по id предмета
-     * @param subjectID     id предмета учителя
-     */
-
-    private void getSubjectNameBySubjectID(String subjectID){
-        Teacher.getSubjectValueByID(mGetSubjectByIdCallback, subjectID);
-    }
-
-    private Callback mGetSubjectByIdCallback = new Callback() {
-        @Override
-        public void execute(Object data, String... params) {
-            String subjectName = (String) data;
-            subjectNow.setText(subjectName);
-        }
-    };
-
-    /**
-     * Наполнить спиннер с выбором предмета
-     */
-
-    private void populateSubjectSpinner(){
-        User.getAllSubjectsList(mGetAllSubjectsListCallback);
-    }
-
-    private Callback mGetAllSubjectsListCallback = new Callback() {
-        @Override
-        public void execute(Object data, String... params) {
-            ArrayList<Subject> subjects = (ArrayList) data;
-            SubjectArrayAdapter adapter = new SubjectArrayAdapter(getContext(), subjects);
-            subjectSpinner.setAdapter(adapter);
-        }
-    };
 
     @Override
     public void onClick(View v) {
@@ -169,16 +125,13 @@ public class TeacherSettingsDialog extends DialogFragment implements View.OnClic
                 String new_second_name = secondName.getText().toString();
                 String new_last_name = lastName.getText().toString();
                 String realEmail = email.getText().toString();
-                String roomNumberValue = roomNumber.getText().toString();
+                int roomNumberValue = Integer.parseInt(roomNumber.getText().toString());
                 Log.d(TAG, "teachersSettingsDialog: realEmail:" + realEmail + " roomNumber:" + roomNumberValue);
-                // Получить выбраный предмет
-                Subject subject = (Subject) subjectSpinner.getSelectedItem();
-                String subjectID = subject.getId();
                 progressDialog = new ProgressDialog(getContext());
                 progressDialog.setTitle("Обновление");
                 progressDialog.setMessage("Мы изменяем Ваш профиль...");
                 progressDialog.show();
-                Teacher.updateCredentials(mUpdateCredentialsCallback, teacherID, new_first_name, new_second_name, new_last_name, subjectID, realEmail, roomNumberValue);
+                Admin.updateCredentials(mUpdateCredentialsCallback, adminID, new_first_name, new_second_name, new_last_name, realEmail, roomNumberValue);
                 break;
             }
             case R.id.cancel:{
