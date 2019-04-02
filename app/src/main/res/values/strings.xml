@@ -194,6 +194,9 @@
     <string name="requestDetailsScore">requestDetailScore</string>
     <string name="requestDetailsOption">requestDetailOption</string>
 
+    <string name="limit_remote_request_doc">FdqR3mJBKDBrBG9BKwD9</string>
+    <string name="limit_qrcode_doc">TY9MpQFh4xVkOLpJif28</string>
+
     <string name="social">Соц.сети</string>
     <string name="make_request">Отправить удаленный запрос</string>
     <string name="description">описание</string>

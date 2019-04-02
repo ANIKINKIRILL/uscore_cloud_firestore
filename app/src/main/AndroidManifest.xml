@@ -180,7 +180,27 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.EditTeacherAdminSectionActivity" />
+
+        <activity android:name="com.it_score.admin.uscore001.activities.EditTeacherAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.EditTeacherAdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.ChangeLimitRemoteRequestAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ChangeLimitRemoteRequestAdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.it_score.admin.uscore001.activities.ChangeQRCODE_LIMITAdminSectionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ChangeQRCODE_LIMITAdminSectionActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <!--<service android:name=".FirebaseMessagingService">-->
             <!--<intent-filter>-->

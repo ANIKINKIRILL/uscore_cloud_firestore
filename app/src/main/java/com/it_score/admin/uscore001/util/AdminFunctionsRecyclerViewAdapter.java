@@ -16,6 +16,8 @@ import com.it_score.admin.uscore001.activities.AddGroupFunctionAdminSectionActiv
 import com.it_score.admin.uscore001.activities.AddOptionActivity;
 import com.it_score.admin.uscore001.activities.AddSubjectFunctionAdminSectionActivity;
 import com.it_score.admin.uscore001.activities.AddTeacherAdminSectionActivity;
+import com.it_score.admin.uscore001.activities.ChangeLimitRemoteRequestAdminSectionActivity;
+import com.it_score.admin.uscore001.activities.ChangeQRCODE_LIMITAdminSectionActivity;
 import com.it_score.admin.uscore001.activities.EditTeacherAdminSectionActivity;
 import com.it_score.admin.uscore001.models.AdminFunction;
 
@@ -38,6 +40,7 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
     public static final String EDIT_TEACHER_FUN_ID = "YeGNUFEcNqD8JuY3a9U7";
     public static final String CREATE_TEACHER_FUN_ID = "Bcd0UOapnTtOMkEmTusO";
     public static final String CHANGE_LIMIT_REMOTE_REQUEST_ID = "lijh9X81op4PHlqSLU3q";
+    public static final String CHANGE_QR_CODE_LIMIT_ID = "MHNx5M4QvdjgKRdbz3Qx";
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView position, title, description;
@@ -113,6 +116,13 @@ public class AdminFunctionsRecyclerViewAdapter extends RecyclerView.Adapter<Admi
                         break;
                     }
                     case CHANGE_LIMIT_REMOTE_REQUEST_ID:{
+                        Intent intent = new Intent(context, ChangeLimitRemoteRequestAdminSectionActivity.class);
+                        context.startActivity(intent);
+                        break;
+                    }
+                    case CHANGE_QR_CODE_LIMIT_ID:{
+                        Intent intent = new Intent(context, ChangeQRCODE_LIMITAdminSectionActivity.class);
+                        context.startActivity(intent);
                         break;
                     }
                 }
