@@ -1,6 +1,7 @@
 package com.it_score.admin.uscore001.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -111,6 +112,9 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
      */
 
     private void getQRCODE_limit(){
+        generateButton.setEnabled(false);
+        ProgressDialog progressDialog = new ProgressDialog(QRCODE_activity.this);
+        progressDialog.setMessage("Загрузка...");
         QR_CODE_LIMIT.document("TY9MpQFh4xVkOLpJif28").addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
@@ -120,9 +124,9 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(Student.LIMIT_QRCODE_NUMBER, limit);
                 editor.apply();
-
                 score.setHint("Максимум: " + limit);
-
+                generateButton.setEnabled(true);
+                progressDialog.dismiss();
             }
         });
     }
@@ -169,7 +173,7 @@ public class QRCODE_activity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()){
             case R.id.generateButton:{
                 SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
-                String qrcode_limit = sharedPreferences.getString(Student.LIMIT_QRCODE_NUMBER, "1500");
+                String qrcode_limit = sharedPreferences.getString(Student.LIMIT_QRCODE_NUMBER, "50");
                 String scoreValue = score.getText().toString();
                 if(!scoreValue.trim().isEmpty() && Integer.parseInt(scoreValue) <= Integer.parseInt(qrcode_limit)) {
                     try {

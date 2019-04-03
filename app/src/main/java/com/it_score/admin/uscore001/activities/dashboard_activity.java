@@ -281,13 +281,8 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.generateQERCODE:{
-                if(Integer.parseInt(limitScore) != 0) {
-                    Intent intent = new Intent(dashboard_activity.this, QRCODE_activity.class);
-                    startActivity(intent);
-                }
-                else{
-                    checkSpendLimitScoreDateAndCurrentDate(menu);
-                }
+                Intent intent = new Intent(dashboard_activity.this, QRCODE_activity.class);
+                startActivity(intent);
                 break;
             }
             case R.id.scanQRCODE:{
@@ -447,7 +442,7 @@ public class dashboard_activity extends AppCompatActivity implements
             getTeacherRealEmail(teacherID);
             getTeacherRoomNumber(teacherID);
 
-            getTeacherRequestsNumber(teacherID);
+            getTeacherRequestsNumber(teacherRequestID);
 
             SharedPreferences sharedPreferencesSettings = getSharedPreferences(Settings.SETTINGS, MODE_PRIVATE);
             SharedPreferences.Editor editorSettings = sharedPreferencesSettings.edit();
@@ -617,9 +612,12 @@ public class dashboard_activity extends AppCompatActivity implements
                                 public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                                     requestCounter += queryDocumentSnapshots.getDocuments().size();
                                     Log.d(TAG, "getTeacherRequestsNumber(): " + requestCounter);
+                                    SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putInt(Teacher.NEW_REQUESTS_AMOUNT, requestCounter);
+                                    editor.apply();
                                 }
                             });
-                        Log.d(TAG, "getTeacherRequestsNumber(): " + requestCounter);
                     }
                 }
             });
@@ -648,8 +646,29 @@ public class dashboard_activity extends AppCompatActivity implements
                 break;
             }
             case R.id.requestNumber:{
-                ShowRequestDialog dialog = new ShowRequestDialog();
-                dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                SharedPreferences sharedPreferences = getSharedPreferences(Teacher.TEACHER_DATA, MODE_PRIVATE);
+                int requestAmount = sharedPreferences.getInt(Teacher.NEW_REQUESTS_AMOUNT, 1);
+                if(requestAmount != 0) {
+                    ShowRequestDialog dialog = new ShowRequestDialog();
+                    dialog.show(getSupportFragmentManager(), getString(R.string.open_dialog));
+                }else{
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(dashboard_activity.this);
+                    alertDialog.setTitle("Удаленные запросы");
+                    alertDialog.setMessage("У Вас нет новых удаленных запросов");
+                    alertDialog.setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).setNegativeButton("НЕДАВНИИ", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(dashboard_activity.this, RecentActionsPage.class);
+                            startActivity(intent);
+                        }
+                    });
+                    alertDialog.show();
+                }
                 break;
             }
             case R.id.recentCardView:{
@@ -907,8 +926,12 @@ public class dashboard_activity extends AppCompatActivity implements
             String teacherID = student.getTeacherID();
             boolean change_password = student.isChange_password();
             if(!change_password){
-                ChangePasswordDialog dialog = new ChangePasswordDialog();
-                dialog.show(getSupportFragmentManager(), "open_dialog");
+                try {
+                    ChangePasswordDialog dialog = new ChangePasswordDialog();
+                    dialog.show(getSupportFragmentManager(), "open_dialog");
+                }catch (Exception e){
+                    e.getMessage();
+                }
             }
             SharedPreferences sharedPreferences = getSharedPreferences(Student.STUDENT_DATA, MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();

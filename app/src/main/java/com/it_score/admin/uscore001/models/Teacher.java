@@ -39,6 +39,7 @@ public class Teacher {
    public static final String POSITION_DATA = "position_data";
    public static final String REAL_EMAIL = "real_email";
    public static final String ROOM_NUMBER = "position_data";
+   public static final String NEW_REQUESTS_AMOUNT = "new_requests_amount";
 
     public Teacher(
             String responsible_email,

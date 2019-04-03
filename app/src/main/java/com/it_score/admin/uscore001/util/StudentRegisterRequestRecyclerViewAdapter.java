@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +42,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
     ArrayList<StudentRegisterRequestModel> requestModels = new ArrayList<>();
     String teacherEmail;
     int counter = 0;
+    private String limitRemoteRequests;
 
     // Firebase
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
@@ -69,6 +71,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
     public StudentRegisterRequestRecyclerViewViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.student_register_request_recyeler_view_item, viewGroup, false);
         StudentRegisterRequestRecyclerViewViewHolder holder = new StudentRegisterRequestRecyclerViewViewHolder(view);
+        getLimitRemoteRequests(holder);
         return holder;
     }
 
@@ -113,7 +116,7 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
                                         // Создание обьекта класса Student
                                         Student student = new Student(email.trim(), model.getGroupID(),
                                                "", 100, "",
-                                               "50", model.getTeacherID(), firstName.trim(),
+                                               limitRemoteRequests, model.getTeacherID(), firstName.trim(),
                                                secondName.trim(), lastName.trim(),
                                                "y1igExymzKFaV3BU8zH8");
                                         // Добавление в базу
@@ -176,5 +179,14 @@ public class StudentRegisterRequestRecyclerViewAdapter extends RecyclerView.Adap
             dialog.dismiss();
         }
     };
+
+    /**
+     * Получить лимит на удаленные запросы
+     */
+
+    private void getLimitRemoteRequests(StudentRegisterRequestRecyclerViewViewHolder studentRegisterRequestRecyclerViewViewHolder){
+        SharedPreferences sharedPreferences = studentRegisterRequestRecyclerViewViewHolder.cardView.getContext().getSharedPreferences(Student.STUDENT_DATA, Context.MODE_PRIVATE);
+        limitRemoteRequests = sharedPreferences.getString(Student.LIMIT_REMOTE_REQUEST_NUMBER, "3");
+    }
 
 }
