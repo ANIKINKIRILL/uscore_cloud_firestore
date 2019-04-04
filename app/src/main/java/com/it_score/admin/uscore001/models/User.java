@@ -1,5 +1,8 @@
 package com.it_score.admin.uscore001.models;
 
+import android.util.Log;
+
+import com.it_score.admin.uscore001.App;
 import com.it_score.admin.uscore001.AsyncTaskArguments;
 import com.it_score.admin.uscore001.AsyncTaskDataArgument;
 import com.it_score.admin.uscore001.Callback;
@@ -7,6 +10,10 @@ import com.it_score.admin.uscore001.FirebaseServer;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.medavox.library.mutime.MissingTimeDataException;
+import com.medavox.library.mutime.MuTime;
+
+import java.io.IOException;
 
 /**
  * Пользователь
@@ -172,6 +179,36 @@ public class User {
         AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback, new AsyncTaskDataArgument(login));
         FirebaseServer.GetAdminClass getAdminClass = new FirebaseServer.GetAdminClass();
         getAdminClass.execute(asyncTaskArguments);
+    }
+
+    /**
+     * Получить московское времмя
+     * @param callback      callback который вернется полсе получения времени
+     */
+
+    public static void getMoscowTime(Callback callback){
+        AsyncTaskArguments asyncTaskArguments = new AsyncTaskArguments(callback);
+        FirebaseServer.GetMoscowTime getMoscowTime = new FirebaseServer.GetMoscowTime();
+        getMoscowTime.execute(asyncTaskArguments);
+    }
+
+    public static long getMoscowTimeLibrary(){
+        //optionally enable the disk cache
+        MuTime.enableDiskCaching(/*Context*/ App.context);//this hardens MuTime against clock changes and reboots
+        try {
+            MuTime.requestTimeFromServer("ntp2.stratum2.ru");//use any ntp server address here, eg "time.apple.com"
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //get the real time in unix epoch format (milliseconds since midnight on 1 january 1970)
+        long theActualTime = 0;
+        try {
+            theActualTime = MuTime.now(); // throws MissingTimeDataException if we don't know the time
+        }
+        catch (MissingTimeDataException e) {
+            Log.e("MuTime", "failed to get the actual time: " + e.getMessage());
+        }
+        return theActualTime;
     }
 
 

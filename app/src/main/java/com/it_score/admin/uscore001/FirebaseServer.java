@@ -32,7 +32,16 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.medavox.library.mutime.MissingTimeDataException;
+import com.medavox.library.mutime.MuTime;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,6 +51,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Класс для асинхронной работы с Firebase
@@ -92,6 +102,7 @@ public class FirebaseServer {
 
     // Постоянные переменны
     public static final String ADMIN_STATUS_ID = "26gmBm7N0oUVupLktAg6";
+    public static final String address = "https://platun0v.ru/time";
 
     /**
      * Авторизация пользователя
@@ -617,6 +628,16 @@ public class FirebaseServer {
             updateCredentialsMap.put("subjectID", subjectID);
             updateCredentialsMap.put("realEmail", realEmail);
             updateCredentialsMap.put("roomNumber", roomNumber);
+            // Обновляем sharedpreferences
+            SharedPreferences sharedPreferences = App.context.getSharedPreferences(Teacher.TEACHER_DATA, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Teacher.FIRST_NAME, firstName);
+            editor.putString(Teacher.SECOND_NAME, secondName);
+            editor.putString(Teacher.LAST_NAME, lastName);
+            editor.putString(Teacher.SUBJECT_ID, subjectID);
+            editor.putString(Teacher.REAL_EMAIL, realEmail);
+            editor.putString(Teacher.ROOM_NUMBER, roomNumber);
+            editor.apply();
             TEACHERS$DB.document(teacherID).update(updateCredentialsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
@@ -1437,6 +1458,15 @@ public class FirebaseServer {
             updateCredentialsMap.put("lastName", lastName.trim());
             updateCredentialsMap.put("realEmail", realEmail);
             updateCredentialsMap.put("roomNumber", roomNumber);
+            // Обновляем sharedpreferences
+            SharedPreferences sharedPreferences = App.context.getSharedPreferences(Admin.ADMIN_DATA, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Admin.ADMIN_FIRST_NAME, firstName);
+            editor.putString(Admin.ADMIN_SECOND_NAME, secondName);
+            editor.putString(Admin.ADMIN_LAST_NAME, lastName);
+            editor.putString(Admin.ADMIN_REAL_EMAIL, realEmail);
+            editor.putInt(Admin.ADMIN_ROOM_NUMBER, roomNumber);
+            editor.apply();
             TEACHERS$DB.document(adminID).update(updateCredentialsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
@@ -1447,6 +1477,34 @@ public class FirebaseServer {
                     }
                 }
             });
+            return null;
+        }
+    }
+
+    /**
+     * Получить время по Москве
+     */
+
+    public static class GetMoscowTime extends AsyncTask<AsyncTaskArguments, Void, Void>{
+        @Override
+        protected Void doInBackground(AsyncTaskArguments... asyncTaskArguments) {
+            Callback callback = asyncTaskArguments[0].mCallback;
+            //optionally enable the disk cache
+            MuTime.enableDiskCaching(/*Context*/ App.context);//this hardens MuTime against clock changes and reboots
+            try {
+                MuTime.requestTimeFromServer("ntp2.stratum2.ru");//use any ntp server address here, eg "time.apple.com"
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //get the real time in unix epoch format (milliseconds since midnight on 1 january 1970)
+            long theActualTime = 0;
+            try {
+                theActualTime = MuTime.now(); // throws MissingTimeDataException if we don't know the time
+            }
+            catch (MissingTimeDataException e) {
+                Log.e("MuTime", "failed to get the actual time: " + e.getMessage());
+            }
+            callback.execute(theActualTime);
             return null;
         }
     }

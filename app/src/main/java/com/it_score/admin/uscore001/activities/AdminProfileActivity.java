@@ -37,7 +37,7 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
     String email;
     private String lastName;
     private String firstName;
-    private String teacherImagePath;
+    private String adminImagePath;
     private String secondName;
     private int roomNumberValue;
     private String realEmail;
@@ -46,10 +46,16 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_profile_activity);
-        getTeacherData();
+
         init();
         initActionBar();
-        setTeacherData(teacherImagePath, firstName, secondName, lastName, email);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getAdminData();
+        setAdminData(adminImagePath, firstName, secondName, lastName, email);
     }
 
     /**
@@ -84,9 +90,9 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
      * Извлечение данных учителя из SharedPreferences
      */
 
-    private void getTeacherData(){
+    private void getAdminData(){
         SharedPreferences sharedPreferences = getSharedPreferences(Admin.ADMIN_DATA, MODE_PRIVATE);
-        teacherImagePath = sharedPreferences.getString(Admin.ADMIN_IMAGE_PATH, "");
+        adminImagePath = sharedPreferences.getString(Admin.ADMIN_IMAGE_PATH, "");
         firstName = sharedPreferences.getString(Admin.ADMIN_FIRST_NAME, "");
         secondName = sharedPreferences.getString(Admin.ADMIN_SECOND_NAME, "");
         lastName = sharedPreferences.getString(Admin.ADMIN_LAST_NAME, "");
@@ -98,14 +104,14 @@ public class AdminProfileActivity extends AppCompatActivity implements View.OnCl
     /**
      * Загрузка данных учителя в виджеты
      *
-     * @param teacherImagePath  Аватарка
+     * @param adminImagePath  Аватарка
      * @param firstName         Имя
      * @param lastName          Отчество
      * @param email             Почта
      */
 
-    public void setTeacherData(String teacherImagePath, String firstName, String secondName, String lastName, String email){
-        GlideApp.with(this).load(teacherImagePath).centerCrop().into(imageView);
+    public void setAdminData(String adminImagePath, String firstName, String secondName, String lastName, String email){
+        GlideApp.with(this).load(adminImagePath).centerCrop().into(imageView);
         usernameView.setText(String.format("%s %s %s", secondName, firstName, lastName));
         positionView.setText("Администрация");
         roomNumber.setText(String.format("Кабинет: %s", Integer.toString(roomNumberValue)));

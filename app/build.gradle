@@ -102,6 +102,9 @@ dependencies {
     // Library to Restart Application
     implementation 'com.jakewharton:process-phoenix:2.0.0'
 
+    // Get Real Moscow Time
+    implementation 'com.github.medavox:MuTime:0.5'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

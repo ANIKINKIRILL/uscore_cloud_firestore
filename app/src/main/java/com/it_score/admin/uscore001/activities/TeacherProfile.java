@@ -88,9 +88,14 @@ public class TeacherProfile extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.teacher_profile_layout);
-        getTeacherData();
         init();
         initActionBar();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getTeacherData();
         getSubjectByID(subjectID);
         getPositionByID(positionID);
         setTeacherData(teacherImagePath, firstName, lastName, email, requestID);

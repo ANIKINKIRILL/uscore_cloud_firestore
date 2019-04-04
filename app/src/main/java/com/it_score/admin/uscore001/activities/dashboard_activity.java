@@ -53,8 +53,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -976,6 +981,21 @@ public class dashboard_activity extends AppCompatActivity implements
             rateStudentInSchool(studentID);
             
             User.getUserGroupName(mGetUserGroupNameCallback, groupID);
+
+            /*
+                        MOSCOW TIME
+             */
+
+            User.getMoscowTime(new Callback() {
+                @Override
+                public void execute(Object data, String... params) {
+                    Log.d(TAG, "moscow time: " + Long.toString((long)data));
+                    long milliseconds = (long) data;
+                    Date date = new Date(milliseconds);
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE,MMMM d,yyyy h:mm,a");
+                    Log.d(TAG, "moscow time: " + simpleDateFormat.format(date));
+                }
+            });
 
              /*
                 --------------------------------------------------------------
